@@ -34,3 +34,19 @@ func handleSubmit(w http.ResponseWriter, r *http.Request, dataDir string) error 
 
 	return nil
 }
+
+func handleList(w http.ResponseWriter, r *http.Request, dataDir string) error {
+	if r.Method != "GET" {
+		return fmt.Errorf("expexted GET request")
+	}
+
+	repository := newRepository(dataDir)
+	ids, err := repository.list()
+	if err != nil {
+		return err
+	}
+	for _, id := range ids {
+		fmt.Fprintf(w, id)
+	}
+	return nil
+}
