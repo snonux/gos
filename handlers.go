@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -45,8 +46,12 @@ func handleList(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	if err != nil {
 		return err
 	}
-	for _, id := range ids {
-		fmt.Fprintf(w, id)
+
+	jsonData, err := json.Marshal(ids)
+	if err != nil {
+		return err
 	}
+
+	fmt.Fprint(w, string(jsonData))
 	return nil
 }
