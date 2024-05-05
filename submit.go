@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,7 +9,7 @@ import (
 
 func handleSubmit(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	if r.Method != "POST" {
-		return fmt.Errorf("Expexted POST request")
+		return fmt.Errorf("expexted POST request")
 	}
 
 	bytes, err := io.ReadAll(r.Body)
@@ -22,9 +21,7 @@ func handleSubmit(w http.ResponseWriter, r *http.Request, dataDir string) error 
 	if err != nil {
 		return err
 	}
-
-	filePath := fmt.Sprintf("%s/%s/%x.json", dataDir,
-		time.Now().Format("2006"), sha256.Sum256(bytes))
+	filePath := fmt.Sprintf("%s/%s/%s.json", dataDir, time.Now().Format("2006"), entry.id)
 
 	jsonStr, err := entry.serialize()
 	if err != nil {
