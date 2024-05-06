@@ -6,10 +6,10 @@ func TestHealthStatus(t *testing.T) {
 	t.Parallel()
 
 	h := NewStatus()
-	h.Set(warning, "fooService", "this is not good")
-	h.Set(critical, "barService", "this is not good either")
-	h.Set(warning, "bazService", "urgh!")
-	h.Set(unknown, "bazService", "don't know what happened here!")
+	h.Set(Warning, "fooService", "this is not good")
+	h.Set(Critical, "barService", "this is not good either")
+	h.Set(Warning, "bazService", "urgh!")
+	h.Set(Unknown, "bazService", "don't know what happened here!")
 	h.Clear("fooService")
 
 	result := h.String()

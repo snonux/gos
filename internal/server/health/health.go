@@ -42,12 +42,13 @@ func (a alert) String() string {
 
 type Status struct {
 	alerts map[string]alert
-	mu     sync.Mutex
+	mu     *sync.Mutex
 }
 
 func NewStatus() Status {
 	return Status{
 		alerts: make(map[string]alert),
+		mu:     &sync.Mutex{},
 	}
 }
 
