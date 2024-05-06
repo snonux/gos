@@ -93,7 +93,7 @@ func (hs healthStatus) String() string {
 
 	result := sb.String()
 	if result == "" {
-		return "OK: all is fine"
+		return "OK: all is fine\n"
 	}
 	return result
 }
