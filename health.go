@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 )
@@ -51,6 +52,8 @@ func newHealthStatus() healthStatus {
 }
 
 func (hs healthStatus) set(s alertSeverity, what, text string) {
+	log.Println("setting health status for", what, "to", text, "with severity", s)
+
 	hs.mu.Lock()
 	defer hs.mu.Unlock()
 

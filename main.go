@@ -13,13 +13,14 @@ func main() {
 	health := newHealthStatus()
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Someone requested /health")
 		fmt.Fprint(w, health.String())
 	})
 
 	http.HandleFunc("/submit", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Someone requested /submit")
 		if err := handleSubmit(w, r, *dataDir); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			log.Println(err)
 			health.set(critical, "submitHandler", err.Error())
 			return
 		}
@@ -27,13 +28,23 @@ func main() {
 	})
 
 	http.HandleFunc("/list", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Someone requested /list")
 		if err := handleList(w, r, *dataDir); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			log.Println(err)
 			health.set(critical, "listHandler", err.Error())
 			return
 		}
 		health.clear("listHandler")
+	})
+
+	http.HandleFunc("/get", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Someone requested /get")
+		if err := handleGet(w, r, *dataDir); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			health.set(critical, "getHandler", err.Error())
+			return
+		}
+		health.clear("getHandler")
 	})
 
 	log.Println("Server is starting on ", *listenAddr)

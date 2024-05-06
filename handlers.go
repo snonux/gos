@@ -5,8 +5,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"regexp"
 	"time"
 )
+
+var getIDRe = regexp.MustCompile(`^/[0-9]{4}/[a-z0-9]{64}\.json$`)
 
 func handleSubmit(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	if r.Method != "POST" {
@@ -53,5 +57,20 @@ func handleList(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	}
 
 	fmt.Fprint(w, string(jsonData))
+	return nil
+}
+
+func handleGet(w http.ResponseWriter, r *http.Request, dataDir string) error {
+	path := r.URL.Query().Get("path")
+	if !getIDRe.MatchString(path) {
+		return fmt.Errorf("invalid path %s", path)
+	}
+
+	data, err := os.ReadFile(fmt.Sprintf("%s/%s", dataDir, path))
+	if err != err {
+		return err
+	}
+
+	fmt.Fprint(w, string(data))
 	return nil
 }
