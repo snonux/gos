@@ -1,6 +1,10 @@
 package main
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+	"sync"
+)
 
 type alertSeverity int
 
@@ -31,8 +35,13 @@ type alert struct {
 	severity alertSeverity
 }
 
+func (a alert) String() string {
+	return fmt.Sprintf("%s: %s", a.severity, a.text)
+}
+
 type healthStatus struct {
 	alerts map[string]alert
+	mu     sync.Mutex
 }
 
 func newHealthStatus() healthStatus {
@@ -41,17 +50,37 @@ func newHealthStatus() healthStatus {
 	}
 }
 
+func (hs healthStatus) set(s alertSeverity, what, text string) {
+	hs.mu.Lock()
+	defer hs.mu.Unlock()
+
+	hs.alerts[what] = alert{
+		text:     text,
+		severity: s,
+	}
+}
+
+func (hs healthStatus) clear(what string) {
+	hs.mu.Lock()
+	defer hs.mu.Unlock()
+
+	delete(hs.alerts, what)
+}
+
 func (hs healthStatus) String() string {
 	var (
 		alertsBySeverity [4][]string
 		sb               strings.Builder
 	)
 
+	hs.mu.Lock()
+	defer hs.mu.Unlock()
+
 	for _, alert := range hs.alerts {
-		alertsBySeverity[alert.severity] = append(alertsBySeverity[alert.severity], alert.text)
+		alertsBySeverity[alert.severity] = append(alertsBySeverity[alert.severity], alert.String())
 	}
 
-	possible := [4]alertSeverity{ok, warning, critical, unknown}
+	possible := [4]alertSeverity{unknown, critical, warning, ok}
 	for _, severity := range possible {
 		if len(alertsBySeverity[severity]) == 0 {
 			continue
