@@ -5,16 +5,16 @@ import "testing"
 func TestHealthStatus(t *testing.T) {
 	t.Parallel()
 
-	h := NewStatus()
-	h.Set(Warning, "fooService", "this is not good")
-	h.Set(Critical, "barService", "this is not good either")
-	h.Set(Warning, "bazService", "urgh!")
-	h.Set(Unknown, "bazService", "don't know what happened here!")
-	h.Clear("fooService")
+	hs := NewStatus()
+	hs.Set(Warning, "foo", "this is not good")
+	hs.Set(Critical, "bar", "this is not good either")
+	hs.Set(Warning, "baz", "urgh!")
+	hs.Set(Unknown, "baz", "don't know what happened here!")
+	hs.Clear("foo")
 
-	result := h.String()
-	expected := `UNKNOWN: don't know what happened here!
-CRITICAL: this is not good either
+	result := hs.String()
+	expected := `UNKNOWN: don't know what happened here! (handler baz)
+CRITICAL: this is not good either (handler bar)
 `
 
 	if result != expected {

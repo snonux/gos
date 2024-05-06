@@ -64,13 +64,13 @@ func (hs Status) Set(s Severity, what, text string) {
 	}
 }
 
-func (hs Status) Clear(what string) {
+func (hs Status) Clear(handlerName string) {
 	hs.mu.Lock()
 	defer hs.mu.Unlock()
 
-	if _, ok := hs.alerts[what]; ok {
-		log.Println("clearing alert for", what)
-		delete(hs.alerts, what)
+	if _, ok := hs.alerts[handlerName]; ok {
+		log.Println("clearing alert for handler", handlerName)
+		delete(hs.alerts, handlerName)
 	}
 }
 
@@ -83,8 +83,9 @@ func (hs Status) String() string {
 	hs.mu.Lock()
 	defer hs.mu.Unlock()
 
-	for _, alert := range hs.alerts {
-		alerts[alert.severity] = append(alerts[alert.severity], alert.String())
+	for handlerName, alert := range hs.alerts {
+		str := fmt.Sprintf("%s (handler %s)", alert, handlerName)
+		alerts[alert.severity] = append(alerts[alert.severity], str)
 	}
 
 	possible := [4]Severity{Unknown, Critical, Warning, OK}

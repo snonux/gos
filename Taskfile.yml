@@ -5,9 +5,13 @@ tasks:
     cmds:
       - go build -o gosd cmd/gosd/main.go
   dev:
-    deps: ["vet", "lint"]
+    deps: ["test", "vet", "lint"]
     cmds:
       - go build -race -o gosd cmd/gosd/main.go
+  test:
+    cmds:
+      - go clean -testcache
+      - go test -v ./... 
   vet:
     cmds:
       - go vet **/*.go
