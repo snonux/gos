@@ -52,7 +52,7 @@ func newHealthStatus() healthStatus {
 }
 
 func (hs healthStatus) set(s alertSeverity, what, text string) {
-	log.Println("setting health status for", what, "to", text, "with severity", s)
+	log.Println("alerting", what, "to", text, "with severity", s)
 
 	hs.mu.Lock()
 	defer hs.mu.Unlock()
@@ -67,36 +67,38 @@ func (hs healthStatus) clear(what string) {
 	hs.mu.Lock()
 	defer hs.mu.Unlock()
 
-	delete(hs.alerts, what)
+	if _, ok := hs.alerts[what]; ok {
+		log.Println("clearing alert for", what)
+		delete(hs.alerts, what)
+	}
 }
 
 func (hs healthStatus) String() string {
 	var (
-		alertsBySeverity [4][]string
-		sb               strings.Builder
+		alerts [4][]string // Alerts by severity
+		sb     strings.Builder
 	)
 
 	hs.mu.Lock()
 	defer hs.mu.Unlock()
 
 	for _, alert := range hs.alerts {
-		alertsBySeverity[alert.severity] = append(alertsBySeverity[alert.severity], alert.String())
+		alerts[alert.severity] = append(alerts[alert.severity], alert.String())
 	}
 
 	possible := [4]alertSeverity{unknown, critical, warning, ok}
 	for _, severity := range possible {
-		if len(alertsBySeverity[severity]) == 0 {
+		if len(alerts[severity]) == 0 {
 			continue
 		}
-		for _, alert := range alertsBySeverity[severity] {
+		for _, alert := range alerts[severity] {
 			sb.WriteString(alert)
 			sb.WriteString("\n")
 		}
 	}
 
-	result := sb.String()
-	if result == "" {
-		return "OK: all is fine\n"
+	if result := sb.String(); result != "" {
+		return result
 	}
-	return result
+	return "OK: all is fine :-)\n"
 }
