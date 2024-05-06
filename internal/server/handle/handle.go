@@ -1,4 +1,4 @@
-package main
+package handle
 
 import (
 	"encoding/json"
@@ -8,11 +8,15 @@ import (
 	"os"
 	"regexp"
 	"time"
+
+	"codeberg.org/snonux/gos/internal"
+	"codeberg.org/snonux/gos/internal/server/repository"
+	"codeberg.org/snonux/gos/internal/types"
 )
 
 var getIDRe = regexp.MustCompile(`^/[0-9]{4}/[a-z0-9]{64}\.json$`)
 
-func handleSubmit(w http.ResponseWriter, r *http.Request, dataDir string) error {
+func Submit(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	if r.Method != "POST" {
 		return fmt.Errorf("expexted POST request")
 	}
@@ -22,31 +26,31 @@ func handleSubmit(w http.ResponseWriter, r *http.Request, dataDir string) error 
 		return err
 	}
 
-	entry, err := newEntry(bytes)
+	entry, err := types.NewEntry(bytes)
 	if err != nil {
 		return err
 	}
-	filePath := fmt.Sprintf("%s/%s/%s.json", dataDir, time.Now().Format("2006"), entry.id)
+	filePath := fmt.Sprintf("%s/%s/%s.json", dataDir, time.Now().Format("2006"), entry.ID)
 
-	jsonStr, err := entry.serialize()
+	jsonStr, err := entry.Serialize()
 	if err != nil {
 		return err
 	}
 
-	if err := saveFile(filePath, jsonStr); err != nil {
+	if err := internal.SaveFile(filePath, jsonStr); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func handleList(w http.ResponseWriter, r *http.Request, dataDir string) error {
+func List(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	if r.Method != "GET" {
 		return fmt.Errorf("expexted GET request")
 	}
 
-	repository := newRepository(dataDir)
-	ids, err := repository.list()
+	repository := repository.New(dataDir)
+	ids, err := repository.List()
 	if err != nil {
 		return err
 	}
@@ -60,7 +64,7 @@ func handleList(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	return nil
 }
 
-func handleGet(w http.ResponseWriter, r *http.Request, dataDir string) error {
+func Get(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	path := r.URL.Query().Get("path")
 	if !getIDRe.MatchString(path) {
 		return fmt.Errorf("invalid path %s", path)

@@ -1,4 +1,4 @@
-package main
+package health
 
 import (
 	"fmt"
@@ -7,51 +7,51 @@ import (
 	"sync"
 )
 
-type alertSeverity int
+type Severity int
 
 const (
-	ok alertSeverity = iota
-	warning
-	critical
-	unknown
+	OK Severity = iota
+	Warning
+	Critical
+	Unknown
 )
 
-func (s alertSeverity) String() string {
+func (s Severity) String() string {
 	switch s {
-	case ok:
+	case OK:
 		return "OK"
-	case warning:
+	case Warning:
 		return "WARNING"
-	case critical:
+	case Critical:
 		return "CRITICAL"
-	case unknown:
-		return "UNKNOWN"
+	case Unknown:
+		fallthrough
 	default:
-		panic("encountered an unknown alertSeverity")
+		return "UNKNOWN"
 	}
 }
 
 type alert struct {
 	text     string
-	severity alertSeverity
+	severity Severity
 }
 
 func (a alert) String() string {
 	return fmt.Sprintf("%s: %s", a.severity, a.text)
 }
 
-type healthStatus struct {
+type Status struct {
 	alerts map[string]alert
 	mu     sync.Mutex
 }
 
-func newHealthStatus() healthStatus {
-	return healthStatus{
+func NewStatus() Status {
+	return Status{
 		alerts: make(map[string]alert),
 	}
 }
 
-func (hs healthStatus) set(s alertSeverity, what, text string) {
+func (hs Status) Set(s Severity, what, text string) {
 	log.Println("alerting", what, "to", text, "with severity", s)
 
 	hs.mu.Lock()
@@ -63,7 +63,7 @@ func (hs healthStatus) set(s alertSeverity, what, text string) {
 	}
 }
 
-func (hs healthStatus) clear(what string) {
+func (hs Status) Clear(what string) {
 	hs.mu.Lock()
 	defer hs.mu.Unlock()
 
@@ -73,7 +73,7 @@ func (hs healthStatus) clear(what string) {
 	}
 }
 
-func (hs healthStatus) String() string {
+func (hs Status) String() string {
 	var (
 		alerts [4][]string // Alerts by severity
 		sb     strings.Builder
@@ -86,7 +86,7 @@ func (hs healthStatus) String() string {
 		alerts[alert.severity] = append(alerts[alert.severity], alert.String())
 	}
 
-	possible := [4]alertSeverity{unknown, critical, warning, ok}
+	possible := [4]Severity{Unknown, Critical, Warning, OK}
 	for _, severity := range possible {
 		if len(alerts[severity]) == 0 {
 			continue

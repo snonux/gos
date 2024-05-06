@@ -5,46 +5,49 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"codeberg.org/snonux/gos/internal/server/handle"
+	"codeberg.org/snonux/gos/internal/server/health"
 )
 
 func main() {
 	listenAddr := flag.String("listenAddr", "localhost:8080", "The listen address")
 	dataDir := flag.String("dataDir", "data", "The data directory")
-	health := newHealthStatus()
+	hs := health.NewStatus()
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Someone requested /health")
-		fmt.Fprint(w, health.String())
+		fmt.Fprint(w, hs.String())
 	})
 
 	http.HandleFunc("/submit", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Someone requested /submit")
-		if err := handleSubmit(w, r, *dataDir); err != nil {
+		if err := handle.Submit(w, r, *dataDir); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			health.set(critical, "submitHandler", err.Error())
+			hs.Set(health.Critical, "submitHandler", err.Error())
 			return
 		}
-		health.clear("submitHandler")
+		hs.Clear("submitHandler")
 	})
 
 	http.HandleFunc("/list", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Someone requested /list")
-		if err := handleList(w, r, *dataDir); err != nil {
+		if err := handle.List(w, r, *dataDir); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			health.set(critical, "listHandler", err.Error())
+			hs.Set(health.Critical, "listHandler", err.Error())
 			return
 		}
-		health.clear("listHandler")
+		hs.Clear("listHandler")
 	})
 
 	http.HandleFunc("/get", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Someone requested /get")
-		if err := handleGet(w, r, *dataDir); err != nil {
+		if err := handle.Get(w, r, *dataDir); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			health.set(critical, "getHandler", err.Error())
+			hs.Set(health.Critical, "getHandler", err.Error())
 			return
 		}
-		health.clear("getHandler")
+		hs.Clear("getHandler")
 	})
 
 	log.Println("Server is starting on ", *listenAddr)

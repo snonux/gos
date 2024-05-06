@@ -1,0 +1,19 @@
+version: '3'
+
+tasks:
+  build:
+    cmds:
+      - go build -o gosd cmd/gosd/main.go
+  dev:
+    deps: ["vet", "lint"]
+    cmds:
+      - go build -race -o gosd cmd/gosd/main.go
+  vet:
+    cmds:
+      - go vet **/*.go
+  lint:
+    cmds:
+      - golangci-lint run
+  lint-install:
+    cmds:
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest

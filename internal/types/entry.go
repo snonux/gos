@@ -1,4 +1,4 @@
-package main
+package types
 
 import (
 	"crypto/sha256"
@@ -6,27 +6,29 @@ import (
 	"fmt"
 )
 
-type shared struct {
+type Shared struct {
 	Name string `json:"id"`
 	Is   bool   `json:"is,omitempty"`
 }
 
-type entry struct {
+type Entry struct {
 	Body   string   `json:"body"`
-	Shared []shared `json:"shared,omitempty"`
+	Shared []Shared `json:"shared,omitempty"`
 	Epoch  int      `json:"epoch,omitempty"`
-	id     string
+	ID     string   `json:"id,omitempty"`
 }
 
-func newEntry(bytes []byte) (entry, error) {
-	var entry entry
+func NewEntry(bytes []byte) (Entry, error) {
+	var entry Entry
 	if err := json.Unmarshal(bytes, &entry); err != nil {
 		return entry, fmt.Errorf("unable to deserialise payload: %w", err)
 	}
-	entry.id = fmt.Sprintf("%x", sha256.Sum256(bytes))
+	if entry.ID == "" {
+		entry.ID = fmt.Sprintf("%x", sha256.Sum256(bytes))
+	}
 	return entry, nil
 }
 
-func (e entry) serialize() ([]byte, error) {
+func (e Entry) Serialize() ([]byte, error) {
 	return json.Marshal(e)
 }
