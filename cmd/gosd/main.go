@@ -10,47 +10,59 @@ import (
 	"codeberg.org/snonux/gos/internal/server/health"
 )
 
+const apiKey = "banana" // for dev purposes only, will be changed to something else
+const healthHandlerName = `healthHandler`
+
+var hs = health.NewStatus()
+
+type handlerFuncWithError func(http.ResponseWriter, *http.Request) error
+
+func httpHandle(name string, handler handlerFuncWithError) {
+	var (
+		handlerPath = fmt.Sprintf("/%s", name)
+		handlerName = fmt.Sprintf("%sHandler", name)
+	)
+
+	http.HandleFunc(handlerPath, func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Someone requested", handlerName)
+
+		// The health endpoint doesn't require an API key
+		if handlerName != healthHandlerName && r.Header.Get("X-API-KEY") != apiKey {
+			http.Error(w, "Invalid API key", http.StatusUnauthorized)
+			log.Println("Unauthorized access attempt to", handlerName)
+			return
+		}
+
+		if err := handler(w, r); err != nil {
+			hs.Set(health.Critical, handlerName, err.Error())
+			return
+		}
+		hs.Clear(handlerName)
+	})
+}
+
 func main() {
 	listenAddr := flag.String("listenAddr", "localhost:8080", "The listen address")
 	dataDir := flag.String("dataDir", "data", "The data directory")
-	hs := health.NewStatus()
 
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Someone requested /health")
+	httpHandle("health", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, hs.String())
+		return nil
 	})
 
-	http.HandleFunc("/submit", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Someone requested /submit")
-		if err := handle.Submit(w, r, *dataDir); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			hs.Set(health.Critical, "submitHandler", err.Error())
-			return
-		}
-		hs.Clear("submitHandler")
+	httpHandle("submit", func(w http.ResponseWriter, r *http.Request) error {
+		return handle.Submit(w, r, *dataDir)
 	})
 
-	http.HandleFunc("/list", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Someone requested /list")
-		if err := handle.List(w, r, *dataDir); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			hs.Set(health.Critical, "listHandler", err.Error())
-			return
-		}
-		hs.Clear("listHandler")
+	httpHandle("list", func(w http.ResponseWriter, r *http.Request) error {
+		return handle.List(w, r, *dataDir)
 	})
 
-	http.HandleFunc("/get", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Someone requested /get")
-		if err := handle.Get(w, r, *dataDir); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			hs.Set(health.Critical, "getHandler", err.Error())
-			return
-		}
-		hs.Clear("getHandler")
+	httpHandle("get", func(w http.ResponseWriter, r *http.Request) error {
+		return handle.Get(w, r, *dataDir)
 	})
 
-	log.Println("Server is starting on ", *listenAddr)
+	log.Println("Server is starting on", *listenAddr)
 	if err := http.ListenAndServe(*listenAddr, nil); err != err {
 		log.Fatal("Error starting server: ", err)
 	}
