@@ -49,4 +49,12 @@ func TestFromEnv(t *testing.T) {
 		return
 	}
 	t.Logf("got empty string as expected")
+
+	expected = "casio g-shock"
+	got = fromEnv("watch", "", "", "", expected, "")
+	if got != expected {
+		t.Errorf("got '%s' but expected '%s'", got, expected)
+		return
+	}
+	t.Logf("got '%s' as expected", expected)
 }

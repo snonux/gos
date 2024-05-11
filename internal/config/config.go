@@ -10,22 +10,40 @@ import (
 	"unicode"
 )
 
-type config struct {
+type Config struct {
+	ListenAddr string `json:"ListenAddr,omitempty"`
+	Partner    string `json:"Partner,omitempty"`
+	ApiKey     string `json:"ApiKey,omitempty"`
+	DataDir    string `json:"StateDir,omitempty"`
 	EmailTo    string `json:"EmailTo,omitempty"`
 	EmailFrom  string `json:"EmailFrom,omitempty"`
 	SMTPServer string `json:"SMTPServer,omitempty"`
-	DataDir    string `json:"StateDir,omitempty"`
-	Partner    string `json:"Partner,omitempty"`
 }
 
-func newConfig(configFile string) (config, error) {
-	conf := config{
-		EmailTo:    fromEnv("EmailTo"),
-		EmailFrom:  fromEnv("EmailFrom"),
-		SMTPServer: fromEnv("SMTPServer"),
-		DataDir:    fromEnv("DataDir", "data"),
-		Partner:    fromEnv("Partner"),
+func New(configFile string) (Config, error) {
+	conf, _ := newFromConfigFile(configFile)
+	conf.ListenAddr = fromEnv("ListenAddr", conf.ListenAddr, "localhost:8080")
+	conf.Partner = fromEnv("Partner", conf.Partner)
+	conf.ApiKey = fromEnv("ApiKey", conf.ApiKey)
+	conf.DataDir = fromEnv("DataDir", conf.DataDir, "data")
+	conf.EmailTo = fromEnv("EmailTo", conf.EmailTo)
+	conf.EmailFrom = fromEnv("EmailFrom", conf.EmailFrom)
+	conf.SMTPServer = fromEnv("SMTPServer", conf.SMTPServer)
+
+	if conf.SMTPServer == "" {
+		hostname, err := os.Hostname()
+		if err != nil {
+			log.Fatal(err)
+		}
+		conf.SMTPServer = fmt.Sprintf("%s:25", hostname)
+		log.Println("Set SMTPServer to " + conf.SMTPServer)
 	}
+
+	return conf, nil
+}
+
+func newFromConfigFile(configFile string) (Config, error) {
+	var conf Config
 
 	file, err := os.Open(configFile)
 	if err != nil {
@@ -39,25 +57,7 @@ func newConfig(configFile string) (config, error) {
 	}
 
 	err = json.Unmarshal(bytes, &conf)
-	if err != nil {
-		return conf, err
-	}
-
-	if conf.SMTPServer == "" {
-		hostname, err := os.Hostname()
-		if err != nil {
-			log.Fatal(err)
-		}
-		conf.SMTPServer = fmt.Sprintf("%s:25", hostname)
-		log.Println("Set SMTPServer to " + conf.SMTPServer)
-	}
-
-	if conf.DataDir == "" {
-		conf.DataDir = "data"
-		log.Println("Set data dir to " + conf.DataDir)
-	}
-
-	return conf, nil
+	return conf, err
 }
 
 // Set config from envoronment variable if present, e.g. hansWurst from GOS_HANS_WURST
@@ -67,9 +67,13 @@ func fromEnv(configKey string, defaultValue ...string) string {
 		return value
 	}
 
-	if len(defaultValue) > 0 {
-		return defaultValue[0]
+	// Use first non-empty default value.
+	for _, value := range defaultValue {
+		if value != "" {
+			return value
+		}
 	}
+
 	return ""
 }
 
