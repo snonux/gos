@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"codeberg.org/snonux/gos/internal/config"
+	config "codeberg.org/snonux/gos/internal/config/server"
 	"codeberg.org/snonux/gos/internal/server"
 	"codeberg.org/snonux/gos/internal/server/handle"
 )

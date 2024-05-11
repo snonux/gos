@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"codeberg.org/snonux/gos/internal/config"
+	config "codeberg.org/snonux/gos/internal/config/server"
 	"codeberg.org/snonux/gos/internal/server/health"
 )
 
@@ -13,12 +13,12 @@ const HealthHandlerName = `healthHandler`
 
 type Server struct {
 	Status health.Status
-	Conf   config.Config
+	Conf   config.ServerConfig
 }
 
 type HandlerFuncWithError func(http.ResponseWriter, *http.Request) error
 
-func New(conf config.Config) Server {
+func New(conf config.ServerConfig) Server {
 	return Server{
 		Conf:   conf,
 		Status: health.NewStatus(),
