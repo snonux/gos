@@ -38,6 +38,10 @@ func main() {
 		return handle.Get(w, r, conf.DataDir)
 	})
 
+	serv.Handle("merge", func(w http.ResponseWriter, r *http.Request) error {
+		return handle.Merge(w, r, conf.DataDir)
+	})
+
 	log.Println("Server is starting on", conf.ListenAddr)
 	if err := http.ListenAndServe(conf.ListenAddr, nil); err != err {
 		log.Fatal("error starting server:", err)

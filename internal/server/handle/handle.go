@@ -1,7 +1,6 @@
 package handle
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -49,19 +48,13 @@ func List(w http.ResponseWriter, r *http.Request, dataDir string) error {
 		return fmt.Errorf("expexted GET request")
 	}
 
-	repository := repository.New(dataDir)
-	ids, err := repository.List()
+	list, err := repository.New(dataDir).List()
 	if err != nil {
 		return err
 	}
 
-	jsonData, err := json.Marshal(ids)
-	if err != nil {
-		return err
-	}
-
-	fmt.Fprint(w, string(jsonData))
-	return nil
+	_, err = w.Write(list)
+	return err
 }
 
 func Get(w http.ResponseWriter, r *http.Request, dataDir string) error {
@@ -76,5 +69,10 @@ func Get(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	}
 
 	fmt.Fprint(w, string(data))
+	return nil
+}
+
+func Merge(w http.ResponseWriter, r *http.Request, dataDir string) error {
+
 	return nil
 }
