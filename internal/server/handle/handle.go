@@ -19,6 +19,7 @@ import (
 
 var getIDRe = regexp.MustCompile(`^/[0-9]{4}/[a-z0-9]{64}\.json$`)
 
+// TODO: Use repository.Repository to store the file to the file system
 func Submit(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	if r.Method != "POST" {
 		return fmt.Errorf("expexted POST request")

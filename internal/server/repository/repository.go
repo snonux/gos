@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	instance Repository
+	instance *Repository
 	once     sync.Once
 )
 
@@ -27,19 +27,20 @@ type Repository struct {
 	mu      *sync.Mutex
 }
 
-func Instance(dataDir string) Repository {
+func Instance(dataDir string) *Repository {
 	once.Do(func() {
-		instance.dataDir = dataDir
-		instance.entries = make(map[string]types.Entry)
-		instance.mu = &sync.Mutex{}
+		instance = &Repository{
+			dataDir: dataDir,
+			entries: make(map[string]types.Entry),
+			mu:      &sync.Mutex{},
+		}
 	})
 	return instance
 }
 
-func (r Repository) store(entry types.Entry) {
+func (r Repository) add(entry types.Entry) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-
 	r.entries[entry.ID] = entry
 }
 
@@ -59,7 +60,7 @@ func (r Repository) load() error {
 			if err != err {
 				return err
 			}
-			r.store(entry)
+			r.add(entry)
 			return nil
 		}
 	}
@@ -105,4 +106,5 @@ func (r Repository) Merge(new types.Entry) {
 	}
 
 	r.entries[new.ID] = old.Update(new)
+	panic("Not yet implemented: shoud write entry also to disk")
 }
