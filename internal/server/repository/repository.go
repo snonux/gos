@@ -95,16 +95,16 @@ func (r Repository) HasEntry(pair EntryPair) bool {
 	return true
 }
 
-func (r Repository) Merge(new types.Entry) {
+func (r Repository) Merge(newEntry types.Entry) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	oldEntry, ok := r.entries[newEntry.ID]
 
-	old, ok := r.entries[new.ID]
 	if !ok {
-		r.entries[new.ID] = new
+		r.entries[newEntry.ID] = types.NewEntryFromCopy(newEntry)
 		return
 	}
 
-	r.entries[new.ID] = old.Update(new)
+	r.entries[newEntry.ID] = oldEntry.Updated(newEntry)
 	panic("Not yet implemented: shoud write entry also to disk")
 }

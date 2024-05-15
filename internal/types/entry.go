@@ -30,16 +30,22 @@ type Entry struct {
 }
 
 func NewEntry(bytes []byte) (Entry, error) {
-	var ent Entry
-	if err := json.Unmarshal(bytes, &ent); err != nil {
-		return ent, fmt.Errorf("unable to deserialise payload: %w", err)
+	var e Entry
+	if err := json.Unmarshal(bytes, &e); err != nil {
+		return e, fmt.Errorf("unable to deserialise payload: %w", err)
 	}
-	ent.mu = &sync.Mutex{}
-	ent.dirty = true
-	if ent.ID == "" {
-		ent.ID = fmt.Sprintf("%x", sha256.Sum256(bytes))
+	e.initialize()
+	if e.ID == "" {
+		e.ID = fmt.Sprintf("%x", sha256.Sum256(bytes))
 	}
-	return ent, nil
+	return e, nil
+}
+
+// Beware , this is only from a shallow copy!
+func NewEntryFromCopy(other Entry) Entry {
+	e := other
+	e.initialize()
+	return e
 }
 
 func NewEntryFromFile(filePath string) (Entry, error) {
@@ -50,7 +56,12 @@ func NewEntryFromFile(filePath string) (Entry, error) {
 	return NewEntry(bytes)
 }
 
-func (e Entry) Update(new Entry) Entry {
+func (e *Entry) initialize() {
+	e.mu = &sync.Mutex{}
+	e.dirty = true
+}
+
+func (e Entry) Updated(other Entry) Entry {
 	panic("not yet implemented")
 	//return e
 }
