@@ -11,23 +11,35 @@ import (
 	"codeberg.org/snonux/gos/internal/types"
 )
 
+var (
+	instance Repository
+	once     sync.Once
+)
+
+// Contains an Entry ID and its checksumm, for the list and merge operations.
+type EntryPair struct {
+	ID, Checksum string
+}
+
 type Repository struct {
 	dataDir string
 	entries map[string]types.Entry
 	mu      *sync.Mutex
 }
 
-func New(dataDir string) Repository {
-	return Repository{
-		dataDir: dataDir,
-		entries: make(map[string]types.Entry),
-		mu:      &sync.Mutex{},
-	}
+func Instance(dataDir string) Repository {
+	once.Do(func() {
+		instance.dataDir = dataDir
+		instance.entries = make(map[string]types.Entry)
+		instance.mu = &sync.Mutex{}
+	})
+	return instance
 }
 
 func (r Repository) store(entry types.Entry) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+
 	r.entries[entry.ID] = entry
 }
 
@@ -60,17 +72,37 @@ func (r Repository) List() ([]byte, error) {
 		return []byte{}, err
 	}
 
-	type pair struct {
-		ID, Checksum string
-	}
-
-	var pairs []pair
+	var pairs []EntryPair
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	for _, entry := range r.entries {
-		pairs = append(pairs, pair{entry.ID, entry.Checksum()})
+		pairs = append(pairs, EntryPair{entry.ID, entry.Checksum()})
 	}
 
 	return json.Marshal(pairs)
+}
+
+func (r Repository) HasEntry(pair EntryPair) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	ent, ok := r.entries[pair.ID]
+	if !ok || ent.Checksum() != pair.Checksum {
+		return false
+	}
+	return true
+}
+
+func (r Repository) Merge(new types.Entry) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	old, ok := r.entries[new.ID]
+	if !ok {
+		r.entries[new.ID] = new
+		return
+	}
+
+	r.entries[new.ID] = old.Update(new)
 }

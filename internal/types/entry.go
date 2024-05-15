@@ -50,6 +50,11 @@ func NewEntryFromFile(filePath string) (Entry, error) {
 	return NewEntry(bytes)
 }
 
+func (e Entry) Update(new Entry) Entry {
+	panic("not yet implemented")
+	//return e
+}
+
 func (e Entry) Serialize() ([]byte, error) {
 	return json.Marshal(e)
 }

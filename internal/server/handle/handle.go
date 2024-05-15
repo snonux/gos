@@ -1,12 +1,13 @@
 package handle
 
 import (
+	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"codeberg.org/snonux/gos/internal"
@@ -51,7 +52,7 @@ func List(w http.ResponseWriter, r *http.Request, dataDir string) error {
 		return fmt.Errorf("expexted GET request")
 	}
 
-	list, err := repository.New(dataDir).List()
+	list, err := repository.Instance(dataDir).List()
 	if err != nil {
 		return err
 	}
@@ -61,12 +62,12 @@ func List(w http.ResponseWriter, r *http.Request, dataDir string) error {
 }
 
 func Get(w http.ResponseWriter, r *http.Request, dataDir string) error {
-	path := r.URL.Query().Get("path")
-	if !getIDRe.MatchString(path) {
-		return fmt.Errorf("invalid path %s", path)
+	id := r.URL.Query().Get("id")
+	if !getIDRe.MatchString(id) {
+		return fmt.Errorf("invalid id %s", id)
 	}
 
-	data, err := os.ReadFile(fmt.Sprintf("%s/%s", dataDir, path))
+	data, err := os.ReadFile(fmt.Sprintf("%s/%s", dataDir, id))
 	if err != err {
 		return err
 	}
@@ -76,11 +77,75 @@ func Get(w http.ResponseWriter, r *http.Request, dataDir string) error {
 }
 
 func Merge(w http.ResponseWriter, r *http.Request, conf server.ServerConfig) error {
+	var errs []error
+
 	for _, partner := range conf.Partners() {
-		uri := fmt.Sprintf("%s/list", partner)
-		data, err := easyhttp.Get(uri, conf.ApiKey)
-		log.Println(string(data), err)
+		if err := mergeFromPartner(conf, partner); err != nil {
+			errs = append(errs, err)
+		}
 	}
 
+	err := combineErrors(errs)
+	if err != nil {
+		fmt.Fprint(w, err.Error())
+		return err
+	}
+
+	fmt.Fprint(w, "Okiedokie")
 	return nil
+}
+
+func mergeFromPartner(conf server.ServerConfig, partner string) error {
+	var (
+		errs  []error
+		uri   = fmt.Sprintf("%s/list", partner)
+		repo  = repository.Instance(conf.DataDir)
+		pairs []repository.EntryPair
+	)
+
+	if err := easyhttp.GetData(uri, conf.ApiKey, &pairs); err != nil {
+		return err
+	}
+
+	for _, pair := range pairs {
+		if repo.HasEntry(pair) {
+			continue
+		}
+
+		var (
+			entry types.Entry
+			uri   = fmt.Sprintf("%s/get?id=%s", partner, pair.ID)
+		)
+
+		if err := easyhttp.GetData(uri, conf.ApiKey, &entry); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		// In theory, this should never happen
+		if pair.ID != entry.ID {
+			errs = append(errs, fmt.Errorf("pair ID %s does not match entry id %s", pair.ID, entry.ID))
+			continue
+		}
+
+		repo.Merge(entry)
+	}
+
+	return combineErrors(errs)
+}
+
+func combineErrors(errs []error) error {
+	if len(errs) == 0 {
+		return nil
+	}
+
+	var sb strings.Builder
+	for i, err := range errs {
+		if i > 0 {
+			sb.WriteString("; ")
+		}
+		sb.WriteString(err.Error())
+	}
+
+	return errors.New(sb.String())
 }
