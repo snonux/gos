@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"codeberg.org/snonux/gos/internal/config"
 )
@@ -38,4 +39,8 @@ func New(configFile string) (ServerConfig, error) {
 	}
 
 	return conf, nil
+}
+
+func (conf ServerConfig) Partners() []string {
+	return strings.Split(conf.Partner, ",")
 }

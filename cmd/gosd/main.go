@@ -39,7 +39,7 @@ func main() {
 	})
 
 	serv.Handle("merge", func(w http.ResponseWriter, r *http.Request) error {
-		return handle.Merge(w, r, conf.DataDir)
+		return handle.Merge(w, r, conf)
 	})
 
 	log.Println("Server is starting on", conf.ListenAddr)

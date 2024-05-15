@@ -3,12 +3,15 @@ package handle
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
 	"time"
 
 	"codeberg.org/snonux/gos/internal"
+	"codeberg.org/snonux/gos/internal/config/server"
+	"codeberg.org/snonux/gos/internal/easyhttp"
 	"codeberg.org/snonux/gos/internal/server/repository"
 	"codeberg.org/snonux/gos/internal/types"
 )
@@ -72,7 +75,12 @@ func Get(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	return nil
 }
 
-func Merge(w http.ResponseWriter, r *http.Request, dataDir string) error {
+func Merge(w http.ResponseWriter, r *http.Request, conf server.ServerConfig) error {
+	for _, partner := range conf.Partners() {
+		uri := fmt.Sprintf("%s/list", partner)
+		data, err := easyhttp.Get(uri, conf.ApiKey)
+		log.Println(string(data), err)
+	}
 
 	return nil
 }
