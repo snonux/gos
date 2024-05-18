@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"regexp"
-	"strings"
 	"time"
 
 	"codeberg.org/snonux/gos/internal"
@@ -86,10 +85,8 @@ func Merge(w http.ResponseWriter, r *http.Request, conf server.ServerConfig) err
 		}
 	}
 
-	err := combineErrors(errs)
-	if err != nil {
-		fmt.Fprint(w, err.Error())
-		return err
+	if len(errs) > 0 {
+		return errors.Join(errs...)
 	}
 
 	fmt.Fprint(w, "Okiedokie")
@@ -132,21 +129,5 @@ func mergeFromPartner(conf server.ServerConfig, partner string) error {
 		repo.Merge(entry)
 	}
 
-	return combineErrors(errs)
-}
-
-func combineErrors(errs []error) error {
-	if len(errs) == 0 {
-		return nil
-	}
-
-	var sb strings.Builder
-	for i, err := range errs {
-		if i > 0 {
-			sb.WriteString("; ")
-		}
-		sb.WriteString(err.Error())
-	}
-
-	return errors.New(sb.String())
+	return errors.Join(errs...)
 }
