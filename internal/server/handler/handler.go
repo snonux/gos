@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"time"
 
-	"codeberg.org/snonux/gos/internal"
 	"codeberg.org/snonux/gos/internal/config/server"
 	"codeberg.org/snonux/gos/internal/easyhttp"
 	"codeberg.org/snonux/gos/internal/server/repository"
@@ -43,18 +42,7 @@ func (h Handler) Submit(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	filePath := fmt.Sprintf("%s/%s/%s.json", h.conf.DataDir, time.Now().Format("2006"), entry.ID)
-
-	jsonStr, err := entry.Serialize()
-	if err != nil {
-		return err
-	}
-
-	if err := internal.SaveFile(filePath, jsonStr); err != nil {
-		return err
-	}
-
-	return nil
+	return entry.SaveFile(fmt.Sprintf("%s/%s/%s.json", h.conf.DataDir, time.Now().Format("2006"), entry.ID))
 }
 
 func (h Handler) List(w http.ResponseWriter, r *http.Request) error {

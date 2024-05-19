@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 	"sync"
+
+	"codeberg.org/snonux/gos/internal"
 )
 
 // Tells me whether the entry was shared to the sm platform named Name
@@ -68,6 +70,15 @@ func (e Entry) Updated(other Entry) Entry {
 
 func (e Entry) Serialize() ([]byte, error) {
 	return json.Marshal(e)
+}
+
+func (e Entry) SaveFile(filePath string) error {
+	jsonStr, err := e.Serialize()
+	if err != nil {
+		return err
+	}
+
+	return internal.SaveFile(filePath, jsonStr)
 }
 
 func (e Entry) String() string {
