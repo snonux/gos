@@ -8,7 +8,7 @@ import (
 
 	config "codeberg.org/snonux/gos/internal/config/server"
 	"codeberg.org/snonux/gos/internal/server"
-	"codeberg.org/snonux/gos/internal/server/handle"
+	"codeberg.org/snonux/gos/internal/server/handler"
 )
 
 func main() {
@@ -19,8 +19,10 @@ func main() {
 		log.Fatal("error building config:", err)
 	}
 
-	serv := server.New(conf)
-	hand := handle.New(conf)
+	var (
+		serv = server.New(conf)
+		hand = handler.New(conf)
+	)
 
 	serv.Handle("health", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, serv.Status.String())
