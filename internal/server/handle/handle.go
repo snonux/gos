@@ -16,10 +16,20 @@ import (
 	"codeberg.org/snonux/gos/internal/types"
 )
 
-var getIDRe = regexp.MustCompile(`^/[0-9]{4}/[a-z0-9]{64}\.json$`)
+type Handle struct {
+	conf    server.ServerConfig
+	getIdRe *regexp.Regexp
+}
+
+func New(conf server.ServerConfig) Handle {
+	return Handle{
+		conf:    conf,
+		getIdRe: regexp.MustCompile(`^/[0-9]{4}/[a-z0-9]{64}\.json$`),
+	}
+}
 
 // TODO: Use repository.Repository to store the file to the file system
-func Submit(w http.ResponseWriter, r *http.Request, dataDir string) error {
+func (h Handle) Submit(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "POST" {
 		return fmt.Errorf("expexted POST request")
 	}
@@ -33,7 +43,7 @@ func Submit(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	if err != nil {
 		return err
 	}
-	filePath := fmt.Sprintf("%s/%s/%s.json", dataDir, time.Now().Format("2006"), entry.ID)
+	filePath := fmt.Sprintf("%s/%s/%s.json", h.conf.DataDir, time.Now().Format("2006"), entry.ID)
 
 	jsonStr, err := entry.Serialize()
 	if err != nil {
@@ -47,12 +57,12 @@ func Submit(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	return nil
 }
 
-func List(w http.ResponseWriter, r *http.Request, dataDir string) error {
+func (h Handle) List(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "GET" {
 		return fmt.Errorf("expexted GET request")
 	}
 
-	list, err := repository.Instance(dataDir).List()
+	list, err := repository.Instance(h.conf.DataDir).List()
 	if err != nil {
 		return err
 	}
@@ -61,13 +71,13 @@ func List(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	return err
 }
 
-func Get(w http.ResponseWriter, r *http.Request, dataDir string) error {
+func (h Handle) Get(w http.ResponseWriter, r *http.Request) error {
 	id := r.URL.Query().Get("id")
-	if !getIDRe.MatchString(id) {
+	if !h.getIdRe.MatchString(id) {
 		return fmt.Errorf("invalid id %s", id)
 	}
 
-	data, err := os.ReadFile(fmt.Sprintf("%s/%s", dataDir, id))
+	data, err := os.ReadFile(fmt.Sprintf("%s/%s", h.conf.DataDir, id))
 	if err != err {
 		return err
 	}
@@ -76,11 +86,11 @@ func Get(w http.ResponseWriter, r *http.Request, dataDir string) error {
 	return nil
 }
 
-func Merge(w http.ResponseWriter, r *http.Request, conf server.ServerConfig) error {
+func (h Handle) Merge(w http.ResponseWriter, r *http.Request) error {
 	var errs []error
 
-	for _, partner := range conf.Partners() {
-		if err := mergeFromPartner(conf, partner); err != nil {
+	for _, partner := range h.conf.Partners() {
+		if err := h.mergeFromPartner(partner); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -93,15 +103,15 @@ func Merge(w http.ResponseWriter, r *http.Request, conf server.ServerConfig) err
 	return nil
 }
 
-func mergeFromPartner(conf server.ServerConfig, partner string) error {
+func (h Handle) mergeFromPartner(partner string) error {
 	var (
 		errs  []error
 		uri   = fmt.Sprintf("%s/list", partner)
-		repo  = repository.Instance(conf.DataDir)
+		repo  = repository.Instance(h.conf.DataDir)
 		pairs []repository.EntryPair
 	)
 
-	if err := easyhttp.GetData(uri, conf.ApiKey, &pairs); err != nil {
+	if err := easyhttp.GetData(uri, h.conf.ApiKey, &pairs); err != nil {
 		return err
 	}
 
@@ -115,7 +125,7 @@ func mergeFromPartner(conf server.ServerConfig, partner string) error {
 			uri   = fmt.Sprintf("%s/get?id=%s", partner, pair.ID)
 		)
 
-		if err := easyhttp.GetData(uri, conf.ApiKey, &entry); err != nil {
+		if err := easyhttp.GetData(uri, h.conf.ApiKey, &entry); err != nil {
 			errs = append(errs, err)
 			continue
 		}

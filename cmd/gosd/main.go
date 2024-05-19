@@ -20,6 +20,7 @@ func main() {
 	}
 
 	serv := server.New(conf)
+	hand := handle.New(conf)
 
 	serv.Handle("health", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, serv.Status.String())
@@ -27,19 +28,19 @@ func main() {
 	})
 
 	serv.Handle("submit", func(w http.ResponseWriter, r *http.Request) error {
-		return handle.Submit(w, r, conf.DataDir)
+		return hand.Submit(w, r)
 	})
 
 	serv.Handle("list", func(w http.ResponseWriter, r *http.Request) error {
-		return handle.List(w, r, conf.DataDir)
+		return hand.List(w, r)
 	})
 
 	serv.Handle("get", func(w http.ResponseWriter, r *http.Request) error {
-		return handle.Get(w, r, conf.DataDir)
+		return hand.Get(w, r)
 	})
 
 	serv.Handle("merge", func(w http.ResponseWriter, r *http.Request) error {
-		return handle.Merge(w, r, conf)
+		return hand.Merge(w, r)
 	})
 
 	log.Println("Server is starting on", conf.ListenAddr)
