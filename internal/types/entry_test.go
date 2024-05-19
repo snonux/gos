@@ -11,7 +11,7 @@ func TestEntryChecksum(t *testing.T) {
 		return
 	}
 
-	expected := "8618a63380fe6d365422cae6ef143a88bb6bd78df567fea3822074cc748f52f8"
+	expected := "e139c0788fbc0d9cce370e4918c1cbc8862184d9461bd1238c02b7f80cb042fe"
 	got := entry.Checksum()
 
 	if expected != got {
