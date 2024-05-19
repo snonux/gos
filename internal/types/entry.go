@@ -13,12 +13,12 @@ import (
 
 // Tells me whether the entry was shared to the sm platform named Name
 type Shared struct {
-	Name string `json:"id"`
+	Name string `json:"name"`
 	Is   bool   `json:"is,omitempty"`
 }
 
 func (s Shared) String() string {
-	return fmt.Sprintf("Name:%s\nIs:%v\n", s.Name, s.Is)
+	return fmt.Sprintf("Name:%s;Is:%v", s.Name, s.Is)
 }
 
 func (s Shared) Equals(other Shared) bool {
@@ -33,13 +33,16 @@ func (s Shared) Equals(other Shared) bool {
 }
 
 type Entry struct {
-	Body          string   `json:"body"`
-	Shared        []Shared `json:"shared,omitempty"`
-	Epoch         int      `json:"epoch,omitempty"`
-	ID            string   `json:"id,omitempty"`
-	mu            *sync.Mutex
+	// The unique ID of this entry.
+	ID     string   `json:"id,omitempty"`
+	Body   string   `json:"body"`
+	Shared []Shared `json:"shared,omitempty"`
+	Epoch  int      `json:"epoch,omitempty"`
+
+	// The checksum of the whole entry, can change depending on the state.
 	checksum      string
 	checksumDirty bool
+	mu            *sync.Mutex
 }
 
 func NewEntry(bytes []byte) (Entry, error) {
@@ -49,7 +52,7 @@ func NewEntry(bytes []byte) (Entry, error) {
 	}
 	e.initialize()
 	if e.ID == "" {
-		e.ID = fmt.Sprintf("%x", sha256.Sum256(bytes))
+		e.ID = fmt.Sprintf("%x", sha256.Sum256([]byte(e.Body)))
 	}
 	return e, nil
 }
@@ -72,10 +75,6 @@ func NewEntryFromFile(filePath string) (Entry, error) {
 func (e *Entry) initialize() {
 	e.mu = &sync.Mutex{}
 	e.checksumDirty = true
-}
-
-func (e Entry) Update(other Entry) (Entry, bool) {
-	panic("not yet impelemented")
 }
 
 func (e Entry) Equals(other Entry) bool {
@@ -105,6 +104,50 @@ func (e Entry) Equals(other Entry) bool {
 	return true
 }
 
+/**
+ * This updates the entry with the other entry. The Shared slice will also be
+ * updated. If entry is missing, it will be added. If entry is there, the shared
+ * Is status will eventually flip to true but never to false.
+ */
+func (e Entry) Update(other Entry) (Entry, error) {
+	if e.ID != other.ID {
+		return e, fmt.Errorf("can update entry only with other entry with same ID: %s %s", e, other)
+	}
+	e.checksumDirty = true
+
+	if e.Body != other.Body {
+		e.Body = other.Body
+	}
+
+	if e.Epoch != other.Epoch {
+		e.Epoch = other.Epoch
+	}
+
+	sharedMap := make(map[string]Shared)
+	for _, shared := range e.Shared {
+		sharedMap[shared.Name] = shared
+	}
+
+	for _, otherShared := range other.Shared {
+		shared, ok := sharedMap[otherShared.Name]
+		switch {
+		case !ok:
+			sharedMap[otherShared.Name] = shared
+			continue
+		case otherShared.Is:
+			shared.Is = true
+			sharedMap[otherShared.Name] = shared
+		}
+	}
+
+	e.Shared = e.Shared[:0]
+	for _, shared := range sharedMap {
+		e.Shared = append(e.Shared, shared)
+	}
+
+	return e, nil
+}
+
 func (e Entry) Serialize() ([]byte, error) {
 	return json.Marshal(e)
 }
@@ -123,14 +166,18 @@ func (e Entry) String() string {
 
 	sb.WriteString("ID:")
 	sb.WriteString(e.ID)
-	sb.WriteString("\n")
-	sb.WriteString(fmt.Sprintf("Epoch:%d\n", e.Epoch))
-	for _, shared := range e.Shared {
+	sb.WriteString(";")
+	sb.WriteString(fmt.Sprintf("Epoch:%d;", e.Epoch))
+	sb.WriteString("Shared:[")
+	for i, shared := range e.Shared {
+		if i > 0 {
+			sb.WriteString(",")
+		}
 		sb.WriteString(shared.String())
 	}
+	sb.WriteString("];")
 	sb.WriteString("Body:")
 	sb.WriteString(e.Body)
-	sb.WriteString("\n")
 
 	return sb.String()
 }

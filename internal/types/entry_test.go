@@ -22,12 +22,31 @@ func TestEntryChecksum(t *testing.T) {
 }
 
 func twoDifferentEntries(t *testing.T) (entry1, entry2 Entry, err error) {
-	entry1, err = NewEntry([]byte(`{"Body": "Body text here"}`))
+	entry1Str := `
+		{
+			"Body": "Body text here",
+			"Shared": [
+				{ "Name": "Foo", "Is": true },
+				{ "Name": "Bar", "Is": false }
+			]
+		}
+	`
+	entry1, err = NewEntry([]byte(entry1Str))
 	if err != nil {
 		return
 	}
 
-	entry2, err = NewEntry([]byte(`{"Body": "Body text here 2"}`))
+	entry2Str := `
+		{
+			"Body": "Body text here",
+			"Shared": [
+				{ "Name": "Foo", "Is": true },
+				{ "Name": "Bar", "Is": true },
+				{ "Name": "Baz", "Is": false }
+			]
+		}
+	`
+	entry2, err = NewEntry([]byte(entry2Str))
 	return
 }
 
@@ -45,4 +64,34 @@ func TestEquals(t *testing.T) {
 	}
 
 	t.Log("both entries differ", entry1, entry2)
+}
+
+func TestUpdate(t *testing.T) {
+	t.Parallel()
+
+	entry1, entry2, err := twoDifferentEntries(t)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	entry1, _ = entry1.Update(entry2)
+	if len(entry1.Shared) != 3 {
+		t.Error("expected 3 entries after update", entry1)
+		return
+	}
+
+	var isShared int
+	for _, shared := range entry1.Shared {
+		if shared.Is {
+			isShared++
+		}
+	}
+
+	if isShared != 2 {
+		t.Error("expected 2 shared entries after update but got", isShared, entry1)
+		return
+	}
+
+	t.Log("entry as expected after update", entry1)
 }
