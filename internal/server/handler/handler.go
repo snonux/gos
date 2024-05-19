@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"regexp"
-	"time"
 
 	"codeberg.org/snonux/gos/internal/config/server"
 	"codeberg.org/snonux/gos/internal/easyhttp"
@@ -42,7 +41,7 @@ func (h Handler) Submit(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	return entry.SaveFile(fmt.Sprintf("%s/%s/%s.json", h.conf.DataDir, time.Now().Format("2006"), entry.ID))
+	return repository.Instance(h.conf.DataDir).Merge(entry)
 }
 
 func (h Handler) List(w http.ResponseWriter, r *http.Request) error {
@@ -124,7 +123,7 @@ func (h Handler) mergeFromPartner(partner string) error {
 			continue
 		}
 
-		repo.Merge(entry)
+		errs = append(errs, repo.Merge(entry))
 	}
 
 	return errors.Join(errs...)

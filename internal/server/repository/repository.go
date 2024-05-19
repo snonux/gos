@@ -2,11 +2,13 @@ package repository
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"codeberg.org/snonux/gos/internal/types"
 )
@@ -95,16 +97,22 @@ func (r Repository) HasEntry(pair EntryPair) bool {
 	return true
 }
 
-func (r Repository) Merge(newEntry types.Entry) {
+func (r Repository) entryPath(entry types.Entry) string {
+	return fmt.Sprintf("%s/%s/%s.json", r.dataDir, time.Now().Format("2006"), entry.ID)
+}
+
+func (r Repository) Merge(newEntry types.Entry) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	oldEntry, ok := r.entries[newEntry.ID]
 
+	entry, ok := r.entries[newEntry.ID]
 	if !ok {
-		r.entries[newEntry.ID] = types.NewEntryFromCopy(newEntry)
-		return
+		entry = types.NewEntryFromCopy(newEntry)
 	}
 
-	r.entries[newEntry.ID] = oldEntry.Updated(newEntry)
-	panic("Not yet implemented: shoud write entry also to disk")
+	entry, _ = entry.Update(newEntry)
+	r.entries[newEntry.ID] = entry
+
+	// TODO: Only save to file when actually changed
+	return entry.SaveFile(r.entryPath(entry))
 }

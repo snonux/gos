@@ -20,3 +20,9 @@ func TestEntryChecksum(t *testing.T) {
 	}
 	t.Log(ent.Checksum())
 }
+
+func TestEqual(t *testing.T) {
+	t.Parallel()
+
+	// TODO: Write a unit test here.
+}

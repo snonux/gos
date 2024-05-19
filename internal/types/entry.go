@@ -21,14 +21,25 @@ func (s Shared) String() string {
 	return fmt.Sprintf("Name:%s\nIs:%v\n", s.Name, s.Is)
 }
 
+func (s Shared) Equals(other Shared) bool {
+	switch {
+	case s.Name != other.Name:
+		return false
+	case s.Is != other.Is:
+		return false
+	default:
+		return true
+	}
+}
+
 type Entry struct {
-	Body     string   `json:"body"`
-	Shared   []Shared `json:"shared,omitempty"`
-	Epoch    int      `json:"epoch,omitempty"`
-	ID       string   `json:"id,omitempty"`
-	mu       *sync.Mutex
-	dirty    bool
-	checksum string
+	Body          string   `json:"body"`
+	Shared        []Shared `json:"shared,omitempty"`
+	Epoch         int      `json:"epoch,omitempty"`
+	ID            string   `json:"id,omitempty"`
+	mu            *sync.Mutex
+	checksum      string
+	checksumDirty bool
 }
 
 func NewEntry(bytes []byte) (Entry, error) {
@@ -60,12 +71,38 @@ func NewEntryFromFile(filePath string) (Entry, error) {
 
 func (e *Entry) initialize() {
 	e.mu = &sync.Mutex{}
-	e.dirty = true
+	e.checksumDirty = true
 }
 
-func (e Entry) Updated(other Entry) Entry {
-	panic("not yet implemented")
-	//return e
+func (e Entry) Update(other Entry) (Entry, bool) {
+	panic("not yet impelemented")
+}
+
+func (e Entry) Equals(other Entry) bool {
+	switch {
+	case e.Body != other.Body:
+		return false
+	case e.Epoch != other.Epoch:
+		return false
+	case e.ID != other.ID:
+		return false
+	case len(e.Shared) != len(other.Shared):
+		return false
+	}
+
+	otherShared := make(map[string]Shared)
+	for _, shared := range other.Shared {
+		otherShared[shared.Name] = shared
+	}
+
+	for _, shared := range e.Shared {
+		otherShared, ok := otherShared[shared.Name]
+		if !ok || !shared.Equals(otherShared) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (e Entry) Serialize() ([]byte, error) {
@@ -102,11 +139,11 @@ func (e *Entry) Checksum() string {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	if !e.dirty {
+	if !e.checksumDirty {
 		return e.checksum
 	}
 
 	e.checksum = fmt.Sprintf("%x", sha256.Sum256([]byte(e.String())))
-	e.dirty = false
+	e.checksumDirty = false
 	return e.checksum
 }
