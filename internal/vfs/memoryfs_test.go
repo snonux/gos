@@ -26,9 +26,37 @@ func TestMemoryFS(t *testing.T) {
 		testFilesAreThere(t, vfs, writeFiles)
 	})
 
+	t.Run("file is not there", func(t *testing.T) {
+		testFileNotThere(t, vfs, "/dennis.rodman.txt")
+	})
+
 	t.Run("find json files", func(t *testing.T) {
 		testFindFiles(t, vfs, writeFiles, "/data/dir/subdir", ".json", 2)
 	})
+
+}
+
+func testFilesAreThere(t *testing.T, vfs VFS, writeFiles map[string]string) {
+	for path, content := range writeFiles {
+		bytes, err := vfs.ReadFile(path)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		if content != string(bytes) {
+			t.Error("expected", content, "in file", path, "but got", string(bytes))
+			return
+		}
+	}
+}
+
+func testFileNotThere(t *testing.T, vfs VFS, filePath string) {
+	_, err := vfs.ReadFile(filePath)
+	if err == nil {
+		t.Error("expected file", filePath, "not to be there, but it is")
+		return
+	}
+	t.Log("file", filePath, "not there as expected:", err)
 }
 
 func testFindFiles(t *testing.T, vfs VFS, writeFiles map[string]string, dataDir, suffix string, count int) {
@@ -50,20 +78,6 @@ func testFindFiles(t *testing.T, vfs VFS, writeFiles map[string]string, dataDir,
 
 		if !slices.Contains(filePaths, filePath) {
 			t.Error("expected file", filePath, "to be there, but it isn't in", filePaths)
-			return
-		}
-	}
-}
-
-func testFilesAreThere(t *testing.T, vfs VFS, writeFiles map[string]string) {
-	for path, content := range writeFiles {
-		bytes, err := vfs.ReadFile(path)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		if content != string(bytes) {
-			t.Error("expected", content, "in file", path, "but got", string(bytes))
 			return
 		}
 	}

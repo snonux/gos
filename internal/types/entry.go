@@ -72,7 +72,9 @@ func NewEntryFromFile(filePath string, vfsToUse ...vfs.VFS) (Entry, error) {
 	if err != err {
 		return Entry{}, err
 	}
-	return NewEntry(bytes)
+	e, err := NewEntry(bytes)
+	e.vfs = vfs
+	return e, err
 }
 
 func NewEntryFromCopy(other Entry) (Entry, error) {
