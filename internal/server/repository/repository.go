@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"codeberg.org/snonux/gos/internal"
 	"codeberg.org/snonux/gos/internal/types"
+	"codeberg.org/snonux/gos/internal/vfs"
 )
 
 var (
@@ -24,7 +24,7 @@ type Repository struct {
 	dataDir string
 	entries map[string]types.Entry
 	mu      *sync.Mutex
-	vfs     internal.VFS
+	vfs     vfs.VFS
 }
 
 func Instance(dataDir string) *Repository {
@@ -33,7 +33,7 @@ func Instance(dataDir string) *Repository {
 			dataDir: dataDir,
 			entries: make(map[string]types.Entry),
 			mu:      &sync.Mutex{},
-			vfs:     internal.RealFS{},
+			vfs:     vfs.RealFS{},
 		}
 	})
 	return instance
@@ -47,7 +47,7 @@ func (r Repository) add(entry types.Entry) {
 
 // Load repository into memory
 func (r Repository) load() error {
-	filePaths, err := r.vfs.FindFiles(r.dataDir)
+	filePaths, err := r.vfs.FindFiles(r.dataDir, ".json")
 	if err != nil {
 		return err
 	}

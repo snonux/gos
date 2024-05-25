@@ -1,4 +1,4 @@
-package internal
+package vfs
 
 import (
 	"log"
@@ -6,13 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 )
-
-// virtual file system - useful for testing as well
-type VFS interface {
-	ReadFile(name string) ([]byte, error)
-	SaveFile(filePath string, bytes []byte) error
-	FindFiles(dataPath string) ([]string, error)
-}
 
 type RealFS struct{}
 
@@ -30,7 +23,7 @@ func (RealFS) SaveFile(filePath string, bytes []byte) error {
 	return os.WriteFile(filePath, bytes, 0644)
 }
 
-func (RealFS) FindFiles(dataDir string) ([]string, error) {
+func (RealFS) FindFiles(dataDir, suffix string) ([]string, error) {
 	var filePaths []string
 
 	visit := func() filepath.WalkFunc {
@@ -39,17 +32,10 @@ func (RealFS) FindFiles(dataDir string) ([]string, error) {
 				log.Println(err)
 				return nil
 			}
-			if info.IsDir() || !strings.HasSuffix(path, ".json") {
+			if info.IsDir() || !strings.HasSuffix(path, suffix) {
 				return nil
 			}
 			filePaths = append(filePaths, path)
-			/*
-				entry, err := types.NewEntryFromFile(path)
-				if err != err {
-					return err
-				}
-				r.add(entry)
-			*/
 			return nil
 		}
 	}

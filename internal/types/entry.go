@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"codeberg.org/snonux/gos/internal"
+	"codeberg.org/snonux/gos/internal/vfs"
 )
 
 // Tells me whether the entry was shared to the sm platform named Name
@@ -37,7 +37,7 @@ type Entry struct {
 	Body   string   `json:"body"`
 	Shared []Shared `json:"shared,omitempty"`
 	Epoch  int      `json:"epoch,omitempty"`
-	vfs    internal.VFS
+	vfs    vfs.VFS
 
 	// The checksum of the whole entry, can change depending on the state.
 	checksum      string
@@ -57,11 +57,11 @@ func NewEntry(bytes []byte) (Entry, error) {
 	return e, nil
 }
 
-func NewEntryFromFile(filePath string, vfsToUse ...internal.VFS) (Entry, error) {
+func NewEntryFromFile(filePath string, vfsToUse ...vfs.VFS) (Entry, error) {
 	var (
 		bytes []byte
 		err   error
-		vfs   internal.VFS = internal.RealFS{}
+		vfs   vfs.VFS = vfs.RealFS{}
 	)
 
 	if len(vfsToUse) > 0 {
@@ -84,7 +84,7 @@ func NewEntryFromCopy(other Entry) (Entry, error) {
 func (e *Entry) initialize() {
 	e.mu = &sync.Mutex{}
 	e.checksumDirty = true
-	e.vfs = internal.RealFS{}
+	e.vfs = vfs.RealFS{}
 }
 
 func (e Entry) Equals(other Entry) bool {
