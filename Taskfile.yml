@@ -14,7 +14,7 @@ tasks:
       - go test -v ./... 
   vet:
     cmds:
-      - go vet **/*.go
+      - go vet ./...
   lint:
     cmds:
       - golangci-lint run

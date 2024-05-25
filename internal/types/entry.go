@@ -168,7 +168,7 @@ func (e Entry) SaveFile(filePath string) error {
 		return err
 	}
 
-	return e.vfs.SaveFile(filePath, jsonStr)
+	return e.vfs.WriteFile(filePath, jsonStr)
 }
 
 func (e Entry) String() string {

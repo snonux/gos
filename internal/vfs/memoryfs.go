@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// VFS implementaion especially for unit testing.
 type MemoryFS map[string][]byte
 
 func (fs MemoryFS) ReadFile(filePath string) ([]byte, error) {
@@ -14,7 +15,7 @@ func (fs MemoryFS) ReadFile(filePath string) ([]byte, error) {
 	return []byte{}, fmt.Errorf("no such file path: %s", filePath)
 }
 
-func (fs MemoryFS) SaveFile(filePath string, bytes []byte) error {
+func (fs MemoryFS) WriteFile(filePath string, bytes []byte) error {
 	fs[filePath] = bytes
 	return nil
 }
@@ -23,7 +24,7 @@ func (fs MemoryFS) FindFiles(dataDir, suffix string) ([]string, error) {
 	var filePaths []string
 
 	for filePath := range fs {
-		if !strings.HasSuffix(filePath, suffix) {
+		if !strings.HasPrefix(filePath, dataDir) || !strings.HasSuffix(filePath, suffix) {
 			continue
 		}
 		filePaths = append(filePaths, filePath)

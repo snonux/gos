@@ -13,7 +13,7 @@ func (RealFS) ReadFile(filePath string) ([]byte, error) {
 	return os.ReadFile(filePath)
 }
 
-func (RealFS) SaveFile(filePath string, bytes []byte) error {
+func (RealFS) WriteFile(filePath string, bytes []byte) error {
 	dir := filepath.Dir(filePath)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		if err := os.MkdirAll(dir, 0755); err != nil {
