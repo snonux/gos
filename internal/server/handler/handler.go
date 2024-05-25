@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"regexp"
 
 	"codeberg.org/snonux/gos/internal/config/server"
@@ -26,7 +25,6 @@ func New(conf server.ServerConfig) Handler {
 	}
 }
 
-// TODO: Use repository.Repository to store the file to the file system
 func (h Handler) Submit(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "POST" {
 		return fmt.Errorf("expexted POST request")
@@ -64,7 +62,7 @@ func (h Handler) Get(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("invalid id %s", id)
 	}
 
-	data, err := os.ReadFile(fmt.Sprintf("%s/%s", h.conf.DataDir, id))
+	data, err := repository.Instance(h.conf.DataDir).Get(id)
 	if err != err {
 		return err
 	}
@@ -103,7 +101,7 @@ func (h Handler) mergeFromPartner(partner string) error {
 	}
 
 	for _, pair := range pairs {
-		if repo.HasEntry(pair) {
+		if repo.HasSameEntry(pair) {
 			continue
 		}
 

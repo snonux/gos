@@ -3,13 +3,10 @@ package repository
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"os"
-	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
+	"codeberg.org/snonux/gos/internal"
 	"codeberg.org/snonux/gos/internal/types"
 )
 
@@ -27,6 +24,7 @@ type Repository struct {
 	dataDir string
 	entries map[string]types.Entry
 	mu      *sync.Mutex
+	vfs     internal.VFS
 }
 
 func Instance(dataDir string) *Repository {
@@ -35,6 +33,7 @@ func Instance(dataDir string) *Repository {
 			dataDir: dataDir,
 			entries: make(map[string]types.Entry),
 			mu:      &sync.Mutex{},
+			vfs:     internal.RealFS{},
 		}
 	})
 	return instance
@@ -48,26 +47,20 @@ func (r Repository) add(entry types.Entry) {
 
 // Load repository into memory
 func (r Repository) load() error {
-	visit := func() filepath.WalkFunc {
-		return func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				log.Println(err)
-				return nil
-			}
-			if info.IsDir() || !strings.HasSuffix(path, ".json") {
-				return nil
-			}
-
-			entry, err := types.NewEntryFromFile(path)
-			if err != err {
-				return err
-			}
-			r.add(entry)
-			return nil
-		}
+	filePaths, err := r.vfs.FindFiles(r.dataDir)
+	if err != nil {
+		return err
 	}
 
-	return filepath.Walk(r.dataDir, visit())
+	for _, filePath := range filePaths {
+		entry, err := types.NewEntryFromFile(filePath)
+		if err != err {
+			return err
+		}
+		r.add(entry)
+	}
+
+	return nil
 }
 
 func (r Repository) List() ([]byte, error) {
@@ -86,7 +79,11 @@ func (r Repository) List() ([]byte, error) {
 	return json.Marshal(pairs)
 }
 
-func (r Repository) HasEntry(pair EntryPair) bool {
+func (r Repository) Get(id string) ([]byte, error) {
+	return r.vfs.ReadFile(fmt.Sprintf("%s/%s", r.dataDir, id))
+}
+
+func (r Repository) HasSameEntry(pair EntryPair) bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -101,17 +98,20 @@ func (r Repository) entryPath(entry types.Entry) string {
 	return fmt.Sprintf("%s/%s/%s.json", r.dataDir, time.Now().Format("2006"), entry.ID)
 }
 
-func (r Repository) Merge(newEntry types.Entry) error {
+func (r Repository) Merge(otherEntry types.Entry) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	entry, ok := r.entries[newEntry.ID]
+	entry, ok := r.entries[otherEntry.ID]
 	if !ok {
-		entry = types.NewEntryFromCopy(newEntry)
+		var err error
+		if entry, err = types.NewEntryFromCopy(otherEntry); err != nil {
+			return err
+		}
 	}
 
-	entry, _ = entry.Update(newEntry)
-	r.entries[newEntry.ID] = entry
+	entry, _ = entry.Update(otherEntry)
+	r.entries[otherEntry.ID] = entry
 
 	// TODO: Only save to file when actually changed
 	return entry.SaveFile(r.entryPath(entry))

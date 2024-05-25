@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 
@@ -38,6 +37,7 @@ type Entry struct {
 	Body   string   `json:"body"`
 	Shared []Shared `json:"shared,omitempty"`
 	Epoch  int      `json:"epoch,omitempty"`
+	vfs    internal.VFS
 
 	// The checksum of the whole entry, can change depending on the state.
 	checksum      string
@@ -57,24 +57,34 @@ func NewEntry(bytes []byte) (Entry, error) {
 	return e, nil
 }
 
-// Beware , this is only from a shallow copy!
-func NewEntryFromCopy(other Entry) Entry {
-	e := other
-	e.initialize()
-	return e
-}
+func NewEntryFromFile(filePath string, vfsToUse ...internal.VFS) (Entry, error) {
+	var (
+		bytes []byte
+		err   error
+		vfs   internal.VFS = internal.RealFS{}
+	)
 
-func NewEntryFromFile(filePath string) (Entry, error) {
-	bytes, err := os.ReadFile(filePath)
+	if len(vfsToUse) > 0 {
+		vfs = vfsToUse[0]
+	}
+
+	bytes, err = vfs.ReadFile(filePath)
 	if err != err {
 		return Entry{}, err
 	}
 	return NewEntry(bytes)
 }
 
+func NewEntryFromCopy(other Entry) (Entry, error) {
+	var e Entry
+	e.initialize()
+	return e.Update(other)
+}
+
 func (e *Entry) initialize() {
 	e.mu = &sync.Mutex{}
 	e.checksumDirty = true
+	e.vfs = internal.RealFS{}
 }
 
 func (e Entry) Equals(other Entry) bool {
@@ -158,7 +168,7 @@ func (e Entry) SaveFile(filePath string) error {
 		return err
 	}
 
-	return internal.SaveFile(filePath, jsonStr)
+	return e.vfs.SaveFile(filePath, jsonStr)
 }
 
 func (e Entry) String() string {
