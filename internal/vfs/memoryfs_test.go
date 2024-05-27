@@ -8,7 +8,7 @@ import (
 
 func TestMemoryFS(t *testing.T) {
 	t.Parallel()
-	var vfs VFS = make(MemoryFS)
+	fs := make(MemoryFS)
 
 	writeFiles := map[string]string{
 		"/data/dir/foo.json":        "hello world",
@@ -19,26 +19,26 @@ func TestMemoryFS(t *testing.T) {
 
 	for path, content := range writeFiles {
 		bytes := []byte(content)
-		_ = vfs.WriteFile(path, bytes)
+		_ = fs.WriteFile(path, bytes)
 	}
 
 	t.Run("files are there", func(t *testing.T) {
-		testFilesAreThere(t, vfs, writeFiles)
+		testFilesAreThere(t, fs, writeFiles)
 	})
 
 	t.Run("file is not there", func(t *testing.T) {
-		testFileNotThere(t, vfs, "/dennis.rodman.txt")
+		testFileNotThere(t, fs, "/dennis.rodman.txt")
 	})
 
 	t.Run("find json files", func(t *testing.T) {
-		testFindFiles(t, vfs, writeFiles, "/data/dir/subdir", ".json", 2)
+		testFindFiles(t, fs, writeFiles, "/data/dir/subdir", ".json", 2)
 	})
 
 }
 
-func testFilesAreThere(t *testing.T, vfs VFS, writeFiles map[string]string) {
+func testFilesAreThere(t *testing.T, fs MemoryFS, writeFiles map[string]string) {
 	for path, content := range writeFiles {
-		bytes, err := vfs.ReadFile(path)
+		bytes, err := fs.ReadFile(path)
 		if err != nil {
 			t.Error(err)
 			return
@@ -50,8 +50,8 @@ func testFilesAreThere(t *testing.T, vfs VFS, writeFiles map[string]string) {
 	}
 }
 
-func testFileNotThere(t *testing.T, vfs VFS, filePath string) {
-	_, err := vfs.ReadFile(filePath)
+func testFileNotThere(t *testing.T, fs MemoryFS, filePath string) {
+	_, err := fs.ReadFile(filePath)
 	if err == nil {
 		t.Error("expected file", filePath, "not to be there, but it is")
 		return
@@ -59,8 +59,8 @@ func testFileNotThere(t *testing.T, vfs VFS, filePath string) {
 	t.Log("file", filePath, "not there as expected:", err)
 }
 
-func testFindFiles(t *testing.T, vfs VFS, writeFiles map[string]string, dataDir, suffix string, count int) {
-	filePaths, err := vfs.FindFiles(dataDir, suffix)
+func testFindFiles(t *testing.T, fs MemoryFS, writeFiles map[string]string, dataDir, suffix string, count int) {
+	filePaths, err := fs.FindFiles(dataDir, suffix)
 	if err != nil {
 		t.Error(err)
 		return

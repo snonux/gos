@@ -15,6 +15,12 @@ var (
 	once     sync.Once
 )
 
+type fs interface {
+	ReadFile(name string) ([]byte, error)
+	WriteFile(filePath string, bytes []byte) error
+	FindFiles(dataPath, suffix string) ([]string, error)
+}
+
 // Contains an Entry ID and its checksumm, for the list and merge operations.
 type EntryPair struct {
 	ID, Checksum string
@@ -24,7 +30,7 @@ type Repository struct {
 	dataDir string
 	entries map[string]types.Entry
 	mu      *sync.Mutex
-	vfs     vfs.VFS
+	fs      fs
 }
 
 func Instance(dataDir string) *Repository {
@@ -33,7 +39,7 @@ func Instance(dataDir string) *Repository {
 			dataDir: dataDir,
 			entries: make(map[string]types.Entry),
 			mu:      &sync.Mutex{},
-			vfs:     vfs.RealFS{},
+			fs:      vfs.RealFS{},
 		}
 	})
 	return instance
@@ -47,7 +53,7 @@ func (r Repository) add(entry types.Entry) {
 
 // Load repository into memory
 func (r Repository) load() error {
-	filePaths, err := r.vfs.FindFiles(r.dataDir, ".json")
+	filePaths, err := r.fs.FindFiles(r.dataDir, ".json")
 	if err != nil {
 		return err
 	}
@@ -80,7 +86,7 @@ func (r Repository) List() ([]byte, error) {
 }
 
 func (r Repository) Get(id string) ([]byte, error) {
-	return r.vfs.ReadFile(fmt.Sprintf("%s/%s", r.dataDir, id))
+	return r.fs.ReadFile(fmt.Sprintf("%s/%s", r.dataDir, id))
 }
 
 func (r Repository) HasSameEntry(pair EntryPair) bool {

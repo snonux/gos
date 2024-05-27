@@ -10,6 +10,11 @@ import (
 	"codeberg.org/snonux/gos/internal/vfs"
 )
 
+type fs interface {
+	ReadFile(name string) ([]byte, error)
+	WriteFile(filePath string, bytes []byte) error
+}
+
 // Tells me whether the entry was shared to the sm platform named Name
 type Shared struct {
 	Name string `json:"name"`
@@ -37,7 +42,7 @@ type Entry struct {
 	Body   string   `json:"body"`
 	Shared []Shared `json:"shared,omitempty"`
 	Epoch  int      `json:"epoch,omitempty"`
-	vfs    vfs.VFS
+	fs     fs
 
 	// The checksum of the whole entry, can change depending on the state.
 	checksum      string
@@ -57,23 +62,23 @@ func NewEntry(bytes []byte) (Entry, error) {
 	return e, nil
 }
 
-func NewEntryFromFile(filePath string, vfsToUse ...vfs.VFS) (Entry, error) {
+func NewEntryFromFile(filePath string, fsToUse ...fs) (Entry, error) {
 	var (
 		bytes []byte
 		err   error
-		vfs   vfs.VFS = vfs.RealFS{}
+		fs    fs = vfs.RealFS{}
 	)
 
-	if len(vfsToUse) > 0 {
-		vfs = vfsToUse[0]
+	if len(fsToUse) > 0 {
+		fs = fsToUse[0]
 	}
 
-	bytes, err = vfs.ReadFile(filePath)
+	bytes, err = fs.ReadFile(filePath)
 	if err != err {
 		return Entry{}, err
 	}
 	e, err := NewEntry(bytes)
-	e.vfs = vfs
+	e.fs = fs
 	return e, err
 }
 
@@ -86,7 +91,7 @@ func NewEntryFromCopy(other Entry) (Entry, error) {
 func (e *Entry) initialize() {
 	e.mu = &sync.Mutex{}
 	e.checksumDirty = true
-	e.vfs = vfs.RealFS{}
+	e.fs = vfs.RealFS{}
 }
 
 func (e Entry) Equals(other Entry) bool {
@@ -170,7 +175,7 @@ func (e Entry) SaveFile(filePath string) error {
 		return err
 	}
 
-	return e.vfs.WriteFile(filePath, jsonStr)
+	return e.fs.WriteFile(filePath, jsonStr)
 }
 
 func (e Entry) String() string {
