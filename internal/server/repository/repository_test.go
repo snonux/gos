@@ -7,43 +7,32 @@ import (
 	"codeberg.org/snonux/gos/internal/vfs"
 )
 
-func TestRepositoryGet(t *testing.T) {
+func TestRepositoryPutGet(t *testing.T) {
 	t.Parallel()
 
-	repo, entry, _, err := setupRepository()
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	fs := make(vfs.MemoryFS)
+	repo := newRepository("./data", fs)
 
-	if err := repo.put(entry); err != nil {
-		t.Error(err)
-		return
-	}
-	list, err := repo.List()
-	if err != err {
-		t.Error(err)
-		return
-	}
-	t.Log(string(list))
+	entry1, _ := makeAnEntry(fs)
+	entry2, _ := makeAnotherEntry(fs)
+	entries := []types.Entry{entry1, entry2}
 
-	entryGot, ok := repo.Get(entry.ID)
-	if !ok {
-		t.Errorf("could not find entry with id %s in repo", entry.ID)
-		return
-	}
-	if !entryGot.Equals(entry) {
-		t.Error("expected to get", entry, "but got", entryGot)
+	for _, entry := range entries {
+		_ = repo.put(entry)
+		entryGot, ok := repo.Get(entry.ID)
+		if !ok {
+			t.Errorf("could not find entry with id %s in repo", entry.ID)
+			return
+		}
+		if !entryGot.Equals(entry) {
+			t.Error("expected to get", entry, "but got", entryGot)
+			return
+		}
 	}
 }
 
-// TODO: Write unit tests for the remainder of the repo methods
-
-func setupRepository() (repo Repository, entry1, entry2 types.Entry, err error) {
-	fs := make(vfs.MemoryFS)
-	repo = newRepository("./data", fs)
-
-	entry1Str := `
+func makeAnEntry(fs fs) (types.Entry, error) {
+	entry := `
 		{
 			"Body": "Body text here",
 			"Shared": [
@@ -52,12 +41,11 @@ func setupRepository() (repo Repository, entry1, entry2 types.Entry, err error) 
 			]
 		}
 	`
-	entry1, err = types.NewEntry([]byte(entry1Str), fs)
-	if err != nil {
-		return
-	}
+	return types.NewEntry([]byte(entry), fs)
+}
 
-	entry2Str := `
+func makeAnotherEntry(fs fs) (types.Entry, error) {
+	entry := `
 		{
 			"Body": "Body text here",
 			"Shared": [
@@ -67,6 +55,7 @@ func setupRepository() (repo Repository, entry1, entry2 types.Entry, err error) 
 			]
 		}
 	`
-	entry2, err = types.NewEntry([]byte(entry2Str), fs)
-	return
+	return types.NewEntry([]byte(entry), fs)
 }
+
+// TODO: Write unit tests for the remainder of the repo methods
