@@ -108,6 +108,36 @@ func TestRepositoryHasSameEntry(t *testing.T) {
 	}
 }
 
+func TestRepositoryMerge(t *testing.T) {
+	t.Parallel()
+
+	fs := make(vfs.MemoryFS)
+	repo := newRepository("./data", fs)
+	entry1, _ := makeAnEntry()
+	_ = repo.put(entry1)
+
+	entry2, _ := makeAnotherEntry()
+	// Need to have the same IDs so that the entries will actually be merged
+	entry2.ID = entry1.ID
+	entry2.Body = "merged"
+	entry2.Epoch = 12345
+
+	_ = repo.Merge(entry2)
+	pairs, _ := repo.List()
+	// Ensuring the merge didn't add a new entry
+	if len(pairs) != 1 {
+		t.Error("expected exactly one element in the repo but got", pairs)
+	}
+
+	entryGot, _ := repo.Get(entry1.ID)
+	if entryGot.Body != "merged" {
+		t.Error("unexpected body", entryGot.Body)
+	}
+	if entryGot.Epoch != 12345 {
+		t.Error("unexpected epoch", entryGot.Epoch)
+	}
+}
+
 func makeEntries(t *testing.T) []types.Entry {
 	entry1, err := makeAnEntry()
 	if err != nil {
