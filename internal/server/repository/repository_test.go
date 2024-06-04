@@ -13,11 +13,7 @@ func TestRepositoryPutGet(t *testing.T) {
 	fs := make(vfs.MemoryFS)
 	repo := newRepository("./data", fs)
 
-	entry1, _ := makeAnEntry()
-	entry2, _ := makeAnotherEntry()
-	entries := []types.Entry{entry1, entry2}
-
-	for _, entry := range entries {
+	for _, entry := range makeEntries(t) {
 		t.Run(entry.ID, func(t *testing.T) {
 			_ = repo.put(entry)
 			entryGot, ok := repo.Get(entry.ID)
@@ -36,10 +32,7 @@ func TestRepositoryLoad(t *testing.T) {
 
 	fs := make(vfs.MemoryFS)
 	repo := newRepository("./data", fs)
-
-	entry1, _ := makeAnEntry()
-	entry2, _ := makeAnotherEntry()
-	entries := []types.Entry{entry1, entry2}
+	entries := makeEntries(t)
 
 	// Write entries into the VFS
 	for _, entry := range entries {
@@ -63,6 +56,33 @@ func TestRepositoryLoad(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRepositoryList(t *testing.T) {
+	t.Parallel()
+
+	fs := make(vfs.MemoryFS)
+	repo := newRepository("./data", fs)
+	entries := makeEntries(t)
+
+	for _, entry := range entries {
+		_ = repo.put(entry)
+	}
+
+	list, _ := repo.List()
+	t.Log(string(list))
+}
+
+func makeEntries(t *testing.T) []types.Entry {
+	entry1, err := makeAnEntry()
+	if err != nil {
+		t.Error(err)
+	}
+	entry2, err := makeAnotherEntry()
+	if err != nil {
+		t.Error(err)
+	}
+	return []types.Entry{entry1, entry2}
 }
 
 func makeAnEntry() (types.Entry, error) {
