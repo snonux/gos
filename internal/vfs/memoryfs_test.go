@@ -36,6 +36,30 @@ func TestMemoryFS(t *testing.T) {
 
 }
 
+func TestPassByValue(t *testing.T) {
+	t.Parallel()
+	fs := make(MemoryFS)
+
+	writeFiles := map[string]string{
+		"/data/dir/foo.json":        "hello world",
+		"/data/dir/subdir/bar.json": "hello solar system",
+		"/data/dir/subdir/baz.json": "hello universe",
+		"/data/dir/subdir/bay.txt":  "hello bar keeper",
+	}
+
+	// Should work, as the underlying data type is a map.
+	func(fs MemoryFS) {
+		for path, content := range writeFiles {
+			bytes := []byte(content)
+			_ = fs.WriteFile(path, bytes)
+		}
+	}(fs)
+
+	t.Run("files are there", func(t *testing.T) {
+		testFilesAreThere(t, fs, writeFiles)
+	})
+}
+
 func testFilesAreThere(t *testing.T, fs MemoryFS, writeFiles map[string]string) {
 	for path, content := range writeFiles {
 		bytes, err := fs.ReadFile(path)

@@ -6,14 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-
-	"codeberg.org/snonux/gos/internal/vfs"
 )
-
-type fs interface {
-	ReadFile(name string) ([]byte, error)
-	WriteFile(filePath string, bytes []byte) error
-}
 
 // Tells me whether the entry was shared to the sm platform named Name
 type Shared struct {
@@ -42,7 +35,6 @@ type Entry struct {
 	Body   string   `json:"body"`
 	Shared []Shared `json:"shared,omitempty"`
 	Epoch  int      `json:"epoch,omitempty"`
-	fs     fs
 
 	// The checksum of the whole entry, can change depending on the state.
 	checksum      string
@@ -50,52 +42,27 @@ type Entry struct {
 	mu            *sync.Mutex
 }
 
-func NewEntry(bytes []byte, fs ...fs) (Entry, error) {
+func NewEntry(bytes []byte) (Entry, error) {
 	var e Entry
 	if err := json.Unmarshal(bytes, &e); err != nil {
 		return e, fmt.Errorf("unable to deserialise payload: %w", err)
 	}
-	e.initialize(fs...)
+	e.initialize()
 	if e.ID == "" {
 		e.ID = fmt.Sprintf("%x", sha256.Sum256([]byte(e.Body)))
 	}
 	return e, nil
 }
 
-func NewEntryFromFile(filePath string, fs_ ...fs) (Entry, error) {
-	var (
-		bytes []byte
-		err   error
-		fs    fs
-	)
-
-	if len(fs_) > 0 {
-		fs = fs_[0]
-	} else {
-		fs = vfs.RealFS{}
-	}
-
-	bytes, err = fs.ReadFile(filePath)
-	if err != err {
-		return Entry{}, err
-	}
-	return NewEntry(bytes, fs)
-}
-
-func NewEntryFromCopy(other Entry, fs ...fs) (Entry, error) {
+func NewEntryFromCopy(other Entry) (Entry, error) {
 	var e Entry
-	e.initialize(fs...)
+	e.initialize()
 	return e.Update(other)
 }
 
-func (e *Entry) initialize(fs ...fs) {
+func (e *Entry) initialize() {
 	e.mu = &sync.Mutex{}
 	e.checksumDirty = true
-	if len(fs) > 1 {
-		e.fs = fs[0]
-	} else {
-		e.fs = vfs.RealFS{}
-	}
 }
 
 func (e Entry) Equals(other Entry) bool {
@@ -171,15 +138,6 @@ func (e Entry) Update(other Entry) (Entry, error) {
 
 func (e Entry) Serialize() ([]byte, error) {
 	return json.Marshal(e)
-}
-
-func (e Entry) SaveFile(filePath string) error {
-	jsonStr, err := e.Serialize()
-	if err != nil {
-		return err
-	}
-
-	return e.fs.WriteFile(filePath, jsonStr)
 }
 
 func (e Entry) String() string {

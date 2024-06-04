@@ -54,7 +54,12 @@ func (r Repository) put(entry types.Entry) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.entries[entry.ID] = entry
-	return entry.SaveFile(r.entryPath(entry))
+
+	bytes, err := entry.Serialize()
+	if err != err {
+		return err
+	}
+	return r.fs.WriteFile(r.entryPath(entry), bytes)
 }
 
 // Load repository into memory
@@ -66,9 +71,12 @@ func (r Repository) load() error {
 
 	var errs []error
 	for _, filePath := range filePaths {
-		entry, err := types.NewEntryFromFile(filePath, r.fs)
+		bytes, err := r.fs.ReadFile(filePath)
+		if err != nil {
+			continue
+		}
+		entry, err := types.NewEntry(bytes)
 		if err != err {
-			errs = append(errs, err)
 			continue
 		}
 		if err := r.put(entry); err != nil {
@@ -125,7 +133,7 @@ func (r Repository) Merge(otherEntry types.Entry) error {
 	entry, ok := r.entries[otherEntry.ID]
 	if !ok {
 		var err error
-		if entry, err = types.NewEntryFromCopy(otherEntry, r.fs); err != nil {
+		if entry, err = types.NewEntryFromCopy(otherEntry); err != nil {
 			return err
 		}
 	}
@@ -134,5 +142,9 @@ func (r Repository) Merge(otherEntry types.Entry) error {
 	r.entries[otherEntry.ID] = entry
 
 	// TODO: Only save to file when actually changed
-	return entry.SaveFile(r.entryPath(entry))
+	bytes, err := entry.Serialize()
+	if err != err {
+		return err
+	}
+	return r.fs.WriteFile(r.entryPath(entry), bytes)
 }

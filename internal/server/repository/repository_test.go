@@ -13,8 +13,8 @@ func TestRepositoryPutGet(t *testing.T) {
 	fs := make(vfs.MemoryFS)
 	repo := newRepository("./data", fs)
 
-	entry1, _ := makeAnEntry(fs)
-	entry2, _ := makeAnotherEntry(fs)
+	entry1, _ := makeAnEntry()
+	entry2, _ := makeAnotherEntry()
 	entries := []types.Entry{entry1, entry2}
 
 	for _, entry := range entries {
@@ -31,7 +31,21 @@ func TestRepositoryPutGet(t *testing.T) {
 	}
 }
 
-func makeAnEntry(fs fs) (types.Entry, error) {
+func TestRepositoryLoad(t *testing.T) {
+	t.Parallel()
+
+	fs := make(vfs.MemoryFS)
+	repo := newRepository("./data", fs)
+
+	// TODO: Finish implementing this test
+	entry1, _ := makeAnEntry()
+	bytes, _ := entry1.Serialize()
+	_ = repo.fs.WriteFile("./data/foo.json", bytes)
+
+	t.Log(fs)
+}
+
+func makeAnEntry() (types.Entry, error) {
 	entry := `
 		{
 			"Body": "Body text here",
@@ -41,10 +55,10 @@ func makeAnEntry(fs fs) (types.Entry, error) {
 			]
 		}
 	`
-	return types.NewEntry([]byte(entry), fs)
+	return types.NewEntry([]byte(entry))
 }
 
-func makeAnotherEntry(fs fs) (types.Entry, error) {
+func makeAnotherEntry() (types.Entry, error) {
 	entry := `
 		{
 			"Body": "Another text here",
@@ -55,7 +69,7 @@ func makeAnotherEntry(fs fs) (types.Entry, error) {
 			]
 		}
 	`
-	return types.NewEntry([]byte(entry), fs)
+	return types.NewEntry([]byte(entry))
 }
 
 // TODO: Write unit tests for the remainder of the repo methods
