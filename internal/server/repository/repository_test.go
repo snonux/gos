@@ -18,16 +18,16 @@ func TestRepositoryPutGet(t *testing.T) {
 	entries := []types.Entry{entry1, entry2}
 
 	for _, entry := range entries {
-		_ = repo.put(entry)
-		entryGot, ok := repo.Get(entry.ID)
-		if !ok {
-			t.Errorf("could not find entry with id %s in repo", entry.ID)
-			return
-		}
-		if !entryGot.Equals(entry) {
-			t.Error("expected to get", entry, "but got", entryGot)
-			return
-		}
+		t.Run(entry.ID, func(t *testing.T) {
+			_ = repo.put(entry)
+			entryGot, ok := repo.Get(entry.ID)
+			if !ok {
+				t.Errorf("could not find entry with id %s in repo", entry.ID)
+			}
+			if !entryGot.Equals(entry) {
+				t.Error("expected to get", entry, "but got", entryGot)
+			}
+		})
 	}
 }
 
@@ -47,7 +47,7 @@ func makeAnEntry(fs fs) (types.Entry, error) {
 func makeAnotherEntry(fs fs) (types.Entry, error) {
 	entry := `
 		{
-			"Body": "Body text here",
+			"Body": "Another text here",
 			"Shared": [
 				{ "Name": "Foo", "Is": true },
 				{ "Name": "Bar", "Is": true },
