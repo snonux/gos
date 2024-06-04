@@ -37,12 +37,32 @@ func TestRepositoryLoad(t *testing.T) {
 	fs := make(vfs.MemoryFS)
 	repo := newRepository("./data", fs)
 
-	// TODO: Finish implementing this test
 	entry1, _ := makeAnEntry()
-	bytes, _ := entry1.Serialize()
-	_ = repo.fs.WriteFile("./data/foo.json", bytes)
+	entry2, _ := makeAnotherEntry()
+	entries := []types.Entry{entry1, entry2}
 
-	t.Log(fs)
+	// Write entries into the VFS
+	for _, entry := range entries {
+		bytes, _ := entry.Serialize()
+		_ = repo.fs.WriteFile(repo.entryPath(entry), bytes)
+	}
+
+	// Load entries from VFS into the repo
+	if err := repo.load(); err != nil {
+		t.Error(err)
+	}
+
+	for _, entry := range entries {
+		t.Run(entry.ID, func(t *testing.T) {
+			entryGot, ok := repo.Get(entry.ID)
+			if !ok {
+				t.Errorf("could not find entry with id %s in repo", entry.ID)
+			}
+			if !entryGot.Equals(entry) {
+				t.Error("expected to get", entry, "but got", entryGot)
+			}
+		})
+	}
 }
 
 func makeAnEntry() (types.Entry, error) {
