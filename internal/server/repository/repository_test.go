@@ -89,6 +89,25 @@ func TestRepositoryList(t *testing.T) {
 	}
 }
 
+func TestRepositoryHasSameEntry(t *testing.T) {
+	t.Parallel()
+
+	fs := make(vfs.MemoryFS)
+	repo := newRepository("./data", fs)
+	entry, _ := makeAnEntry()
+	_ = repo.put(entry)
+
+	pair := EntryPair{entry.ID, entry.Checksum()}
+	if !repo.HasSameEntry(pair) {
+		t.Error("repo does not contain entry corresponding to pair", pair)
+	}
+
+	pair = EntryPair{"nonexistent", "nonexistent"}
+	if repo.HasSameEntry(pair) {
+		t.Error("repo does contain entry corresponding to pair", pair, "but that should not be")
+	}
+}
+
 func makeEntries(t *testing.T) []types.Entry {
 	entry1, err := makeAnEntry()
 	if err != nil {
