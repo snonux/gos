@@ -69,8 +69,24 @@ func TestRepositoryList(t *testing.T) {
 		_ = repo.put(entry)
 	}
 
-	list, _ := repo.List()
-	t.Log(string(list))
+	pairs, _ := repo.List()
+	if len(entries) != len(pairs) {
+		t.Error("expected as many entries as pairs")
+	}
+
+	for _, entry := range entries {
+		var found bool
+		for _, pair := range pairs {
+			if entry.ID == pair.ID && entry.Checksum() == pair.Checksum {
+				found = true
+				t.Log("entry matches pair", entry, pair)
+				break
+			}
+		}
+		if !found {
+			t.Error("could not find entry", entry, "in", pairs)
+		}
+	}
 }
 
 func makeEntries(t *testing.T) []types.Entry {

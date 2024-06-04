@@ -47,7 +47,7 @@ func (h Handler) List(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("expexted GET request")
 	}
 
-	list, err := repository.Instance(h.conf.DataDir).List()
+	list, err := repository.Instance(h.conf.DataDir).ListBytes()
 	if err != nil {
 		return err
 	}

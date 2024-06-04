@@ -87,9 +87,10 @@ func (r Repository) load() error {
 	return errors.Join(errs...)
 }
 
-func (r Repository) List() ([]byte, error) {
+func (r Repository) List() ([]EntryPair, error) {
+	// TODO: Do I need to load every time? Or only on init of the repo?
 	if err := r.load(); err != nil {
-		return []byte{}, err
+		return []EntryPair{}, err
 	}
 
 	var pairs []EntryPair
@@ -100,6 +101,14 @@ func (r Repository) List() ([]byte, error) {
 		pairs = append(pairs, EntryPair{entry.ID, entry.Checksum()})
 	}
 
+	return pairs, nil
+}
+
+func (r Repository) ListBytes() ([]byte, error) {
+	pairs, err := r.List()
+	if err != nil {
+		return []byte{}, err
+	}
 	return json.Marshal(pairs)
 }
 
