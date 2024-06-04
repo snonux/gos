@@ -50,36 +50,36 @@ type Entry struct {
 	mu            *sync.Mutex
 }
 
-func NewEntry(bytes []byte) (Entry, error) {
+func NewEntry(bytes []byte, fs ...fs) (Entry, error) {
 	var e Entry
 	if err := json.Unmarshal(bytes, &e); err != nil {
 		return e, fmt.Errorf("unable to deserialise payload: %w", err)
 	}
-	e.initialize()
+	e.initialize(fs...)
 	if e.ID == "" {
 		e.ID = fmt.Sprintf("%x", sha256.Sum256([]byte(e.Body)))
 	}
 	return e, nil
 }
 
-func NewEntryFromFile(filePath string, fsToUse ...fs) (Entry, error) {
+func NewEntryFromFile(filePath string, fs_ ...fs) (Entry, error) {
 	var (
 		bytes []byte
 		err   error
-		fs    fs = vfs.RealFS{}
+		fs    fs
 	)
 
-	if len(fsToUse) > 0 {
-		fs = fsToUse[0]
+	if len(fs_) > 0 {
+		fs = fs_[0]
+	} else {
+		fs = vfs.RealFS{}
 	}
 
 	bytes, err = fs.ReadFile(filePath)
 	if err != err {
 		return Entry{}, err
 	}
-	e, err := NewEntry(bytes)
-	e.fs = fs
-	return e, err
+	return NewEntry(bytes, fs)
 }
 
 func NewEntryFromCopy(other Entry) (Entry, error) {
@@ -88,10 +88,14 @@ func NewEntryFromCopy(other Entry) (Entry, error) {
 	return e.Update(other)
 }
 
-func (e *Entry) initialize() {
+func (e *Entry) initialize(fs ...fs) {
 	e.mu = &sync.Mutex{}
 	e.checksumDirty = true
-	e.fs = vfs.RealFS{}
+	if len(fs) > 1 {
+		e.fs = fs[0]
+	} else {
+		e.fs = vfs.RealFS{}
+	}
 }
 
 func (e Entry) Equals(other Entry) bool {

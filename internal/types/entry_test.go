@@ -21,7 +21,7 @@ func TestEntryChecksum(t *testing.T) {
 	t.Log(entry.Checksum())
 }
 
-func twoDifferentEntries(t *testing.T) (entry1, entry2 Entry, err error) {
+func twoDifferentEntries() (entry1, entry2 Entry, err error) {
 	entry1Str := `
 		{
 			"Body": "Body text here",
@@ -53,7 +53,7 @@ func twoDifferentEntries(t *testing.T) (entry1, entry2 Entry, err error) {
 func TestEquals(t *testing.T) {
 	t.Parallel()
 
-	entry1, entry2, err := twoDifferentEntries(t)
+	entry1, entry2, err := twoDifferentEntries()
 	if err != nil {
 		t.Error(err)
 		return
@@ -69,7 +69,7 @@ func TestEquals(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	t.Parallel()
 
-	entry1, entry2, err := twoDifferentEntries(t)
+	entry1, entry2, err := twoDifferentEntries()
 	if err != nil {
 		t.Error(err)
 		return

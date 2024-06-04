@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	instance *Repository
+	instance Repository
 	once     sync.Once
 )
 
@@ -33,19 +33,23 @@ type Repository struct {
 	fs      fs
 }
 
-func Instance(dataDir string) *Repository {
+func Instance(dataDir string) Repository {
 	once.Do(func() {
-		instance = &Repository{
-			dataDir: dataDir,
-			entries: make(map[string]types.Entry),
-			mu:      &sync.Mutex{},
-			fs:      vfs.RealFS{},
-		}
+		instance = newRepository(dataDir, vfs.RealFS{})
 	})
 	return instance
 }
 
-func (r Repository) add(entry types.Entry) {
+func newRepository(dataDir string, fs fs) Repository {
+	return Repository{
+		dataDir: dataDir,
+		entries: make(map[string]types.Entry),
+		mu:      &sync.Mutex{},
+		fs:      fs,
+	}
+}
+
+func (r Repository) put(entry types.Entry) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.entries[entry.ID] = entry
@@ -63,7 +67,7 @@ func (r Repository) load() error {
 		if err != err {
 			return err
 		}
-		r.add(entry)
+		r.put(entry)
 	}
 
 	return nil
@@ -85,8 +89,16 @@ func (r Repository) List() ([]byte, error) {
 	return json.Marshal(pairs)
 }
 
-func (r Repository) Get(id string) ([]byte, error) {
+func (r Repository) GetBytes(id string) ([]byte, error) {
 	return r.fs.ReadFile(fmt.Sprintf("%s/%s", r.dataDir, id))
+}
+
+func (r Repository) Get(id string) (types.Entry, error) {
+	bytes, err := r.GetBytes(id)
+	if err != nil {
+		return types.Entry{}, err
+	}
+	return types.NewEntry(bytes)
 }
 
 func (r Repository) HasSameEntry(pair EntryPair) bool {
