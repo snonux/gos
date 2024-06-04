@@ -32,21 +32,25 @@ type Repository struct {
 	entries map[string]types.Entry
 	mu      *sync.Mutex
 	fs      fs
+	loaded  *bool
 }
 
 func Instance(dataDir string) Repository {
 	once.Do(func() {
 		instance = newRepository(dataDir, vfs.RealFS{})
+		_ = instance.load()
 	})
 	return instance
 }
 
 func newRepository(dataDir string, fs fs) Repository {
+	var loaded bool
 	return Repository{
 		dataDir: dataDir,
 		entries: make(map[string]types.Entry),
 		mu:      &sync.Mutex{},
 		fs:      fs,
+		loaded:  &loaded,
 	}
 }
 
@@ -62,8 +66,12 @@ func (r Repository) put(entry types.Entry) error {
 	return r.fs.WriteFile(r.entryPath(entry), bytes)
 }
 
-// Load repository into memory
+// Load repository into memory if not done yet.
 func (r Repository) load() error {
+	if *r.loaded {
+		return nil
+	}
+
 	filePaths, err := r.fs.FindFiles(r.dataDir, ".json")
 	if err != nil {
 		return err
@@ -84,11 +92,14 @@ func (r Repository) load() error {
 		}
 	}
 
+	if len(errs) == 0 {
+		*r.loaded = true
+	}
+
 	return errors.Join(errs...)
 }
 
 func (r Repository) List() ([]EntryPair, error) {
-	// TODO: Do I need to load every time? Or only on init of the repo?
 	if err := r.load(); err != nil {
 		return []EntryPair{}, err
 	}
@@ -113,6 +124,7 @@ func (r Repository) ListBytes() ([]byte, error) {
 }
 
 func (r Repository) Get(id string) (types.Entry, bool) {
+	_ = r.load()
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -121,6 +133,7 @@ func (r Repository) Get(id string) (types.Entry, bool) {
 }
 
 func (r Repository) HasSameEntry(pair EntryPair) bool {
+	_ = r.load()
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -136,6 +149,7 @@ func (r Repository) entryPath(entry types.Entry) string {
 }
 
 func (r Repository) Merge(otherEntry types.Entry) error {
+	_ = r.load()
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -150,7 +164,10 @@ func (r Repository) Merge(otherEntry types.Entry) error {
 	entry, _ = entry.Update(otherEntry)
 	r.entries[otherEntry.ID] = entry
 
-	// TODO: Only save to file when actually changed
+	if !entry.Changed {
+		return nil
+	}
+
 	bytes, err := entry.Serialize()
 	if err != err {
 		return err

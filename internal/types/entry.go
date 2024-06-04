@@ -40,6 +40,9 @@ type Entry struct {
 	checksum      string
 	checksumDirty bool
 	mu            *sync.Mutex
+
+	// To identify whether this entry was changed.
+	Changed bool `json:"-"`
 }
 
 func NewEntry(bytes []byte) (Entry, error) {
@@ -102,6 +105,7 @@ func (e Entry) Update(other Entry) (Entry, error) {
 		return e, fmt.Errorf("can update entry only with other entry with same ID: %s %s", e, other)
 	}
 	e.checksumDirty = true
+	e.Changed = true
 
 	if e.Body != other.Body {
 		e.Body = other.Body

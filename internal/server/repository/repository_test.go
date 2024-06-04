@@ -119,10 +119,11 @@ func TestRepositoryMerge(t *testing.T) {
 	entry2, _ := makeAnotherEntry()
 	// Need to have the same IDs so that the entries will actually be merged
 	entry2.ID = entry1.ID
+	// Merge a modified entry2 into the repository.
 	entry2.Body = "merged"
 	entry2.Epoch = 12345
-
 	_ = repo.Merge(entry2)
+
 	pairs, _ := repo.List()
 	// Ensuring the merge didn't add a new entry
 	if len(pairs) != 1 {
@@ -176,5 +177,3 @@ func makeAnotherEntry() (types.Entry, error) {
 	`
 	return types.NewEntry([]byte(entry))
 }
-
-// TODO: Write unit tests for the remainder of the repo methods

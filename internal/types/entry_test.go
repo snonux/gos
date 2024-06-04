@@ -21,6 +21,55 @@ func TestEntryChecksum(t *testing.T) {
 	t.Log(entry.Checksum())
 }
 
+func TestEquals(t *testing.T) {
+	t.Parallel()
+
+	entry1, entry2, err := twoDifferentEntries()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if entry1.Equals(entry2) {
+		t.Error("entries should not be equal", entry1, entry2)
+	}
+
+	t.Log("both entries differ", entry1, entry2)
+}
+
+func TestUpdate(t *testing.T) {
+	t.Parallel()
+
+	entry1, entry2, err := twoDifferentEntries()
+	if err != nil {
+		t.Error(err)
+	}
+
+	if entry1.Changed {
+		t.Error("didn't expect the entry to be changed before the update", entry1)
+	}
+
+	entry1, _ = entry1.Update(entry2)
+	if len(entry1.Shared) != 3 {
+		t.Error("expected 3 entries after update", entry1)
+	}
+
+	if !entry1.Changed {
+		t.Error("expected the entry to be changed after update")
+	}
+
+	var isShared int
+	for _, shared := range entry1.Shared {
+		if shared.Is {
+			isShared++
+		}
+	}
+
+	if isShared != 2 {
+		t.Error("expected 2 shared entries after update but got", isShared, entry1)
+	}
+}
+
 func twoDifferentEntries() (entry1, entry2 Entry, err error) {
 	entry1Str := `
 		{
@@ -48,50 +97,4 @@ func twoDifferentEntries() (entry1, entry2 Entry, err error) {
 	`
 	entry2, err = NewEntry([]byte(entry2Str))
 	return
-}
-
-func TestEquals(t *testing.T) {
-	t.Parallel()
-
-	entry1, entry2, err := twoDifferentEntries()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	if entry1.Equals(entry2) {
-		t.Error("entries should not be equal", entry1, entry2)
-	}
-
-	t.Log("both entries differ", entry1, entry2)
-}
-
-func TestUpdate(t *testing.T) {
-	t.Parallel()
-
-	entry1, entry2, err := twoDifferentEntries()
-	if err != nil {
-		t.Error(err)
-		return
-	}
-
-	entry1, _ = entry1.Update(entry2)
-	if len(entry1.Shared) != 3 {
-		t.Error("expected 3 entries after update", entry1)
-		return
-	}
-
-	var isShared int
-	for _, shared := range entry1.Shared {
-		if shared.Is {
-			isShared++
-		}
-	}
-
-	if isShared != 2 {
-		t.Error("expected 2 shared entries after update but got", isShared, entry1)
-		return
-	}
-
-	t.Log("entry as expected after update", entry1)
 }
