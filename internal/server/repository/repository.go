@@ -2,6 +2,7 @@ package repository
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -49,10 +50,11 @@ func newRepository(dataDir string, fs fs) Repository {
 	}
 }
 
-func (r Repository) put(entry types.Entry) {
+func (r Repository) put(entry types.Entry) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.entries[entry.ID] = entry
+	return entry.SaveFile(r.entryPath(entry))
 }
 
 // Load repository into memory
@@ -62,15 +64,19 @@ func (r Repository) load() error {
 		return err
 	}
 
+	var errs []error
 	for _, filePath := range filePaths {
-		entry, err := types.NewEntryFromFile(filePath)
+		entry, err := types.NewEntryFromFile(filePath, r.fs)
 		if err != err {
-			return err
+			errs = append(errs, err)
+			continue
 		}
-		r.put(entry)
+		if err := r.put(entry); err != nil {
+			errs = append(errs, err)
+		}
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (r Repository) List() ([]byte, error) {
@@ -89,16 +95,12 @@ func (r Repository) List() ([]byte, error) {
 	return json.Marshal(pairs)
 }
 
-func (r Repository) GetBytes(id string) ([]byte, error) {
-	return r.fs.ReadFile(fmt.Sprintf("%s/%s", r.dataDir, id))
-}
+func (r Repository) Get(id string) (types.Entry, bool) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
-func (r Repository) Get(id string) (types.Entry, error) {
-	bytes, err := r.GetBytes(id)
-	if err != nil {
-		return types.Entry{}, err
-	}
-	return types.NewEntry(bytes)
+	entry, ok := r.entries[id]
+	return entry, ok
 }
 
 func (r Repository) HasSameEntry(pair EntryPair) bool {
@@ -123,7 +125,7 @@ func (r Repository) Merge(otherEntry types.Entry) error {
 	entry, ok := r.entries[otherEntry.ID]
 	if !ok {
 		var err error
-		if entry, err = types.NewEntryFromCopy(otherEntry); err != nil {
+		if entry, err = types.NewEntryFromCopy(otherEntry, r.fs); err != nil {
 			return err
 		}
 	}

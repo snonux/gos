@@ -10,18 +10,26 @@ import (
 func TestRepositoryGet(t *testing.T) {
 	t.Parallel()
 
-	entry, _, err := twoDifferentEntries()
+	repo, entry, _, err := setupRepository()
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	repo.put(entry)
-	t.Log(fs)
-
-	entryGot, err := repo.Get(entry.ID)
-	if err != nil {
+	if err := repo.put(entry); err != nil {
 		t.Error(err)
+		return
+	}
+	list, err := repo.List()
+	if err != err {
+		t.Error(err)
+		return
+	}
+	t.Log(string(list))
+
+	entryGot, ok := repo.Get(entry.ID)
+	if !ok {
+		t.Errorf("could not find entry with id %s in repo", entry.ID)
 		return
 	}
 	if !entryGot.Equals(entry) {

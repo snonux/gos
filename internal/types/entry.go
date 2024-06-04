@@ -82,9 +82,9 @@ func NewEntryFromFile(filePath string, fs_ ...fs) (Entry, error) {
 	return NewEntry(bytes, fs)
 }
 
-func NewEntryFromCopy(other Entry) (Entry, error) {
+func NewEntryFromCopy(other Entry, fs ...fs) (Entry, error) {
 	var e Entry
-	e.initialize()
+	e.initialize(fs...)
 	return e.Update(other)
 }
 

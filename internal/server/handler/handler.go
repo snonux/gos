@@ -62,12 +62,12 @@ func (h Handler) Get(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("invalid id %s", id)
 	}
 
-	data, err := repository.Instance(h.conf.DataDir).GetBytes(id)
-	if err != err {
-		return err
+	entry, ok := repository.Instance(h.conf.DataDir).Get(id)
+	if !ok {
+		return fmt.Errorf("no entry with id %s found", id)
 	}
 
-	fmt.Fprint(w, string(data))
+	fmt.Fprint(w, entry.String())
 	return nil
 }
 
