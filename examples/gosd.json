@@ -1,0 +1,9 @@
+{
+    "ListenAddr": "127.0.0.1:8080",
+    "Partner": "partner1,partner2",
+    "ApiKey": "",
+    "DataDir": "./data",
+    "EmailTo": "recipient@example.com",
+    "EmailFrom": "sender@example.com",
+    "SMTPServer": "smtp.example.com:587"
+}

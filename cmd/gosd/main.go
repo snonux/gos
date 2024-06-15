@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	configFile := flag.String("cfg", "/etc/gos.json", "The configuration file")
+	configFile := flag.String("cfg", "/etc/gosd.json", "The configuration file")
 
 	conf, err := config.New(*configFile)
 	if err != nil {
