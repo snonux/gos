@@ -1,13 +1,17 @@
 version: '3'
 
 tasks:
+  default:
+    deps: ["build"]
   build:
     cmds:
       - go build -o gosd cmd/gosd/main.go
+      - go build -o gos cmd/gos/main.go
   dev:
     deps: ["test", "vet", "lint"]
     cmds:
       - go build -race -o gosd cmd/gosd/main.go
+      - go build -race -o gos cmd/gos/main.go
   test:
     cmds:
       - go clean -testcache
