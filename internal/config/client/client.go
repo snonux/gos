@@ -8,13 +8,16 @@ import (
 
 type ClientConfig struct {
 	Server string `json:"Partner,omitempty"`
-	ApiKey string `json:"ApiKey,omitempty"`
+	APIKey string `json:"APIKey,omitempty"`
+	Editor string `json:"Editor,omitempty"`
 }
 
 func New(configFile string) (ClientConfig, error) {
 	conf, _ := config.FromFile[ClientConfig](configFile)
-	conf.Server = config.FromENV("Servers", conf.Server)
-	conf.ApiKey = config.FromENV("ApiKey", conf.ApiKey)
+	// TODO: Refactor
+	conf.Server = config.FromENV("GOS_SERVERS", conf.Server)
+	conf.APIKey = config.FromENV("GOS_API_KEY", conf.APIKey)
+	conf.Editor = config.FromENV("GOS_EDITOR", "EDITOR", conf.Editor, "vi")
 
 	return conf, nil
 }

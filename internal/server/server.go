@@ -35,7 +35,7 @@ func (serv Server) Handle(name string, handler HandlerFuncWithError) {
 		log.Println("Someone requested", handlerName)
 
 		// The health endpoint doesn't require an API key
-		if handlerName != HealthHandlerName && r.Header.Get("X-API-KEY") != serv.Conf.ApiKey {
+		if handlerName != HealthHandlerName && r.Header.Get("X-API-KEY") != serv.Conf.APIKey {
 			http.Error(w, "Invalid API key", http.StatusUnauthorized)
 			log.Println("Unauthorized access attempt to", handlerName)
 			return

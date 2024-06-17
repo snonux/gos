@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"io"
 	"os"
-	"strings"
-	"unicode"
 )
 
 func FromFile[T any](configFile string) (T, error) {
@@ -27,8 +25,7 @@ func FromFile[T any](configFile string) (T, error) {
 }
 
 // Set config from envoronment variable if present, e.g. hansWurst from GOS_HANS_WURST
-func FromENV(configKey string, defaultValue ...string) string {
-	envKey := camelToSnakeWithPrefix("GOS", configKey)
+func FromENV(envKey string, defaultValue ...string) string {
 	if value := os.Getenv(envKey); value != "" {
 		return value
 	}
@@ -41,20 +38,4 @@ func FromENV(configKey string, defaultValue ...string) string {
 	}
 
 	return ""
-}
-
-// camelToSnaeWithPrefix converts camelCase strings to UPPER_SNAKE_CASE with a prefix.
-func camelToSnakeWithPrefix(prefix, s string) string {
-	var builder strings.Builder
-	builder.WriteString(strings.ToUpper(prefix))
-	builder.WriteRune('_')
-
-	for i, r := range s {
-		if unicode.IsUpper(r) && i > 0 {
-			builder.WriteRune('_')
-		}
-		builder.WriteRune(unicode.ToUpper(r))
-	}
-
-	return builder.String()
 }

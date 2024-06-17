@@ -5,21 +5,6 @@ import (
 	"testing"
 )
 
-func TestCamelToSnake(t *testing.T) {
-	t.Parallel()
-
-	var (
-		expected = "GOS_FOO_BAR_BAZ"
-		got      = camelToSnakeWithPrefix("GOS", "fooBarBaz")
-	)
-
-	if got != expected {
-		t.Errorf("got '%s' but expected '%s'", got, expected)
-		return
-	}
-	t.Logf("got '%s' as expected", expected)
-}
-
 func TestFromENV(t *testing.T) {
 	t.Parallel()
 
@@ -27,7 +12,7 @@ func TestFromENV(t *testing.T) {
 
 	var (
 		expected = "foobarbaz"
-		got      = FromENV("testFromEnv")
+		got      = FromENV("GOS_TEST_FROM_ENV")
 	)
 
 	if got != expected {
@@ -37,7 +22,7 @@ func TestFromENV(t *testing.T) {
 	t.Logf("got '%s' as expected", expected)
 
 	expected = "default value"
-	got = FromENV("jajaja", expected)
+	got = FromENV("GOS_JAJAJA", expected)
 	if got != expected {
 		t.Errorf("got '%s' but expected '%s'", got, expected)
 		return
@@ -51,7 +36,7 @@ func TestFromENV(t *testing.T) {
 	t.Logf("got empty string as expected")
 
 	expected = "casio g-shock"
-	got = FromENV("watch", "", "", "", expected, "")
+	got = FromENV("GOS_WATCH", "", "", "", expected, "")
 	if got != expected {
 		t.Errorf("got '%s' but expected '%s'", got, expected)
 		return

@@ -96,7 +96,7 @@ func (h Handler) mergeFromPartner(partner string) error {
 		pairs []repository.EntryPair
 	)
 
-	if err := easyhttp.GetData(uri, h.conf.ApiKey, &pairs); err != nil {
+	if err := easyhttp.GetData(uri, h.conf.APIKey, &pairs); err != nil {
 		return err
 	}
 
@@ -110,7 +110,7 @@ func (h Handler) mergeFromPartner(partner string) error {
 			uri   = fmt.Sprintf("%s/get?id=%s", partner, pair.ID)
 		)
 
-		if err := easyhttp.GetData(uri, h.conf.ApiKey, &entry); err != nil {
+		if err := easyhttp.GetData(uri, h.conf.APIKey, &entry); err != nil {
 			errs = append(errs, err)
 			continue
 		}
