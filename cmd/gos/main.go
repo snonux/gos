@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 
+	"codeberg.org/snonux/gos/internal/client/tui"
 	config "codeberg.org/snonux/gos/internal/config/client"
 )
 
@@ -15,5 +16,5 @@ func main() {
 		log.Fatal("error building config:", err)
 	}
 
-	log.Println(conf)
+	tui.Run(conf)
 }
