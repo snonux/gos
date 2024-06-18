@@ -6,7 +6,16 @@ import (
 
 	config "codeberg.org/snonux/gos/internal/config/client"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
+
+var style = lipgloss.NewStyle().
+	Bold(true).
+	Foreground(lipgloss.Color("#FAFAFA")).
+	Background(lipgloss.Color("#7D56F4")).
+	PaddingTop(2).
+	PaddingLeft(4).
+	Width(40)
 
 func Run(config config.ClientConfig) {
 	p := tea.NewProgram(initModel())
@@ -77,5 +86,5 @@ func (m model) View() string {
 	}
 
 	s += "\nPress q to quiet.\n"
-	return s
+	return style.Render(s)
 }
