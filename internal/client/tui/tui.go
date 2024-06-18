@@ -2,7 +2,6 @@ package tui
 
 import (
 	"fmt"
-	"log"
 
 	config "codeberg.org/snonux/gos/internal/config/client"
 	tea "github.com/charmbracelet/bubbletea"
@@ -17,23 +16,26 @@ var style = lipgloss.NewStyle().
 	PaddingLeft(4).
 	Width(40)
 
-func Run(config config.ClientConfig) {
-	p := tea.NewProgram(initModel())
-	if _, err := p.Run(); err != nil {
-		log.Fatal("error starting TUI:", err)
-	}
+func Run(conf config.ClientConfig) error {
+	p := tea.NewProgram(initModel(conf))
+	_, err := p.Run()
+	return err
 }
 
 type model struct {
-	choices  []string
-	cursor   int
-	selected map[int]struct{}
+	choices         []string
+	cursor          int
+	selected        map[int]struct{}
+	conf            config.ClientConfig
+	altscreenActive bool
+	err             error
 }
 
-func initModel() model {
+func initModel(conf config.ClientConfig) model {
 	return model{
 		choices:  []string{"Compose post", "Schedule post"},
 		selected: make(map[int]struct{}),
+		conf:     conf,
 	}
 }
 
@@ -45,8 +47,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
-			return m, tea.Quit
 		case "up", "k":
 			if m.cursor > 0 {
 				m.cursor--
@@ -62,6 +62,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.selected[m.cursor] = struct{}{}
 			}
+		case "a":
+			m.altscreenActive = !m.altscreenActive
+			cmd := tea.EnterAltScreen
+			if !m.altscreenActive {
+				cmd = tea.ExitAltScreen
+			}
+			return m, cmd
+		case "e":
+			return m, openEditor(m.conf.Editor)
+		case "ctrl+c", "q":
+			return m, tea.Quit
+		}
+	case editorFinishedMsg:
+		if msg.err != nil {
+			m.err = msg.err
+			return m, tea.Quit
 		}
 	}
 

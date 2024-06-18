@@ -17,7 +17,6 @@ func TestFromENV(t *testing.T) {
 
 	if got != expected {
 		t.Errorf("got '%s' but expected '%s'", got, expected)
-		return
 	}
 	t.Logf("got '%s' as expected", expected)
 
@@ -25,13 +24,12 @@ func TestFromENV(t *testing.T) {
 	got = FromENV("GOS_JAJAJA", expected)
 	if got != expected {
 		t.Errorf("got '%s' but expected '%s'", got, expected)
-		return
 	}
 	t.Logf("got '%s' as expected", expected)
 
-	if got = FromENV("jujuju"); got != "" {
+	os.Unsetenv("JUJUJU_NOT_EXISTANT_ENV")
+	if got = FromENV("JUJUJU_NOT_EXISTANT_ENV"); got != "" {
 		t.Errorf("got '%s' but expected empty string", got)
-		return
 	}
 	t.Logf("got empty string as expected")
 
@@ -39,7 +37,22 @@ func TestFromENV(t *testing.T) {
 	got = FromENV("GOS_WATCH", "", "", "", expected, "")
 	if got != expected {
 		t.Errorf("got '%s' but expected '%s'", got, expected)
-		return
 	}
 	t.Logf("got '%s' as expected", expected)
+}
+
+func TestSecondENV(t *testing.T) {
+	t.Parallel()
+
+	os.Unsetenv("GOS_NONEXISTANT")
+	os.Setenv("EDITOR", "hx")
+
+	var (
+		expected = "hx"
+		got      = FromENV("GOS_NONEXISTANT", "EDITOR", "notepad.exe")
+	)
+
+	if expected != got {
+		t.Errorf("got '%s' but expected '%s'", got, expected)
+	}
 }

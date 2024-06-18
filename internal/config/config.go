@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"unicode"
 )
 
 func FromFile[T any](configFile string) (T, error) {
@@ -25,17 +26,28 @@ func FromFile[T any](configFile string) (T, error) {
 }
 
 // Set config from envoronment variable if present, e.g. hansWurst from GOS_HANS_WURST
-func FromENV(envKey string, defaultValue ...string) string {
-	if value := os.Getenv(envKey); value != "" {
-		return value
-	}
-
-	// Use first non-empty default value.
-	for _, value := range defaultValue {
-		if value != "" {
+func FromENV(keys ...string) string {
+	for _, key := range keys{
+		if key == "" {
+			continue
+		}
+		if !isAllUpperCase(key) {
+			return key
+		}
+		if value := os.Getenv(key); value != "" {
 			return value
 		}
 	}
 
 	return ""
 }
+
+func isAllUpperCase(s string) bool {
+    for _, r := range s {
+        if unicode.IsLetter(r) && !unicode.IsUpper(r) {
+            return false
+        }
+    }
+    return true
+}
+
