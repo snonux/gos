@@ -25,17 +25,19 @@ func Run(conf config.ClientConfig) error {
 type model struct {
 	choices         []string
 	cursor          int
-	selected        map[int]struct{}
 	conf            config.ClientConfig
 	altscreenActive bool
 	err             error
 }
 
+const (
+	composePostCursorPos = 0
+)
+
 func initModel(conf config.ClientConfig) model {
 	return model{
-		choices:  []string{"Compose post", "Schedule post"},
-		selected: make(map[int]struct{}),
-		conf:     conf,
+		choices: []string{"Compose post", "Schedule post"},
+		conf:    conf,
 	}
 }
 
@@ -55,13 +57,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursor < len(m.choices)-1 {
 				m.cursor++
 			}
-		case "enter", " ":
-			_, ok := m.selected[m.cursor]
-			if ok {
-				delete(m.selected, m.cursor)
-			} else {
-				m.selected[m.cursor] = struct{}{}
+		case "enter":
+			switch m.cursor {
+			case composePostCursorPos:
+				return m, openEditor(m.conf.Editor)
 			}
+
 		case "a":
 			m.altscreenActive = !m.altscreenActive
 			cmd := tea.EnterAltScreen
@@ -69,8 +70,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmd = tea.ExitAltScreen
 			}
 			return m, cmd
-		case "e":
-			return m, openEditor(m.conf.Editor)
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		}
@@ -93,12 +92,7 @@ func (m model) View() string {
 			cursor = "==>"
 		}
 
-		checked := " "
-		if _, ok := m.selected[i]; ok {
-			checked = "x"
-		}
-
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
+		s += fmt.Sprintf("%s %s\n", cursor, choice)
 	}
 
 	s += "\nPress q to quiet.\n"
