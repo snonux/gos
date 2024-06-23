@@ -16,5 +16,7 @@ func main() {
 		log.Fatal("error building config:", err)
 	}
 
-	tui.Run(conf)
+	if err := tui.Run(conf); err != nil {
+		log.Fatal("error running TUI:", err)
+	}
 }
