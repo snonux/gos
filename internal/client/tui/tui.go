@@ -60,8 +60,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			switch m.cursor {
 			case composePostCursorPos:
-				tmpFile := fmt.Sprintf("%s/compose.md", m.conf.DataDir)
-				return m, openEditor(m.conf.Editor, tmpFile)
+				return m, composeAction(m.conf.Editor, m.conf.DataDir)
 			}
 
 		case "a":
@@ -74,9 +73,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		}
-	case editorFinishedMsg:
+	case composeFinishedMsg:
 		if msg.err != nil {
 			m.err = msg.err
+			return m, tea.Quit
+		}
+		if err := msg.callback(); err != nil {
+			m.err = err
 			return m, tea.Quit
 		}
 	}
