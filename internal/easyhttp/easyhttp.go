@@ -43,3 +43,8 @@ func GetData[T any](uri, apiKey string, data *T) error {
 
 	return json.Unmarshal(bytes, data)
 }
+
+// Submiut structure as JSON to API
+func SubmitData[T any](servers []string, uri, apiKey string, data *T) error {
+	return nil
+}

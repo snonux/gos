@@ -77,13 +77,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	case finishedMsg:
-		if msg.err != nil {
-			m.err = msg.err
-			return m, tea.Quit
+		m.err = msg.err
+		if m.err != nil {
+			return m, nil
 		}
 		if err := msg.callback(); err != nil {
 			m.err = err
-			return m, tea.Quit
 		}
 	}
 
@@ -100,6 +99,10 @@ func (m model) View() string {
 		}
 
 		s += fmt.Sprintf("%s %s\n", cursor, choice)
+	}
+
+	if m.err != nil {
+		s += fmt.Sprintf("\nERROR: %s\n", m.err)
 	}
 
 	s += "\nPress q to quiet.\n"
