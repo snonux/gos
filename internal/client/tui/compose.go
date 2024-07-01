@@ -6,30 +6,33 @@ import (
 	"os/exec"
 	"time"
 
+	config "codeberg.org/snonux/gos/internal/config/client"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type composeFinishedMsg struct {
-	callback func() error
-	err      error
-}
+func composeAction(conf config.ClientConfig, queue bool) tea.Cmd {
+	err := ensureDirectoryExists(conf.DataDir)
+	composeFile := fmt.Sprintf("%s/%s", conf.DataDir, conf.ComposeFile)
 
-func composeAction(editor, dataDir string) tea.Cmd {
-	// Maybe handle the error explicitly? Should be obvious anyway
-	// when the editor can't open the file because directory isn't there
-	_ = ensureDirectoryExists(dataDir)
-	composeFile := fmt.Sprintf("%s/compose.txt", dataDir)
-
-	return openEditor(editor, composeFile, func() error {
+	return openEditor(conf.Editor, composeFile, func() error {
+		if err != nil {
+			return err
+		}
+		if !queue {
+			return nil
+		}
 		timestamp := time.Now().Format("20060102-150405")
-		queuedFile := fmt.Sprintf("%s/queued-%s.txt", dataDir, timestamp)
+		queuedFile := fmt.Sprintf("%s/queued-%s.txt", conf.DataDir, timestamp)
 		return os.Rename(composeFile, queuedFile)
 	})
 }
 
 func openEditor(editor, filePath string, callback func() error) tea.Cmd {
 	return tea.ExecProcess(exec.Command(editor, filePath), func(err error) tea.Msg {
-		return composeFinishedMsg{callback, err}
+		return finishedMsg{
+			callback: callback,
+			err:      err,
+		}
 	})
 }
 

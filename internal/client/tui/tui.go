@@ -31,12 +31,13 @@ type model struct {
 }
 
 const (
-	composePostCursorPos = 0
+	composeNewPostCursor = iota
+	submitPostCursor
 )
 
 func initModel(conf config.ClientConfig) model {
 	return model{
-		choices: []string{"Compose post", "Schedule post"},
+		choices: []string{"Compose post", "Submit post"},
 		conf:    conf,
 	}
 }
@@ -59,8 +60,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "enter":
 			switch m.cursor {
-			case composePostCursorPos:
-				return m, composeAction(m.conf.Editor, m.conf.DataDir)
+			case composeNewPostCursor:
+				return m, composeAction(m.conf, false)
+			case submitPostCursor:
+				return m, submitAction(m.conf)
 			}
 
 		case "a":
@@ -73,7 +76,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		}
-	case composeFinishedMsg:
+	case finishedMsg:
 		if msg.err != nil {
 			m.err = msg.err
 			return m, tea.Quit
