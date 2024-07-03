@@ -9,12 +9,22 @@ import (
 )
 
 var style = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("#FFFFFF")).
+	Background(lipgloss.Color("#0000FF")).
+	PaddingTop(2).PaddingLeft(4).PaddingRight(4).
+	BorderStyle(lipgloss.RoundedBorder()).
+	BorderForeground(lipgloss.Color("#FFFFFF")).
+	BorderBackground(lipgloss.Color("#0000FF"))
+
+var errroStyle = lipgloss.NewStyle().
 	Bold(true).
-	Foreground(lipgloss.Color("#FAFAFA")).
-	Background(lipgloss.Color("#7D56F4")).
-	PaddingTop(2).
-	PaddingLeft(4).
-	Width(40)
+	Align(lipgloss.Center).
+	Foreground(lipgloss.Color("#FFFFFF")).
+	Background(lipgloss.Color("#FF0000")).
+	PaddingTop(0).PaddingBottom(0).PaddingLeft(2).PaddingRight(2).
+	BorderStyle(lipgloss.RoundedBorder()).
+	BorderForeground(lipgloss.Color("#FFFFFF")).
+	BorderBackground(lipgloss.Color("#FF0000"))
 
 func Run(conf config.ClientConfig) error {
 	p := tea.NewProgram(initModel(conf))
@@ -102,9 +112,11 @@ func (m model) View() string {
 	}
 
 	if m.err != nil {
-		s += fmt.Sprintf("\nERROR: %s\n", m.err)
+		s += "\n"
+		s += errroStyle.Render(fmt.Sprintf("\nERROR: %s\n", m.err))
+		s += "\n"
 	}
 
-	s += "\nPress q to quiet.\n"
+	s += "\nPress q to quit.\n"
 	return style.Render(s)
 }
