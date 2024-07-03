@@ -6,12 +6,12 @@ import (
 )
 
 // Safe errors
-type SafErrors struct {
+type safErrors struct {
 	errs  []error
 	mutex sync.Mutex
 }
 
-func (errs *SafErrors) Append(err error) {
+func (errs *safErrors) Append(err error) {
 	if err == nil {
 		return
 	}
@@ -20,12 +20,12 @@ func (errs *SafErrors) Append(err error) {
 	errs.errs = append(errs.errs, err)
 }
 
-func (errs *SafErrors) Join() error {
+func (errs *safErrors) Join() error {
 	errs.mutex.Lock()
 	defer errs.mutex.Unlock()
 	return errors.Join(errs.errs...)
 }
 
-func (errs *SafErrors) Error() string {
+func (errs *safErrors) Error() string {
 	return errs.Join().Error()
 }

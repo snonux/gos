@@ -1,11 +1,11 @@
 package easyhttp
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"encoding/json"
+	"sync"
 )
 
 func Get(uri, apiKey string) ([]byte, error) {
@@ -50,14 +50,18 @@ func PostData[T any](uri, apiKey string, data *T, servers ...string) error {
 	if len(servers) == 0 {
 		return fmt.Errorf("no server configured")
 	}
-	var errs SafeErrors
+	var errs safErrors
+	var wg sync.WaitGroup
 
 	for _, server := range servers {
+		wg.Add(1)
 		go func(server string){
-			errs.Append(postData[T](fmt.Sprintf("%s/%s"), apiKey, data))
+			defer wg.Done()
+			errs.Append(postData[T](fmt.Sprintf("%s/%s", server, uri), apiKey, data))
 		}(server)
 	}
 
+	wg.Wait()
 	return errs.Join()
 }
 

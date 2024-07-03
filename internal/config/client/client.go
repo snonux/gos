@@ -1,6 +1,7 @@
 package client
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -30,6 +31,18 @@ func New(configFile string) (ClientConfig, error) {
 	return conf, nil
 }
 
-func (conf ClientConfig) Servers() []string {
-	return strings.Split(conf.Server, ",")
+func (conf ClientConfig) Servers() ([]string, error) {
+	var servers []string
+
+	for _, server := range strings.Split(conf.Server, ",") {
+		if server != "" {
+			servers = append(servers, server)
+		}
+	}
+
+	if len(servers) == 0 {
+		return servers, errors.New("no server(s) configured")
+	}
+
+	return servers, nil
 }

@@ -5,6 +5,8 @@ import (
 
 	"codeberg.org/snonux/gos/internal/config/client"
 	config "codeberg.org/snonux/gos/internal/config/client"
+	"codeberg.org/snonux/gos/internal/easyhttp"
+	"codeberg.org/snonux/gos/internal/types"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -18,10 +20,16 @@ func submitAction(conf config.ClientConfig) tea.Cmd {
 }
 
 func submitMessage(conf client.ClientConfig, filePath string, callback func() error) tea.Cmd {
+	servers, err := conf.Servers()
+	if err == nil {
+		var entry types.Entry
+		err = easyhttp.PostData("/submit", conf.APIKey, &entry, servers...)
+	}
+
 	return func() tea.Msg {
 		return finishedMsg{
 			callback: callback,
-			err:      fmt.Errorf("This is a sample error"),
+			err:      err,
 		}
 	}
 }
