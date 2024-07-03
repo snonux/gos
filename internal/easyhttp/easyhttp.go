@@ -1,6 +1,7 @@
 package easyhttp
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -45,6 +46,21 @@ func GetData[T any](uri, apiKey string, data *T) error {
 }
 
 // Submiut structure as JSON to API
-func SubmitData[T any](servers []string, uri, apiKey string, data *T) error {
-	return nil
+func PostData[T any](uri, apiKey string, data *T, servers ...string) error {
+	if len(servers) == 0 {
+		return fmt.Errorf("no server configured")
+	}
+	var errs SafeErrors
+
+	for _, server := range servers {
+		go func(server string){
+			errs.Append(postData[T](fmt.Sprintf("%s/%s"), apiKey, data))
+		}(server)
+	}
+
+	return errs.Join()
+}
+
+func postData[T any](uri, apiKey string, data * T) error {
+	return fmt.Errorf("not yet implemented to post to: %s", uri)
 }
