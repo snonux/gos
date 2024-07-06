@@ -3,6 +3,12 @@ version: '3'
 tasks:
   default:
     deps: ["build"]
+  run:
+    deps: ["dev"]
+    cmds:
+      - go run cmd/gos/main.go
+    env:
+      GOS_EDITOR: hx
   build:
     cmds:
       - go build -o gosd cmd/gosd/main.go
@@ -12,9 +18,6 @@ tasks:
     cmds:
       - go build -race -o gosd cmd/gosd/main.go
       - go build -race -o gos cmd/gos/main.go
-  gosrun:
-    cmds:
-      - go run cmd/gos/main.go
   test:
     cmds:
       - go clean -testcache
