@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"fmt"
 
 	config "codeberg.org/snonux/gos/internal/config/client"
@@ -37,6 +38,7 @@ type model struct {
 	cursor          int
 	conf            config.ClientConfig
 	altscreenActive bool
+	ctx             context.Context
 	err             error
 }
 
@@ -48,6 +50,7 @@ const (
 func initModel(conf config.ClientConfig) model {
 	return model{
 		choices: []string{"Compose post", "Submit post"},
+		ctx:     context.Background(),
 		conf:    conf,
 	}
 }
@@ -73,7 +76,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case composeNewPostCursor:
 				return m, composeAction(m.conf, false)
 			case submitPostCursor:
-				return m, submitAction(m.conf)
+				return m, submitAction(m.ctx, m.conf)
 			}
 
 		case "a":

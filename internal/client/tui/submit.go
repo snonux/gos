@@ -11,20 +11,20 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func submitAction(conf config.ClientConfig) tea.Cmd {
+func submitAction(ctx context.Context, conf config.ClientConfig) tea.Cmd {
 	composeFile := fmt.Sprintf("%s/%s", conf.DataDir, conf.ComposeFile)
 
-	return submitMessage(conf, composeFile, func() error {
+	return submitMessage(ctx, conf, composeFile, func() error {
 		// This is the callback to call
 		return nil
 	})
 }
 
-func submitMessage(conf client.ClientConfig, filePath string, callback func() error) tea.Cmd {
+func submitMessage(ctx context.Context, conf client.ClientConfig, filePath string, callback func() error) tea.Cmd {
 	servers, err := conf.Servers()
 	if err == nil {
 		var entry types.Entry
-		err = easyhttp.PostData(context.Background(), "/submit", conf.APIKey, &entry, servers...)
+		err = easyhttp.PostData(ctx, "/submit", conf.APIKey, &entry, servers...)
 	}
 
 	return func() tea.Msg {
