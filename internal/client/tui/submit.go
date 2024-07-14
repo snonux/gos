@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"fmt"
 
 	"codeberg.org/snonux/gos/internal/config/client"
@@ -23,7 +24,7 @@ func submitMessage(conf client.ClientConfig, filePath string, callback func() er
 	servers, err := conf.Servers()
 	if err == nil {
 		var entry types.Entry
-		err = easyhttp.PostData("/submit", conf.APIKey, &entry, servers...)
+		err = easyhttp.PostData(context.Background(), "/submit", conf.APIKey, &entry, servers...)
 	}
 
 	return func() tea.Msg {

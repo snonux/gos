@@ -2,6 +2,7 @@ package easyhttp
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,13 +10,13 @@ import (
 	"sync"
 )
 
-func Get(uri, apiKey string) ([]byte, error) {
+func Get(ctx context.Context, uri, apiKey string) ([]byte, error) {
 	var (
 		client = &http.Client{}
 		bytes  []byte
 	)
 
-	req, err := http.NewRequest("GET", uri, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", uri, nil)
 	if err != nil {
 		return bytes, fmt.Errorf("%s: %w", uri, err)
 	}
@@ -37,8 +38,8 @@ func Get(uri, apiKey string) ([]byte, error) {
 }
 
 // Get data from JSON
-func GetData[T any](uri, apiKey string, data *T) error {
-	bytes, err := Get(uri, apiKey)
+func GetData[T any](ctx context.Context, uri, apiKey string, data *T) error {
+	bytes, err := Get(ctx, uri, apiKey)
 	if err != nil {
 		return err
 	}
@@ -46,9 +47,8 @@ func GetData[T any](uri, apiKey string, data *T) error {
 	return json.Unmarshal(bytes, data)
 }
 
-func Post(uri, apiKey string, data []byte) ([]byte, error) {
-	// TODO: Use contexts in Post and Get requests, e.g. NewRequestWithContext
-	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(data))
+func Post(ctx context.Context, uri, apiKey string, data []byte) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, "POST", uri, bytes.NewBuffer(data))
 	if err != nil {
 		return []byte{}, fmt.Errorf("%s: %w", uri, err)
 	}
@@ -71,7 +71,7 @@ func Post(uri, apiKey string, data []byte) ([]byte, error) {
 }
 
 // Submit structure as JSON to API
-func PostData[T any](uri, apiKey string, data *T, servers ...string) error {
+func PostData[T any](ctx context.Context, uri, apiKey string, data *T, servers ...string) error {
 	if len(servers) == 0 {
 		return fmt.Errorf("no server configured")
 	}
@@ -82,7 +82,7 @@ func PostData[T any](uri, apiKey string, data *T, servers ...string) error {
 		wg.Add(1)
 		go func(server string) {
 			defer wg.Done()
-			errs.Append(postData[T](fmt.Sprintf("%s/%s", server, uri), apiKey, data))
+			errs.Append(postData[T](ctx, fmt.Sprintf("%s/%s", server, uri), apiKey, data))
 		}(server)
 	}
 
@@ -90,11 +90,11 @@ func PostData[T any](uri, apiKey string, data *T, servers ...string) error {
 	return errs.Join()
 }
 
-func postData[T any](uri, apiKey string, data *T) error {
+func postData[T any](ctx context.Context, uri, apiKey string, data *T) error {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
-	_, err = Post(uri, apiKey, jsonData)
+	_, err = Post(ctx, uri, apiKey, jsonData)
 	return err
 }

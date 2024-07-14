@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -24,13 +25,16 @@ func main() {
 		hand = handler.New(conf)
 	)
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	serv.Handle("health", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, serv.Status.String())
 		return nil
 	})
 
 	serv.Handle("submit", func(w http.ResponseWriter, r *http.Request) error {
-		return hand.Submit(w, r)
+		return hand.Submit(ctx, w, r)
 	})
 
 	serv.Handle("list", func(w http.ResponseWriter, r *http.Request) error {
@@ -42,7 +46,7 @@ func main() {
 	})
 
 	serv.Handle("merge", func(w http.ResponseWriter, r *http.Request) error {
-		return hand.Merge(w, r)
+		return hand.Merge(ctx, w, r)
 	})
 
 	log.Println("Server is starting on", conf.ListenAddr)

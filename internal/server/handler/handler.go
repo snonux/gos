@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -25,7 +26,7 @@ func New(conf server.ServerConfig) Handler {
 	}
 }
 
-func (h Handler) Submit(w http.ResponseWriter, r *http.Request) error {
+func (h Handler) Submit(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "POST" {
 		return fmt.Errorf("expexted POST request")
 	}
@@ -71,11 +72,11 @@ func (h Handler) Get(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (h Handler) Merge(w http.ResponseWriter, r *http.Request) error {
+func (h Handler) Merge(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var errs []error
 
 	for _, partner := range h.conf.Partners() {
-		if err := h.mergeFromPartner(partner); err != nil {
+		if err := h.mergeFromPartner(ctx, partner); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -88,7 +89,7 @@ func (h Handler) Merge(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (h Handler) mergeFromPartner(partner string) error {
+func (h Handler) mergeFromPartner(ctx context.Context, partner string) error {
 	var (
 		errs  []error
 		uri   = fmt.Sprintf("%s/list", partner)
@@ -96,7 +97,7 @@ func (h Handler) mergeFromPartner(partner string) error {
 		pairs []repository.EntryPair
 	)
 
-	if err := easyhttp.GetData(uri, h.conf.APIKey, &pairs); err != nil {
+	if err := easyhttp.GetData(ctx, uri, h.conf.APIKey, &pairs); err != nil {
 		return err
 	}
 
@@ -110,7 +111,7 @@ func (h Handler) mergeFromPartner(partner string) error {
 			uri   = fmt.Sprintf("%s/get?id=%s", partner, pair.ID)
 		)
 
-		if err := easyhttp.GetData(uri, h.conf.APIKey, &entry); err != nil {
+		if err := easyhttp.GetData(ctx, uri, h.conf.APIKey, &entry); err != nil {
 			errs = append(errs, err)
 			continue
 		}
