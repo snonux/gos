@@ -11,6 +11,7 @@ import (
 )
 
 func composeAction(conf config.ClientConfig, queue bool) tea.Cmd {
+
 	err := ensureDirectoryExists(conf.DataDir)
 	composeFile := fmt.Sprintf("%s/%s", conf.DataDir, conf.ComposeFile)
 
@@ -18,6 +19,7 @@ func composeAction(conf config.ClientConfig, queue bool) tea.Cmd {
 		if err != nil {
 			return err
 		}
+		// ye
 		if !queue {
 			return nil
 		}
