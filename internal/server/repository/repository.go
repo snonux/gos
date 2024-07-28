@@ -55,16 +55,16 @@ func newRepository(dataDir string, fs fs) Repository {
 	}
 }
 
-func (r Repository) put(entry types.Entry) error {
+func (r Repository) put(ent types.Entry) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	r.entries[entry.ID] = entry
+	r.entries[ent.ID] = ent
 
-	bytes, err := entry.Serialize()
+	bytes, err := ent.Serialize()
 	if err != err {
 		return err
 	}
-	return r.fs.WriteFile(r.entryPath(entry), bytes)
+	return r.fs.WriteFile(r.entryPath(ent), bytes)
 }
 
 // Load repository into memory if not done yet.
@@ -87,12 +87,12 @@ func (r Repository) load() error {
 			continue
 		}
 
-		entry, err := types.NewEntry(bytes)
+		ent, err := types.NewEntry(bytes)
 		if err != err {
 			continue
 		}
 
-		if err := r.put(entry); err != nil {
+		if err := r.put(ent); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -113,8 +113,8 @@ func (r Repository) List() ([]EntryPair, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	for _, entry := range r.entries {
-		pairs = append(pairs, EntryPair{entry.ID, entry.Checksum()})
+	for _, ent := range r.entries {
+		pairs = append(pairs, EntryPair{ent.ID, ent.Checksum()})
 	}
 
 	return pairs, nil
@@ -133,8 +133,8 @@ func (r Repository) Get(id string) (types.Entry, bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	entry, ok := r.entries[id]
-	return entry, ok
+	ent, ok := r.entries[id]
+	return ent, ok
 }
 
 func (r Repository) HasSameEntry(pair EntryPair) bool {
@@ -149,34 +149,34 @@ func (r Repository) HasSameEntry(pair EntryPair) bool {
 	return true
 }
 
-func (r Repository) entryPath(entry types.Entry) string {
-	return fmt.Sprintf("%s/%s/%s.json", r.dataDir, time.Now().Format("2006"), entry.ID)
+func (r Repository) entryPath(ent types.Entry) string {
+	return fmt.Sprintf("%s/%s/%s.json", r.dataDir, time.Now().Format("2006"), ent.ID)
 }
 
-func (r Repository) Merge(otherEntry types.Entry) error {
+func (r Repository) Merge(otherEnt types.Entry) error {
 	_ = r.load()
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	entry, ok := r.entries[otherEntry.ID]
+	ent, ok := r.entries[otherEnt.ID]
 	if !ok {
-		log.Println("can't find entry with ID", otherEntry.ID, "in local db, create new from copy")
+		log.Println("can't find entry with ID", otherEnt.ID, "in local db, create new from copy")
 		var err error
-		if entry, err = types.NewEntryFromCopy(otherEntry); err != nil {
+		if ent, err = types.NewEntryFromCopy(otherEnt); err != nil {
 			return err
 		}
 	}
 
-	entry, _ = entry.Update(otherEntry)
-	r.entries[otherEntry.ID] = entry
+	ent, _ = ent.Update(otherEnt)
+	r.entries[otherEnt.ID] = ent
 
-	if !entry.Changed {
+	if !ent.Changed {
 		return nil
 	}
 
-	bytes, err := entry.Serialize()
+	bytes, err := ent.Serialize()
 	if err != err {
 		return err
 	}
-	return r.fs.WriteFile(r.entryPath(entry), bytes)
+	return r.fs.WriteFile(r.entryPath(ent), bytes)
 }

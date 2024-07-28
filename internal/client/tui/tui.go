@@ -43,13 +43,14 @@ type model struct {
 }
 
 const (
-	composeNewPostCursor = iota
-	submitPostCursor
+	cursorCompose = iota
+	cursorSubmit
+	cursorComposeAndSubmit
 )
 
 func initModel(conf config.ClientConfig) model {
 	return model{
-		choices: []string{"Compose post", "Submit post"},
+		choices: []string{"Compose post", "Submit post", "Compose & submit post"},
 		ctx:     context.Background(),
 		conf:    conf,
 	}
@@ -73,11 +74,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "enter":
 			switch m.cursor {
-			case composeNewPostCursor:
+			case cursorCompose:
 				return m, composeAction(m.conf, false)
-			case submitPostCursor:
+			case cursorSubmit:
 				return m, submitAction(m.ctx, m.conf)
+			case cursorComposeAndSubmit:
+				// TODO: Find out correct way how to chain two tea.Cmd's??
+				panic("not yet implemented")
 			}
+		case "1":
+			return m, composeAction(m.conf, false)
+		case "2":
+			return m, submitAction(m.ctx, m.conf)
+		case "3":
+			panic("not yet implemented")
 
 		case "a":
 			m.altscreenActive = !m.altscreenActive
@@ -111,7 +121,7 @@ func (m model) View() string {
 			cursor = "==>"
 		}
 
-		s += fmt.Sprintf("%s %s\n", cursor, choice)
+		s += fmt.Sprintf("%s %d. %s\n", cursor, i+1, choice)
 	}
 
 	if m.err != nil {

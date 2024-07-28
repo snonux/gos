@@ -36,11 +36,11 @@ func (h Handler) Submit(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		return err
 	}
 
-	entry, err := types.NewEntry(bytes)
+	ent, err := types.NewEntry(bytes)
 	if err != nil {
 		return err
 	}
-	return repository.Instance(h.conf.DataDir).Merge(entry)
+	return repository.Instance(h.conf.DataDir).Merge(ent)
 }
 
 func (h Handler) List(w http.ResponseWriter, r *http.Request) error {
@@ -63,12 +63,12 @@ func (h Handler) Get(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("invalid id %s", id)
 	}
 
-	entry, ok := repository.Instance(h.conf.DataDir).Get(id)
+	ent, ok := repository.Instance(h.conf.DataDir).Get(id)
 	if !ok {
 		return fmt.Errorf("no entry with id %s found", id)
 	}
 
-	fmt.Fprint(w, entry.String())
+	fmt.Fprint(w, ent.String())
 	return nil
 }
 
@@ -107,22 +107,22 @@ func (h Handler) mergeFromPartner(ctx context.Context, partner string) error {
 		}
 
 		var (
-			entry types.Entry
-			uri   = fmt.Sprintf("%s/get?id=%s", partner, pair.ID)
+			ent types.Entry
+			uri = fmt.Sprintf("%s/get?id=%s", partner, pair.ID)
 		)
 
-		if err := easyhttp.GetData(ctx, uri, h.conf.APIKey, &entry); err != nil {
+		if err := easyhttp.GetData(ctx, uri, h.conf.APIKey, &ent); err != nil {
 			errs = append(errs, err)
 			continue
 		}
 
 		// In theory, this should never happen
-		if pair.ID != entry.ID {
-			errs = append(errs, fmt.Errorf("pair ID %s does not match entry id %s", pair.ID, entry.ID))
+		if pair.ID != ent.ID {
+			errs = append(errs, fmt.Errorf("pair ID %s does not match entry id %s", pair.ID, ent.ID))
 			continue
 		}
 
-		errs = append(errs, repo.Merge(entry))
+		errs = append(errs, repo.Merge(ent))
 	}
 
 	return errors.Join(errs...)

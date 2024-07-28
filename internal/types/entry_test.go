@@ -5,73 +5,73 @@ import "testing"
 func TestEntryChecksum(t *testing.T) {
 	t.Parallel()
 
-	entry, err := NewEntry([]byte(`{"Body": "Body text here"}`))
+	ent, err := NewEntry([]byte(`{"Body": "Body text here"}`))
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
 	expected := "e139c0788fbc0d9cce370e4918c1cbc8862184d9461bd1238c02b7f80cb042fe"
-	got := entry.Checksum()
+	got := ent.Checksum()
 
 	if expected != got {
 		t.Errorf("expected checksum '%s' but got '%s'", expected, got)
 		return
 	}
-	t.Log(entry.Checksum())
+	t.Log(ent.Checksum())
 }
 
 func TestEquals(t *testing.T) {
 	t.Parallel()
 
-	entry1, entry2, err := twoDifferentEntries()
+	ent1, ent2, err := twoDifferentEntries()
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if entry1.Equals(entry2) {
-		t.Error("entries should not be equal", entry1, entry2)
+	if ent1.Equals(ent2) {
+		t.Error("entries should not be equal", ent1, ent2)
 	}
 
-	t.Log("both entries differ", entry1, entry2)
+	t.Log("both entries differ", ent1, ent2)
 }
 
 func TestUpdate(t *testing.T) {
 	t.Parallel()
 
-	entry1, entry2, err := twoDifferentEntries()
+	ent1, ent2, err := twoDifferentEntries()
 	if err != nil {
 		t.Error(err)
 	}
 
-	if entry1.Changed {
-		t.Error("didn't expect the entry to be changed before the update", entry1)
+	if ent1.Changed {
+		t.Error("didn't expect the entry to be changed before the update", ent1)
 	}
 
-	entry1, _ = entry1.Update(entry2)
-	if len(entry1.Shared) != 3 {
-		t.Error("expected 3 entries after update", entry1)
+	ent1, _ = ent1.Update(ent2)
+	if len(ent1.Shared) != 3 {
+		t.Error("expected 3 entries after update", ent1)
 	}
 
-	if !entry1.Changed {
+	if !ent1.Changed {
 		t.Error("expected the entry to be changed after update")
 	}
 
 	var isShared int
-	for _, shared := range entry1.Shared {
+	for _, shared := range ent1.Shared {
 		if shared.Is {
 			isShared++
 		}
 	}
 
 	if isShared != 2 {
-		t.Error("expected 2 shared entries after update but got", isShared, entry1)
+		t.Error("expected 2 shared entries after update but got", isShared, ent1)
 	}
 }
 
-func twoDifferentEntries() (entry1, entry2 Entry, err error) {
-	entry1Str := `
+func twoDifferentEntries() (ent1, ent2 Entry, err error) {
+	ent1Str := `
 		{
 			"Body": "Body text here",
 			"Shared": [
@@ -80,12 +80,12 @@ func twoDifferentEntries() (entry1, entry2 Entry, err error) {
 			]
 		}
 	`
-	entry1, err = NewEntry([]byte(entry1Str))
+	ent1, err = NewEntry([]byte(ent1Str))
 	if err != nil {
 		return
 	}
 
-	entry2Str := `
+	ent2Str := `
 		{
 			"Body": "Body text here",
 			"Shared": [
@@ -95,6 +95,6 @@ func twoDifferentEntries() (entry1, entry2 Entry, err error) {
 			]
 		}
 	`
-	entry2, err = NewEntry([]byte(entry2Str))
+	ent2, err = NewEntry([]byte(ent2Str))
 	return
 }

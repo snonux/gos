@@ -68,7 +68,14 @@ func Post(ctx context.Context, uri, apiKey string, data []byte) ([]byte, error) 
 		return []byte{}, fmt.Errorf("%s: %w", uri, err)
 	}
 
-	return body, nil
+	switch resp.StatusCode {
+	case 200:
+		return body, nil
+	case 401:
+		return body, fmt.Errorf("unauthorized, API key configured?")
+	default:
+		return body, fmt.Errorf("unexpected HTTP response code %d", resp.StatusCode)
+	}
 }
 
 // Submit structure as JSON to API
