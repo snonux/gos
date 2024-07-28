@@ -65,7 +65,7 @@ func NewEntryFromCopy(other Entry) (Entry, error) {
 	return e.Update(other)
 }
 
-func NewEntryFromFile(filePath string) (Entry, error) {
+func NewEntryFromTextFile(filePath string) (Entry, error) {
 	var e Entry
 	data, err := os.ReadFile(filePath)
 	if err != nil {

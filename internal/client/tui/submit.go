@@ -26,17 +26,14 @@ func submitAction(ctx context.Context, conf config.ClientConfig) tea.Cmd {
 
 func submitEntry(ctx context.Context, conf client.ClientConfig, filePath string, callback func() error) tea.Cmd {
 	servers, err := conf.Servers()
-	if err == nil {
-		var entry types.Entry
-		if entry, err = types.NewEntryFromFile(filePath); err == nil {
-			err = easyhttp.PostData(ctx, "submit", conf.APIKey, &entry, servers...)
-		}
+	if err != nil {
+		return finished(callback, err)
 	}
 
-	return func() tea.Msg {
-		return finishedMsg{
-			callback: callback,
-			err:      err,
-		}
+	ent, err := types.NewEntryFromTextFile(filePath)
+	if err != nil {
+		return finished(callback, err)
 	}
+
+	return finished(callback, easyhttp.PostData(ctx, "submit", conf.APIKey, &ent, servers...))
 }
