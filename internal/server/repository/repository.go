@@ -80,14 +80,18 @@ func (r Repository) load() error {
 
 	var errs []error
 	for _, filePath := range filePaths {
+		log.Println("loading entry", filePath)
+
 		bytes, err := r.fs.ReadFile(filePath)
 		if err != nil {
 			continue
 		}
+
 		entry, err := types.NewEntry(bytes)
 		if err != err {
 			continue
 		}
+
 		if err := r.put(entry); err != nil {
 			errs = append(errs, err)
 		}
