@@ -14,17 +14,20 @@ import (
 func submitAction(ctx context.Context, conf config.ClientConfig) tea.Cmd {
 	composeFile := fmt.Sprintf("%s/%s", conf.DataDir, conf.ComposeFile)
 
-	return submitMessage(ctx, conf, composeFile, func() error {
+	return submitEntry(ctx, conf, composeFile, func() error {
 		// This is the callback to call
 		return nil
 	})
 }
 
-func submitMessage(ctx context.Context, conf client.ClientConfig, filePath string, callback func() error) tea.Cmd {
+func submitEntry(ctx context.Context, conf client.ClientConfig, filePath string, callback func() error) tea.Cmd {
 	servers, err := conf.Servers()
 	if err == nil {
 		var entry types.Entry
-		err = easyhttp.PostData(ctx, "submit", conf.APIKey, &entry, servers...)
+		entry, err = types.NewEntryFromFile(filePath)
+		if err == nil {
+			err = easyhttp.PostData(ctx, "submit", conf.APIKey, &entry, servers...)
+		}
 	}
 
 	return func() tea.Msg {

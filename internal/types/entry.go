@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 )
@@ -61,6 +62,21 @@ func NewEntryFromCopy(other Entry) (Entry, error) {
 	var e Entry
 	e.initialize()
 	return e.Update(other)
+}
+
+func NewEntryFromFile(filePath string) (Entry, error) {
+	var e Entry
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return e, err
+	}
+	e.Body = string(data)
+	if e.ID == "" {
+		e.ID = fmt.Sprintf("%x", sha256.Sum256([]byte(e.Body)))
+	}
+	e.initialize()
+	e.Checksum()
+	return e, nil
 }
 
 func (e *Entry) initialize() {
