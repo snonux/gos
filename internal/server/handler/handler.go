@@ -28,7 +28,7 @@ func New(conf server.ServerConfig) Handler {
 
 func (h Handler) Submit(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	if r.Method != "POST" {
-		return fmt.Errorf("expexted POST request")
+		return fmt.Errorf("expected POST request, but got %s", r.Method)
 	}
 
 	bytes, err := io.ReadAll(r.Body)

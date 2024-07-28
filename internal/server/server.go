@@ -42,6 +42,7 @@ func (serv Server) Handle(name string, handler HandlerFuncWithError) {
 		}
 
 		if err := handler(w, r); err != nil {
+			log.Println(err)
 			serv.Status.Set(health.Critical, handlerName, err.Error())
 			return
 		}

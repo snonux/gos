@@ -24,7 +24,7 @@ func submitMessage(ctx context.Context, conf client.ClientConfig, filePath strin
 	servers, err := conf.Servers()
 	if err == nil {
 		var entry types.Entry
-		err = easyhttp.PostData(ctx, "/submit", conf.APIKey, &entry, servers...)
+		err = easyhttp.PostData(ctx, "submit", conf.APIKey, &entry, servers...)
 	}
 
 	return func() tea.Msg {

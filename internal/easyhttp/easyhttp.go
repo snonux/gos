@@ -16,7 +16,7 @@ func Get(ctx context.Context, uri, apiKey string) ([]byte, error) {
 		bytes  []byte
 	)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", uri, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
 	if err != nil {
 		return bytes, fmt.Errorf("%s: %w", uri, err)
 	}
@@ -48,11 +48,12 @@ func GetData[T any](ctx context.Context, uri, apiKey string, data *T) error {
 }
 
 func Post(ctx context.Context, uri, apiKey string, data []byte) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, "POST", uri, bytes.NewBuffer(data))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, uri, bytes.NewBuffer(data))
 	if err != nil {
 		return []byte{}, fmt.Errorf("%s: %w", uri, err)
 	}
 
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-API-KEY", apiKey)
 
 	client := &http.Client{}
