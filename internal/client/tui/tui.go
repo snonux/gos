@@ -104,7 +104,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.err != nil {
 			return m, nil
 		}
-		if err := msg.callback(); err != nil {
+		if err := msg.cb(); err != nil {
 			m.err = err
 		}
 	}

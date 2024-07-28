@@ -28,10 +28,10 @@ func composeAction(conf config.ClientConfig, queue bool) tea.Cmd {
 	})
 }
 
-func openEditor(editor, filePath string, callback func() error) tea.Cmd {
+func openEditor(editor, filePath string, cb func() error) tea.Cmd {
 	return tea.ExecProcess(exec.Command(editor, filePath), func(err error) tea.Msg {
 		return finishedMsg{
-			callback: callback,
+			cb: cb,
 			err:      err,
 		}
 	})
