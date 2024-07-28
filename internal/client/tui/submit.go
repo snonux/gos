@@ -24,8 +24,7 @@ func submitEntry(ctx context.Context, conf client.ClientConfig, filePath string,
 	servers, err := conf.Servers()
 	if err == nil {
 		var entry types.Entry
-		entry, err = types.NewEntryFromFile(filePath)
-		if err == nil {
+		if entry, err = types.NewEntryFromFile(filePath); err == nil {
 			err = easyhttp.PostData(ctx, "submit", conf.APIKey, &entry, servers...)
 		}
 	}

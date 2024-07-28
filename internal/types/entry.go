@@ -61,6 +61,7 @@ func NewEntry(bytes []byte) (Entry, error) {
 func NewEntryFromCopy(other Entry) (Entry, error) {
 	var e Entry
 	e.initialize()
+	e.ID = other.ID
 	return e.Update(other)
 }
 
@@ -118,7 +119,7 @@ func (e Entry) Equals(other Entry) bool {
  */
 func (e Entry) Update(other Entry) (Entry, error) {
 	if e.ID != other.ID {
-		return e, fmt.Errorf("can update entry only with other entry with same ID: %s %s", e, other)
+		return e, fmt.Errorf("can update entry only with other entry with same ID: this(%s) other(%s)", e, other)
 	}
 	e.checksumDirty = true
 	e.Changed = true

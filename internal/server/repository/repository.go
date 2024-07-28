@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -155,6 +156,7 @@ func (r Repository) Merge(otherEntry types.Entry) error {
 
 	entry, ok := r.entries[otherEntry.ID]
 	if !ok {
+		log.Println("can't find entry with ID", otherEntry.ID, "in local db, create new from copy")
 		var err error
 		if entry, err = types.NewEntryFromCopy(otherEntry); err != nil {
 			return err
