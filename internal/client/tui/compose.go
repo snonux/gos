@@ -1,7 +1,9 @@
 package tui
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"time"
@@ -10,21 +12,34 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func composeAction(conf config.ClientConfig, queue bool) tea.Cmd {
+type composePostAction int
+
+const (
+	noPostAction composePostAction = iota
+	queueAfterCompose
+	submitAfterCompose
+)
+
+func composeAction(ctx context.Context, conf config.ClientConfig, postAction composePostAction) tea.Cmd {
 	err := ensureDirectoryExists(conf.DataDir)
 	composeFile := fmt.Sprintf("%s/%s", conf.DataDir, conf.ComposeFile)
+	log.Println("Composing", composeFile)
 
 	return openEditor(conf.Editor, composeFile, func() error {
 		if err != nil {
 			return err
 		}
-		// ye
-		if !queue {
-			return nil
+
+		switch postAction {
+		case submitAfterCompose:
+			return submitEntryNoCmd(ctx, conf, composeFile)
+		case queueAfterCompose:
+			timestamp := time.Now().Format("20060102-150405")
+			queuedFile := fmt.Sprintf("%s/queued-%s.txt", conf.DataDir, timestamp)
+			return os.Rename(composeFile, queuedFile)
 		}
-		timestamp := time.Now().Format("20060102-150405")
-		queuedFile := fmt.Sprintf("%s/queued-%s.txt", conf.DataDir, timestamp)
-		return os.Rename(composeFile, queuedFile)
+
+		return nil
 	})
 }
 

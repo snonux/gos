@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -15,25 +16,37 @@ import (
 
 func submitAction(ctx context.Context, conf config.ClientConfig) tea.Cmd {
 	composeFile := fmt.Sprintf("%s/%s", conf.DataDir, conf.ComposeFile)
+	log.Println("Submitting", composeFile)
 
 	return submitEntry(ctx, conf, composeFile, func() error {
 		// This is the cb to call when the entry was submitted succesfully
-		timestamp := time.Now().Format("20060102-150405")
-		submittedFile := fmt.Sprintf("%s/submitted-%s.txt", conf.DataDir, timestamp)
-		return os.Rename(composeFile, submittedFile)
+		return nil
 	})
 }
 
-func submitEntry(ctx context.Context, conf client.ClientConfig, filePath string, cb func() error) tea.Cmd {
+func submitEntry(ctx context.Context, conf client.ClientConfig, composeFile string, cb func() error) tea.Cmd {
+	return finished(cb, submitEntryNoCmd(ctx, conf, composeFile))
+}
+
+// TODO: Rename all functions returning a Cmd so that they have a Cmd suffix
+func submitEntryNoCmd(ctx context.Context, conf client.ClientConfig, composeFile string) error {
 	servers, err := conf.Servers()
 	if err != nil {
-		return finished(cb, err)
+		return err
 	}
 
-	ent, err := types.NewEntryFromTextFile(filePath)
+	ent, err := types.NewEntryFromTextFile(composeFile)
 	if err != nil {
-		return finished(cb, err)
+		return err
 	}
 
-	return finished(cb, easyhttp.PostData(ctx, "submit", conf.APIKey, &ent, servers...))
+	if err := easyhttp.PostData(ctx, "submit", conf.APIKey, &ent, servers...); err != nil {
+		return err
+	}
+
+	timestamp := time.Now().Format("20060102-150405")
+	submittedFile := fmt.Sprintf("%s/submitted-%s.txt", conf.DataDir, timestamp)
+
+	log.Println("Renaming", composeFile, "to", submittedFile)
+	return os.Rename(composeFile, submittedFile)
 }

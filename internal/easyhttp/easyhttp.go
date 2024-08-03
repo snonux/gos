@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"sync"
 )
@@ -87,6 +88,7 @@ func PostData[T any](ctx context.Context, uri, apiKey string, data *T, servers .
 	var wg sync.WaitGroup
 
 	for _, server := range servers {
+		log.Println("Submitting data to", server)
 		wg.Add(1)
 		go func(server string) {
 			defer wg.Done()

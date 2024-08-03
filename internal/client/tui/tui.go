@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"fmt"
+	"log"
 
 	config "codeberg.org/snonux/gos/internal/config/client"
 	tea "github.com/charmbracelet/bubbletea"
@@ -75,18 +76,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			switch m.cursor {
 			case cursorCompose:
-				return m, composeAction(m.conf, false)
+				return m, composeAction(m.ctx, m.conf, noPostAction)
 			case cursorSubmit:
 				return m, submitAction(m.ctx, m.conf)
 			case cursorComposeAndSubmit:
-				return m, tea.Sequence(composeAction(m.conf, false), submitAction(m.ctx, m.conf))
+				return m, composeAction(m.ctx, m.conf, submitAfterCompose)
 			}
 		case "1":
-			return m, composeAction(m.conf, false)
+			return m, composeAction(m.ctx, m.conf, noPostAction)
 		case "2":
 			return m, submitAction(m.ctx, m.conf)
 		case "3":
-			return m, tea.Sequence(composeAction(m.conf, false), submitAction(m.ctx, m.conf))
+			return m, composeAction(m.ctx, m.conf, submitAfterCompose)
 
 		case "a":
 			m.altscreenActive = !m.altscreenActive
@@ -124,6 +125,7 @@ func (m model) View() string {
 	}
 
 	if m.err != nil {
+		log.Println(m.err)
 		s += "\n"
 		s += errroStyle.Render(fmt.Sprintf("\nERROR: %s\n", m.err))
 		s += "\n"
