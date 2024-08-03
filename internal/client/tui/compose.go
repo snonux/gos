@@ -20,19 +20,19 @@ const (
 	submitAfterCompose
 )
 
-func composeAction(ctx context.Context, conf config.ClientConfig, postAction composePostAction) tea.Cmd {
+func composeActionCmd(ctx context.Context, conf config.ClientConfig, postAction composePostAction) tea.Cmd {
 	err := ensureDirectoryExists(conf.DataDir)
 	composeFile := fmt.Sprintf("%s/%s", conf.DataDir, conf.ComposeFile)
 	log.Println("Composing", composeFile)
 
-	return openEditor(conf.Editor, composeFile, func() error {
+	return openEditorCmd(conf.Editor, composeFile, func() error {
 		if err != nil {
 			return err
 		}
 
 		switch postAction {
 		case submitAfterCompose:
-			return submitEntryNoCmd(ctx, conf, composeFile)
+			return submitEntry(ctx, conf, composeFile)
 		case queueAfterCompose:
 			timestamp := time.Now().Format("20060102-150405")
 			queuedFile := fmt.Sprintf("%s/queued-%s.txt", conf.DataDir, timestamp)
@@ -43,7 +43,7 @@ func composeAction(ctx context.Context, conf config.ClientConfig, postAction com
 	})
 }
 
-func openEditor(editor, filePath string, cb func() error) tea.Cmd {
+func openEditorCmd(editor, filePath string, cb func() error) tea.Cmd {
 	return tea.ExecProcess(exec.Command(editor, filePath), func(err error) tea.Msg {
 		return finishedMsg{
 			cb:  cb,

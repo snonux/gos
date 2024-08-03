@@ -14,22 +14,22 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func submitAction(ctx context.Context, conf config.ClientConfig) tea.Cmd {
+func submitActionCmd(ctx context.Context, conf config.ClientConfig) tea.Cmd {
 	composeFile := fmt.Sprintf("%s/%s", conf.DataDir, conf.ComposeFile)
 	log.Println("Submitting", composeFile)
 
-	return submitEntry(ctx, conf, composeFile, func() error {
+	return submitEntryCmd(ctx, conf, composeFile, func() error {
 		// This is the cb to call when the entry was submitted succesfully
 		return nil
 	})
 }
 
-func submitEntry(ctx context.Context, conf client.ClientConfig, composeFile string, cb func() error) tea.Cmd {
-	return finished(cb, submitEntryNoCmd(ctx, conf, composeFile))
+func submitEntryCmd(ctx context.Context, conf client.ClientConfig, composeFile string, cb func() error) tea.Cmd {
+	return finished(cb, submitEntry(ctx, conf, composeFile))
 }
 
 // TODO: Rename all functions returning a Cmd so that they have a Cmd suffix
-func submitEntryNoCmd(ctx context.Context, conf client.ClientConfig, composeFile string) error {
+func submitEntry(ctx context.Context, conf client.ClientConfig, composeFile string) error {
 	servers, err := conf.Servers()
 	if err != nil {
 		return err

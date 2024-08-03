@@ -76,18 +76,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			switch m.cursor {
 			case cursorCompose:
-				return m, composeAction(m.ctx, m.conf, noPostAction)
+				return m, composeActionCmd(m.ctx, m.conf, noPostAction)
 			case cursorSubmit:
-				return m, submitAction(m.ctx, m.conf)
+				return m, submitActionCmd(m.ctx, m.conf)
 			case cursorComposeAndSubmit:
-				return m, composeAction(m.ctx, m.conf, submitAfterCompose)
+				return m, composeActionCmd(m.ctx, m.conf, submitAfterCompose)
 			}
 		case "1":
-			return m, composeAction(m.ctx, m.conf, noPostAction)
+			return m, composeActionCmd(m.ctx, m.conf, noPostAction)
 		case "2":
-			return m, submitAction(m.ctx, m.conf)
+			return m, submitActionCmd(m.ctx, m.conf)
 		case "3":
-			return m, composeAction(m.ctx, m.conf, submitAfterCompose)
+			return m, composeActionCmd(m.ctx, m.conf, submitAfterCompose)
 
 		case "a":
 			m.altscreenActive = !m.altscreenActive
