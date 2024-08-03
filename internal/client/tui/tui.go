@@ -79,15 +79,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case cursorSubmit:
 				return m, submitAction(m.ctx, m.conf)
 			case cursorComposeAndSubmit:
-				// TODO: Find out correct way how to chain two tea.Cmd's??
-				panic("not yet implemented")
+				return m, tea.Sequence(composeAction(m.conf, false), submitAction(m.ctx, m.conf))
 			}
 		case "1":
 			return m, composeAction(m.conf, false)
 		case "2":
 			return m, submitAction(m.ctx, m.conf)
 		case "3":
-			panic("not yet implemented")
+			return m, tea.Sequence(composeAction(m.conf, false), submitAction(m.ctx, m.conf))
 
 		case "a":
 			m.altscreenActive = !m.altscreenActive

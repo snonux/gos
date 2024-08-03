@@ -15,6 +15,7 @@ type ClientConfig struct {
 	Editor      string `json:"Editor,omitempty"`
 	DataDir     string `json:"StateDir,omitempty"`
 	ComposeFile string `json:"ComposeFile,omitempty"`
+	LogFile     string `json:"LogFile,omitempty"`
 }
 
 func New(configFile string) (ClientConfig, error) {
@@ -27,6 +28,9 @@ func New(configFile string) (ClientConfig, error) {
 	defaultDataDir := fmt.Sprintf("%s/.gos/data", os.Getenv("HOME"))
 	conf.DataDir = config.FromENV("GOS_DATA_DIR", conf.DataDir, defaultDataDir)
 	conf.ComposeFile = config.FromENV("GOS_COMPOSE_FILE", conf.ComposeFile, "compose.txt")
+
+	defaultLogFile := fmt.Sprintf("%s/.gos/gos.log", os.Getenv("HOME"))
+	conf.LogFile = config.FromENV("GOS_LOG_FILE", conf.LogFile, defaultLogFile)
 
 	return conf, nil
 }
