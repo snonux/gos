@@ -27,7 +27,7 @@ func FromFile[T any](configFile string) (T, error) {
 
 // Set config from envoronment variable if present, e.g. hansWurst from GOS_HANS_WURST
 func FromENV(keys ...string) string {
-	for _, key := range keys{
+	for _, key := range keys {
 		if key == "" {
 			continue
 		}
@@ -43,11 +43,13 @@ func FromENV(keys ...string) string {
 }
 
 func isAllUpperCase(s string) bool {
-    for _, r := range s {
-        if unicode.IsLetter(r) && !unicode.IsUpper(r) {
-            return false
-        }
-    }
-    return true
+	for _, r := range s {
+		if unicode.IsLetter(r) && !unicode.IsUpper(r) {
+			return false
+		}
+		if unicode.IsDigit(r) {
+			return false
+		}
+	}
+	return true
 }
-

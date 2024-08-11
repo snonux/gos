@@ -9,6 +9,7 @@ import (
 
 	config "codeberg.org/snonux/gos/internal/config/server"
 	"codeberg.org/snonux/gos/internal/server"
+	"codeberg.org/snonux/gos/internal/server/cron"
 	"codeberg.org/snonux/gos/internal/server/handler"
 )
 
@@ -27,6 +28,10 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	if err := cron.Start(ctx, conf); err != nil {
+		panic(err)
+	}
 
 	serv.Handle("health", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, serv.Status.String())
