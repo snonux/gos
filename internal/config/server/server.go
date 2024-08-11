@@ -23,24 +23,22 @@ type ServerConfig struct {
 func New(configFile string) (ServerConfig, error) {
 	conf, _ := config.FromFile[ServerConfig](configFile)
 
-	conf.ListenAddr = config.StrFromENV("GOS_LISTEN_ADDR", conf.ListenAddr, "localhost:8080")
-	conf.Partner = config.StrFromENV("GOS_PARTNER", conf.Partner)
-	conf.APIKey = config.StrFromENV("GOS_API_KEY", conf.APIKey)
-	conf.DataDir = config.StrFromENV("GOS_DATA_DIR", conf.DataDir, "data")
-	conf.EmailTo = config.StrFromENV("GOS_EMAIL_TO", conf.EmailTo)
-	conf.EmailFrom = config.StrFromENV("GOS_EMAIL_FROM", conf.EmailFrom)
+	conf.ListenAddr = config.EnvToStr("GOS_LISTEN_ADDR", conf.ListenAddr, "localhost:8080")
+	conf.Partner = config.EnvToStr("GOS_PARTNER", conf.Partner)
+	conf.APIKey = config.EnvToStr("GOS_API_KEY", conf.APIKey)
+	conf.DataDir = config.EnvToStr("GOS_DATA_DIR", conf.DataDir, "data")
+	conf.EmailTo = config.EnvToStr("GOS_EMAIL_TO", conf.EmailTo)
+	conf.EmailFrom = config.EnvToStr("GOS_EMAIL_FROM", conf.EmailFrom)
 
-	conf.SMTPServer = config.StrFromENV("GOS_SMTP_SERVER", conf.SMTPServer)
-	if conf.SMTPServer == "" {
+	conf.SMTPServer = config.EnvToStr("GOS_SMTP_SERVER", conf.SMTPServer, func() string {
 		hostname, err := os.Hostname()
 		if err != nil {
 			log.Fatal(err)
 		}
-		conf.SMTPServer = fmt.Sprintf("%s:25", hostname)
-		log.Println("Set SMTPServer to " + conf.SMTPServer)
-	}
+		return fmt.Sprintf("%s:25", hostname)
+	})
 
-	conf.CRONMergeIntervalS = config.IntFromENV("GOS_CRON_MERGE_INTERVAL", 3600)
+	conf.CRONMergeIntervalS = config.EnvToInt("GOS_CRON_MERGE_INTERVAL", 3600)
 	return conf, nil
 }
 

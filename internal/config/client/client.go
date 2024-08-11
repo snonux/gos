@@ -21,16 +21,16 @@ type ClientConfig struct {
 func New(configFile string) (ClientConfig, error) {
 	conf, _ := config.FromFile[ClientConfig](configFile)
 
-	conf.Server = config.FromENV("GOS_SERVERS", conf.Server)
-	conf.APIKey = config.FromENV("GOS_API_KEY", conf.APIKey)
-	conf.Editor = config.FromENV("GOS_EDITOR", "EDITOR", conf.Editor, "vi")
+	conf.Server = config.EnvToStr("GOS_SERVERS", conf.Server)
+	conf.APIKey = config.EnvToStr("GOS_API_KEY", conf.APIKey)
+	conf.Editor = config.EnvToStr("GOS_EDITOR", "EDITOR", conf.Editor, "vi")
 
 	defaultDataDir := fmt.Sprintf("%s/.gos/data", os.Getenv("HOME"))
-	conf.DataDir = config.FromENV("GOS_DATA_DIR", conf.DataDir, defaultDataDir)
-	conf.ComposeFile = config.FromENV("GOS_COMPOSE_FILE", conf.ComposeFile, "compose.txt")
+	conf.DataDir = config.EnvToStr("GOS_DATA_DIR", conf.DataDir, defaultDataDir)
+	conf.ComposeFile = config.EnvToStr("GOS_COMPOSE_FILE", conf.ComposeFile, "compose.txt")
 
 	defaultLogFile := fmt.Sprintf("%s/.gos/gos.log", os.Getenv("HOME"))
-	conf.LogFile = config.FromENV("GOS_LOG_FILE", conf.LogFile, defaultLogFile)
+	conf.LogFile = config.EnvToStr("GOS_LOG_FILE", conf.LogFile, defaultLogFile)
 
 	return conf, nil
 }

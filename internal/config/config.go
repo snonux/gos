@@ -27,16 +27,21 @@ func FromFile[T any](configFile string) (T, error) {
 }
 
 // Set config from envoronment variable if present, e.g. hansWurst from GOS_HANS_WURST
-func EnvToStr(keys ...string) string {
+func EnvToStr(keys ...any) string {
 	for _, key := range keys {
-		if key == "" {
-			continue
-		}
-		if !isAllUpperCase(key) {
-			return key
-		}
-		if value := os.Getenv(key); value != "" {
-			return value
+		switch key := key.(type) {
+		case string:
+			if key == "" {
+				continue
+			}
+			if !isAllUpperCase(key) {
+				return key
+			}
+			if value := os.Getenv(key); value != "" {
+				return value
+			}
+		case func() string:
+			return key()
 		}
 	}
 
@@ -59,6 +64,8 @@ func EnvToInt(keys ...any) int {
 			}
 		case int:
 			return key
+		case func() int:
+			return key()
 		}
 	}
 
