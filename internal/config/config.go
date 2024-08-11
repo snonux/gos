@@ -26,7 +26,7 @@ func FromFile[T any](configFile string) (T, error) {
 	return conf, err
 }
 
-// Set config from envoronment variable if present, e.g. hansWurst from GOS_HANS_WURST
+// Set config from environment variable if present, e.g. hansWurst from GOS_HANS_WURST
 func EnvToStr(keys ...any) string {
 	for _, key := range keys {
 		switch key := key.(type) {
