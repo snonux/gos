@@ -11,7 +11,7 @@ func (f finishedMsg) Error() string {
 	return f.err.Error()
 }
 
-func finished(cb func() error, err error) tea.Cmd {
+func finishedCmd(cb func() error, err error) tea.Cmd {
 	return func() tea.Msg {
 		return finishedMsg{
 			cb:  cb,

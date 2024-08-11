@@ -25,10 +25,9 @@ func submitActionCmd(ctx context.Context, conf config.ClientConfig) tea.Cmd {
 }
 
 func submitEntryCmd(ctx context.Context, conf client.ClientConfig, composeFile string, cb func() error) tea.Cmd {
-	return finished(cb, submitEntry(ctx, conf, composeFile))
+	return finishedCmd(cb, submitEntry(ctx, conf, composeFile))
 }
 
-// TODO: Rename all functions returning a Cmd so that they have a Cmd suffix
 func submitEntry(ctx context.Context, conf client.ClientConfig, composeFile string) error {
 	servers, err := conf.Servers()
 	if err != nil {
