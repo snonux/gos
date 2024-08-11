@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 
 	"codeberg.org/snonux/gos/internal/config"
@@ -24,14 +23,14 @@ type ServerConfig struct {
 func New(configFile string) (ServerConfig, error) {
 	conf, _ := config.FromFile[ServerConfig](configFile)
 
-	conf.ListenAddr = config.FromENV("GOS_LISTEN_ADDR", conf.ListenAddr, "localhost:8080")
-	conf.Partner = config.FromENV("GOS_PARTNER", conf.Partner)
-	conf.APIKey = config.FromENV("GOS_API_KEY", conf.APIKey)
-	conf.DataDir = config.FromENV("GOS_DATA_DIR", conf.DataDir, "data")
-	conf.EmailTo = config.FromENV("GOS_EMAIL_TO", conf.EmailTo)
-	conf.EmailFrom = config.FromENV("GOS_EMAIL_FROM", conf.EmailFrom)
+	conf.ListenAddr = config.StrFromENV("GOS_LISTEN_ADDR", conf.ListenAddr, "localhost:8080")
+	conf.Partner = config.StrFromENV("GOS_PARTNER", conf.Partner)
+	conf.APIKey = config.StrFromENV("GOS_API_KEY", conf.APIKey)
+	conf.DataDir = config.StrFromENV("GOS_DATA_DIR", conf.DataDir, "data")
+	conf.EmailTo = config.StrFromENV("GOS_EMAIL_TO", conf.EmailTo)
+	conf.EmailFrom = config.StrFromENV("GOS_EMAIL_FROM", conf.EmailFrom)
 
-	conf.SMTPServer = config.FromENV("GOS_SMTP_SERVER", conf.SMTPServer)
+	conf.SMTPServer = config.StrFromENV("GOS_SMTP_SERVER", conf.SMTPServer)
 	if conf.SMTPServer == "" {
 		hostname, err := os.Hostname()
 		if err != nil {
@@ -41,14 +40,7 @@ func New(configFile string) (ServerConfig, error) {
 		log.Println("Set SMTPServer to " + conf.SMTPServer)
 	}
 
-	// TODO: When there are more int parsing cases in the config, use generic? config.FromENV?
-	if conf.CRONMergeIntervalS == 0 {
-		var err error
-		if conf.CRONMergeIntervalS, err = strconv.Atoi(config.FromENV("GOS_CRON_MERGE_INTERVAL", "3600")); err != nil {
-			return conf, err
-		}
-	}
-
+	conf.CRONMergeIntervalS = config.IntFromENV("GOS_CRON_MERGE_INTERVAL", 3600)
 	return conf, nil
 }
 

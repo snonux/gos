@@ -27,7 +27,7 @@ func FromFile[T any](configFile string) (T, error) {
 }
 
 // Set config from envoronment variable if present, e.g. hansWurst from GOS_HANS_WURST
-func FromENV(keys ...string) string {
+func EnvToStr(keys ...string) string {
 	for _, key := range keys {
 		if key == "" {
 			continue
@@ -43,7 +43,7 @@ func FromENV(keys ...string) string {
 	return ""
 }
 
-func IntFromENV(keys ...any) int {
+func EnvToInt(keys ...any) int {
 	for _, key := range keys {
 		switch key := key.(type) {
 		case string:
@@ -54,8 +54,8 @@ func IntFromENV(keys ...any) int {
 			if strValue == "" {
 				continue
 			}
-			if value, err := strconv.Atoi(strValue); err == nil {
-				return value
+			if intValue, err := strconv.Atoi(strValue); err == nil {
+				return intValue
 			}
 		case int:
 			return key
