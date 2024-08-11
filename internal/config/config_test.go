@@ -55,7 +55,7 @@ func TestSecondENV(t *testing.T) {
 	if expected != got {
 		t.Errorf("got '%s' but expected '%s'", got, expected)
 	}
-}dfdf
+}
 
 func TestIsAllUpperCase(t *testing.T) {
 	if isAllUpperCase("foo_bar") {

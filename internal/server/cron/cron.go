@@ -6,9 +6,10 @@ import (
 	"time"
 
 	config "codeberg.org/snonux/gos/internal/config/server"
+	"codeberg.org/snonux/gos/internal/server/handler"
 )
 
-func Start(ctx context.Context, conf config.ServerConfig) error {
+func Start(ctx context.Context, conf config.ServerConfig, hand handler.Handler) error {
 	go func() {
 		helloTicker := time.NewTicker(10 * time.Second)
 		mergeTicker := time.NewTicker(time.Duration(conf.CRONMergeIntervalS) * time.Second)
@@ -24,5 +25,6 @@ func Start(ctx context.Context, conf config.ServerConfig) error {
 			}
 		}
 	}()
+
 	return nil
 }

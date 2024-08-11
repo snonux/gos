@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"codeberg.org/snonux/gos/internal/config"
@@ -42,11 +43,10 @@ func New(configFile string) (ServerConfig, error) {
 
 	// TODO: When there are more int parsing cases in the config, use generic? config.FromENV?
 	if conf.CRONMergeIntervalS == 0 {
-		fmt.Println("FOO", config.FromENV("GOS_CRON_MERGE_INTERVAL", "3600"))
-		// var err error
-		// if conf.CRONMergeIntervalS, err = strconv.Atoi(config.FromENV("GOS_CRON_MERGE_INTERVAL", "3600")); err != nil {
-		// 	return conf, err
-		// }
+		var err error
+		if conf.CRONMergeIntervalS, err = strconv.Atoi(config.FromENV("GOS_CRON_MERGE_INTERVAL", "3600")); err != nil {
+			return conf, err
+		}
 	}
 
 	return conf, nil
