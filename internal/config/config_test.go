@@ -41,6 +41,42 @@ func TestFromENV(t *testing.T) {
 	t.Logf("got '%s' as expected", expected)
 }
 
+func TestIntFromENV(t *testing.T) {
+	t.Parallel()
+
+	os.Setenv("GOS_TEST_INT_FROM_ENV", "1")
+
+	var (
+		expected = 1
+		got      = IntFromENV(t, "GOS_TEST_INT_FROM_ENV")
+	)
+
+	if got != expected {
+		t.Errorf("got '%d' but expected '%d'", got, expected)
+	}
+	t.Logf("got '%d' as expected", expected)
+
+	expected = 999
+	got = IntFromENV("GOS_JAJAJA", expected)
+	if got != expected {
+		t.Errorf("got '%d' but expected '%d'", got, expected)
+	}
+	t.Logf("got '%d' as expected", expected)
+
+	os.Unsetenv("JUJUJU_NOT_EXISTANT_ENV")
+	if got = IntFromENV("JUJUJU_NOT_EXISTANT_ENV"); got != 0 {
+		t.Errorf("got '%d' but expected zero", got)
+	}
+	t.Logf("got zero as expected")
+
+	expected = 1234
+	got = IntFromENV("GOS_WATCH", "", "", "", expected, "")
+	if got != expected {
+		t.Errorf("got '%d' but expected '%d'", got, expected)
+	}
+	t.Logf("got '%d' as expected", expected)
+}
+
 func TestSecondENV(t *testing.T) {
 	t.Parallel()
 

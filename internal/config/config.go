@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"strconv"
 	"unicode"
 )
 
@@ -40,6 +41,28 @@ func FromENV(keys ...string) string {
 	}
 
 	return ""
+}
+
+func IntFromENV(keys ...any) int {
+	for _, key := range keys {
+		switch key := key.(type) {
+		case string:
+			if key == "" || !isAllUpperCase(key) {
+				continue
+			}
+			strValue := os.Getenv(key)
+			if strValue == "" {
+				continue
+			}
+			if value, err := strconv.Atoi(strValue); err == nil {
+				return value
+			}
+		case int:
+			return key
+		}
+	}
+
+	return 0
 }
 
 func isAllUpperCase(s string) bool {
