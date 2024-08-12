@@ -42,9 +42,10 @@ func New(configFile string) (ServerConfig, error) {
 	return conf, nil
 }
 
-func (conf ServerConfig) Partners() []string {
+func (conf ServerConfig) Partners() ([]string, error) {
 	if partners := strings.Split(conf.Partner, ","); partners[0] != "" {
-		return partners
+		return partners, nil
 	}
-	return []string{}
+
+	return []string{}, fmt.Errorf("no partners configured")
 }
