@@ -43,6 +43,7 @@ func Instance(conf server.ServerConfig) Repository {
 	once.Do(func() {
 		instance = newRepository(conf, vfs.RealFS{})
 		if err := instance.load(); err != nil {
+			// TODO: Report this to the health service endpoint, so it will be alerted on
 			log.Println(err)
 		}
 	})
