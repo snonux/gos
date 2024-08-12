@@ -42,7 +42,9 @@ type Repository struct {
 func Instance(conf server.ServerConfig) Repository {
 	once.Do(func() {
 		instance = newRepository(conf, vfs.RealFS{})
-		_ = instance.load()
+		if err := instance.load(); err != nil {
+			log.Println(err)
+		}
 	})
 	return instance
 }
