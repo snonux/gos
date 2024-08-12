@@ -37,7 +37,7 @@ func TestRepositoryLoad(t *testing.T) {
 
 	// Write entries into the VFS
 	for _, ent := range entries {
-		bytes, _ := ent.Serialize()
+		bytes, _ := ent.JSONBytes()
 		_ = repo.fs.WriteFile(repo.entryPath(ent), bytes)
 	}
 

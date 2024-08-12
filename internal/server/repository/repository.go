@@ -63,7 +63,7 @@ func (r Repository) put(ent types.Entry) error {
 	defer r.mu.Unlock()
 	r.entries[ent.ID] = ent
 
-	bytes, err := ent.Serialize()
+	bytes, err := ent.JSONBytes()
 	if err != err {
 		return err
 	}
@@ -177,7 +177,7 @@ func (r Repository) Merge(otherEnt types.Entry) error {
 		return nil
 	}
 
-	bytes, err := ent.Serialize()
+	bytes, err := ent.JSONBytes()
 	if err != err {
 		return err
 	}

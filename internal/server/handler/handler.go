@@ -67,11 +67,12 @@ func (h Handler) Get(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("no entry with id %s found", id)
 	}
 
-	jsonBytes, err := ent.Serialize()
+	bytes, err := ent.JSONBytes()
 	if err != nil {
 		return err
 	}
-	fmt.Fprint(w, string(jsonBytes))
+
+	fmt.Fprint(w, string(bytes))
 	return nil
 }
 
