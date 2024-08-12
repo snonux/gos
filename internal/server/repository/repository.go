@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"codeberg.org/snonux/gos/internal/config/server"
+	"codeberg.org/snonux/gos/internal/easyhttp"
 	"codeberg.org/snonux/gos/internal/types"
 	"codeberg.org/snonux/gos/internal/vfs"
 )
@@ -138,6 +140,7 @@ func (r Repository) Get(id string) (types.Entry, bool) {
 	return ent, ok
 }
 
+// TODO: Make all methods not used externally in this file private
 func (r Repository) HasSameEntry(pair EntryPair) bool {
 	_ = r.load()
 	r.mu.Lock()
@@ -180,4 +183,54 @@ func (r Repository) Merge(otherEnt types.Entry) error {
 		return err
 	}
 	return r.fs.WriteFile(r.entryPath(ent), bytes)
+}
+
+func (r Repository) MergeRemotely(ctx context.Context) error {
+	var errs []error
+
+	for _, partner := range r.conf.Partners() {
+		if err := r.mergeRemotelyFromPartner(ctx, partner); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
+func (r Repository) mergeRemotelyFromPartner(ctx context.Context, partner string) error {
+	var (
+		errs  []error
+		uri   = fmt.Sprintf("%s/list", partner)
+		pairs []EntryPair
+	)
+
+	if err := easyhttp.GetData(ctx, uri, r.conf.APIKey, &pairs); err != nil {
+		return err
+	}
+
+	for _, pair := range pairs {
+		if r.HasSameEntry(pair) {
+			continue
+		}
+
+		var (
+			ent types.Entry
+			uri = fmt.Sprintf("%s/get?id=%s", partner, pair.ID)
+		)
+
+		if err := easyhttp.GetData(ctx, uri, r.conf.APIKey, &ent); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		// In theory, this should never happen
+		if pair.ID != ent.ID {
+			errs = append(errs, fmt.Errorf("pair ID %s does not match entry id %s", pair.ID, ent.ID))
+			continue
+		}
+
+		errs = append(errs, r.Merge(ent))
+	}
+
+	return errors.Join(errs...)
 }

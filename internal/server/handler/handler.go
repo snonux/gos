@@ -2,14 +2,12 @@ package handler
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"regexp"
 
 	"codeberg.org/snonux/gos/internal/config/server"
-	"codeberg.org/snonux/gos/internal/easyhttp"
 	"codeberg.org/snonux/gos/internal/server/repository"
 	"codeberg.org/snonux/gos/internal/types"
 )
@@ -73,57 +71,10 @@ func (h Handler) Get(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h Handler) Merge(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	var errs []error
-
-	for _, partner := range h.conf.Partners() {
-		if err := h.mergeFromPartner(ctx, partner); err != nil {
-			errs = append(errs, err)
-		}
-	}
-
-	if len(errs) > 0 {
-		return errors.Join(errs...)
-	}
-
-	fmt.Fprint(w, "Okiedokie")
-	return nil
-}
-
-func (h Handler) mergeFromPartner(ctx context.Context, partner string) error {
-	var (
-		errs  []error
-		uri   = fmt.Sprintf("%s/list", partner)
-		repo  = repository.Instance(h.conf)
-		pairs []repository.EntryPair
-	)
-
-	if err := easyhttp.GetData(ctx, uri, h.conf.APIKey, &pairs); err != nil {
+	if err := repository.Instance(h.conf).MergeRemotely(ctx); err != nil {
 		return err
 	}
 
-	for _, pair := range pairs {
-		if repo.HasSameEntry(pair) {
-			continue
-		}
-
-		var (
-			ent types.Entry
-			uri = fmt.Sprintf("%s/get?id=%s", partner, pair.ID)
-		)
-
-		if err := easyhttp.GetData(ctx, uri, h.conf.APIKey, &ent); err != nil {
-			errs = append(errs, err)
-			continue
-		}
-
-		// In theory, this should never happen
-		if pair.ID != ent.ID {
-			errs = append(errs, fmt.Errorf("pair ID %s does not match entry id %s", pair.ID, ent.ID))
-			continue
-		}
-
-		errs = append(errs, repo.Merge(ent))
-	}
-
-	return errors.Join(errs...)
+	fmt.Fprint(w, "Repository merge went well")
+	return nil
 }
