@@ -29,7 +29,6 @@ func New(configFile string) (ServerConfig, error) {
 	conf.DataDir = config.EnvToStr("GOS_DATA_DIR", conf.DataDir, "data")
 	conf.EmailTo = config.EnvToStr("GOS_EMAIL_TO", conf.EmailTo)
 	conf.EmailFrom = config.EnvToStr("GOS_EMAIL_FROM", conf.EmailFrom)
-	conf.CRONMergeIntervalS = config.EnvToInt("GOS_CRON_MERGE_INTERVAL", conf.CRONMergeIntervalS, 3600)
 
 	conf.SMTPServer = config.EnvToStr("GOS_SMTP_SERVER", conf.SMTPServer, func() string {
 		hostname, err := os.Hostname()
@@ -39,9 +38,13 @@ func New(configFile string) (ServerConfig, error) {
 		return fmt.Sprintf("%s:25", hostname)
 	})
 
+	conf.CRONMergeIntervalS = config.EnvToInt("GOS_CRON_MERGE_INTERVAL", 3600)
 	return conf, nil
 }
 
 func (conf ServerConfig) Partners() []string {
-	return strings.Split(conf.Partner, ",")
+	if partners := strings.Split(conf.Partner, ","); partners[0] != "" {
+		return partners
+	}
+	return []string{}
 }

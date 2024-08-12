@@ -187,7 +187,12 @@ func (r Repository) Merge(otherEnt types.Entry) error {
 func (r Repository) MergeRemotely(ctx context.Context) error {
 	var errs []error
 
-	for _, partner := range r.conf.Partners() {
+	partners := r.conf.Partners()
+	if len(partners) == 0 {
+		return fmt.Errorf("no parter for remote merge operation configured")
+	}
+
+	for _, partner := range partners {
 		if err := r.mergeRemotelyFromPartner(ctx, partner); err != nil {
 			errs = append(errs, err)
 		}

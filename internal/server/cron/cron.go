@@ -6,22 +6,25 @@ import (
 	"time"
 
 	config "codeberg.org/snonux/gos/internal/config/server"
-	"codeberg.org/snonux/gos/internal/server/handler"
+	"codeberg.org/snonux/gos/internal/server/repository"
 )
 
-func Start(ctx context.Context, conf config.ServerConfig, hand handler.Handler) error {
+func Start(ctx context.Context, conf config.ServerConfig) error {
 	go func() {
-		helloTicker := time.NewTicker(10 * time.Second)
-		mergeTicker := time.NewTicker(time.Duration(conf.CRONMergeIntervalS) * time.Second)
+		helloTicker := time.NewTicker(time.Hour)
+		mergeTicker := time.NewTicker(time.Second * time.Duration(conf.CRONMergeIntervalS))
 
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case <-helloTicker.C:
-				log.Println("Hello ticker ticked")
+				log.Println("CRON hello ticker ticked")
 			case <-mergeTicker.C:
-				log.Println("CRON merge ticker ticked")
+				log.Println("CRON ticker initiating remote merge operation")
+				if err := repository.Instance(conf).MergeRemotely(ctx); err != nil {
+					log.Println(err)
+				}
 			}
 		}
 	}()

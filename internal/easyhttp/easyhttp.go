@@ -40,6 +40,7 @@ func Get(ctx context.Context, uri, apiKey string) ([]byte, error) {
 
 // Get data from JSON
 func GetData[T any](ctx context.Context, uri, apiKey string, data *T) error {
+	log.Println("Getting data from ", uri)
 	bytes, err := Get(ctx, uri, apiKey)
 	if err != nil {
 		return err

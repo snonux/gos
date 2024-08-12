@@ -29,7 +29,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if err := cron.Start(ctx, conf, hand); err != nil {
+	if err := cron.Start(ctx, conf); err != nil {
 		panic(err)
 	}
 
