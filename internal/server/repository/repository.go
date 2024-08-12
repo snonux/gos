@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"codeberg.org/snonux/gos/internal/config/server"
 	"codeberg.org/snonux/gos/internal/types"
 	"codeberg.org/snonux/gos/internal/vfs"
 )
@@ -29,25 +30,25 @@ type EntryPair struct {
 }
 
 type Repository struct {
-	dataDir string
+	conf    server.ServerConfig
 	entries map[string]types.Entry
 	mu      *sync.Mutex
 	fs      fs
 	loaded  *bool
 }
 
-func Instance(dataDir string) Repository {
+func Instance(conf server.ServerConfig) Repository {
 	once.Do(func() {
-		instance = newRepository(dataDir, vfs.RealFS{})
+		instance = newRepository(conf, vfs.RealFS{})
 		_ = instance.load()
 	})
 	return instance
 }
 
-func newRepository(dataDir string, fs fs) Repository {
+func newRepository(conf server.ServerConfig, fs fs) Repository {
 	var loaded bool
 	return Repository{
-		dataDir: dataDir,
+		conf:    conf,
 		entries: make(map[string]types.Entry),
 		mu:      &sync.Mutex{},
 		fs:      fs,
@@ -73,7 +74,7 @@ func (r Repository) load() error {
 		return nil
 	}
 
-	filePaths, err := r.fs.FindFiles(r.dataDir, ".json")
+	filePaths, err := r.fs.FindFiles(r.conf.DataDir, ".json")
 	if err != nil {
 		return err
 	}
@@ -150,7 +151,7 @@ func (r Repository) HasSameEntry(pair EntryPair) bool {
 }
 
 func (r Repository) entryPath(ent types.Entry) string {
-	return fmt.Sprintf("%s/%s/%s.json", r.dataDir, time.Now().Format("2006"), ent.ID)
+	return fmt.Sprintf("%s/%s/%s.json", r.conf.DataDir, time.Now().Format("2006"), ent.ID)
 }
 
 func (r Repository) Merge(otherEnt types.Entry) error {

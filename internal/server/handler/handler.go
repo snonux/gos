@@ -40,7 +40,7 @@ func (h Handler) Submit(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		return err
 	}
-	return repository.Instance(h.conf.DataDir).Merge(ent)
+	return repository.Instance(h.conf).Merge(ent)
 }
 
 func (h Handler) List(w http.ResponseWriter, r *http.Request) error {
@@ -48,7 +48,7 @@ func (h Handler) List(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("expexted GET request")
 	}
 
-	list, err := repository.Instance(h.conf.DataDir).ListBytes()
+	list, err := repository.Instance(h.conf).ListBytes()
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (h Handler) Get(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("invalid id %s", id)
 	}
 
-	ent, ok := repository.Instance(h.conf.DataDir).Get(id)
+	ent, ok := repository.Instance(h.conf).Get(id)
 	if !ok {
 		return fmt.Errorf("no entry with id %s found", id)
 	}
@@ -93,7 +93,7 @@ func (h Handler) mergeFromPartner(ctx context.Context, partner string) error {
 	var (
 		errs  []error
 		uri   = fmt.Sprintf("%s/list", partner)
-		repo  = repository.Instance(h.conf.DataDir)
+		repo  = repository.Instance(h.conf)
 		pairs []repository.EntryPair
 	)
 

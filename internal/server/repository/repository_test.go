@@ -3,6 +3,7 @@ package repository
 import (
 	"testing"
 
+	"codeberg.org/snonux/gos/internal/config/server"
 	"codeberg.org/snonux/gos/internal/types"
 	"codeberg.org/snonux/gos/internal/vfs"
 )
@@ -11,7 +12,7 @@ func TestRepositoryPutGet(t *testing.T) {
 	t.Parallel()
 
 	fs := make(vfs.MemoryFS)
-	repo := newRepository("./data", fs)
+	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
 
 	for _, ent := range makeEntries(t) {
 		t.Run(ent.ID, func(t *testing.T) {
@@ -31,7 +32,7 @@ func TestRepositoryLoad(t *testing.T) {
 	t.Parallel()
 
 	fs := make(vfs.MemoryFS)
-	repo := newRepository("./data", fs)
+	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
 	entries := makeEntries(t)
 
 	// Write entries into the VFS
@@ -62,7 +63,7 @@ func TestRepositoryList(t *testing.T) {
 	t.Parallel()
 
 	fs := make(vfs.MemoryFS)
-	repo := newRepository("./data", fs)
+	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
 	entries := makeEntries(t)
 
 	for _, ent := range entries {
@@ -93,7 +94,7 @@ func TestRepositoryHasSameEntry(t *testing.T) {
 	t.Parallel()
 
 	fs := make(vfs.MemoryFS)
-	repo := newRepository("./data", fs)
+	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
 	ent, _ := makeAnEntry()
 	_ = repo.put(ent)
 
@@ -112,7 +113,7 @@ func TestRepositoryMerge(t *testing.T) {
 	t.Parallel()
 
 	fs := make(vfs.MemoryFS)
-	repo := newRepository("./data", fs)
+	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
 	ent1, _ := makeAnEntry()
 	_ = repo.put(ent1)
 
