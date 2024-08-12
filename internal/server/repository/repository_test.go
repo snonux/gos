@@ -98,12 +98,12 @@ func TestRepositoryHasSameEntry(t *testing.T) {
 	ent, _ := makeAnEntry()
 	_ = repo.put(ent)
 
-	pair := EntryPair{ent.ID, ent.Checksum()}
+	pair := entryPair{ent.ID, ent.Checksum()}
 	if !repo.hasSameEntry(pair) {
 		t.Error("repo does not contain entry corresponding to pair", pair)
 	}
 
-	pair = EntryPair{"nonexistent", "nonexistent"}
+	pair = entryPair{"nonexistent", "nonexistent"}
 	if repo.hasSameEntry(pair) {
 		t.Error("repo does contain entry corresponding to pair", pair, "but that should not be")
 	}

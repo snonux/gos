@@ -27,7 +27,7 @@ type fs interface {
 }
 
 // Contains an Entry ID and its checksumm, for the list and merge operations.
-type EntryPair struct {
+type entryPair struct {
 	ID, Checksum string
 }
 
@@ -107,17 +107,17 @@ func (r Repository) load() error {
 	return errors.Join(errs...)
 }
 
-func (r Repository) List() ([]EntryPair, error) {
+func (r Repository) List() ([]entryPair, error) {
 	if err := r.load(); err != nil {
-		return []EntryPair{}, err
+		return []entryPair{}, err
 	}
 
-	var pairs []EntryPair
+	var pairs []entryPair
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	for _, ent := range r.entries {
-		pairs = append(pairs, EntryPair{ent.ID, ent.Checksum()})
+		pairs = append(pairs, entryPair{ent.ID, ent.Checksum()})
 	}
 
 	return pairs, nil
@@ -140,7 +140,7 @@ func (r Repository) Get(id string) (types.Entry, bool) {
 	return ent, ok
 }
 
-func (r Repository) hasSameEntry(pair EntryPair) bool {
+func (r Repository) hasSameEntry(pair entryPair) bool {
 	_ = r.load()
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -200,7 +200,7 @@ func (r Repository) mergeRemotelyFromPartner(ctx context.Context, partner string
 	var (
 		errs  []error
 		uri   = fmt.Sprintf("%s/list", partner)
-		pairs []EntryPair
+		pairs []entryPair
 	)
 
 	if err := easyhttp.GetData(ctx, uri, r.conf.APIKey, &pairs); err != nil {
