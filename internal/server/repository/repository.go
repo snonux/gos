@@ -140,8 +140,7 @@ func (r Repository) Get(id string) (types.Entry, bool) {
 	return ent, ok
 }
 
-// TODO: Make all methods not used externally in this file private
-func (r Repository) HasSameEntry(pair EntryPair) bool {
+func (r Repository) hasSameEntry(pair EntryPair) bool {
 	_ = r.load()
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -209,7 +208,7 @@ func (r Repository) mergeRemotelyFromPartner(ctx context.Context, partner string
 	}
 
 	for _, pair := range pairs {
-		if r.HasSameEntry(pair) {
+		if r.hasSameEntry(pair) {
 			continue
 		}
 
