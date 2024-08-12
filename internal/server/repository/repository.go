@@ -184,6 +184,7 @@ func (r Repository) Merge(otherEnt types.Entry) error {
 	return r.fs.WriteFile(r.entryPath(ent), bytes)
 }
 
+// TODO: WHens omething has merged from remotely, make sure to commit/sync to disk
 func (r Repository) MergeRemotely(ctx context.Context) error {
 	var errs []error
 
@@ -216,6 +217,8 @@ func (r Repository) mergeRemotelyFromPartner(ctx context.Context, partner string
 		if r.hasSameEntry(pair) {
 			continue
 		}
+
+		log.Println("pair", pair, "missing in local reposotory, going to merge it")
 
 		var (
 			ent types.Entry

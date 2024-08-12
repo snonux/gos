@@ -24,7 +24,7 @@ func New(configFile string) (ServerConfig, error) {
 	conf, _ := config.FromFile[ServerConfig](configFile)
 
 	conf.ListenAddr = config.EnvToStr("GOS_LISTEN_ADDR", conf.ListenAddr, "localhost:8080")
-	conf.Partner = config.EnvToStr("GOS_PARTNER", conf.Partner)
+	conf.Partner = config.EnvToStr("GOS_PARTNER", "GOS_PARTNERS", conf.Partner)
 	conf.APIKey = config.EnvToStr("GOS_API_KEY", conf.APIKey)
 	conf.DataDir = config.EnvToStr("GOS_DATA_DIR", conf.DataDir, "data")
 	conf.EmailTo = config.EnvToStr("GOS_EMAIL_TO", conf.EmailTo)

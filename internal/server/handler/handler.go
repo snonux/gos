@@ -20,7 +20,8 @@ type Handler struct {
 func New(conf server.ServerConfig) Handler {
 	return Handler{
 		conf:    conf,
-		getIdRe: regexp.MustCompile(`^/[0-9]{4}/[a-z0-9]{64}\.json$`),
+		getIdRe: regexp.MustCompile(`^[a-z0-9]{64}$`),
+		// getIdRe: regexp.MustCompile(`^/[0-9]{4}/[a-z0-9]{64}\.json$`),
 	}
 }
 
@@ -66,7 +67,11 @@ func (h Handler) Get(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("no entry with id %s found", id)
 	}
 
-	fmt.Fprint(w, ent.String())
+	jsonBytes, err := ent.Serialize()
+	if err != nil {
+		return err
+	}
+	fmt.Fprint(w, string(jsonBytes))
 	return nil
 }
 
