@@ -157,7 +157,7 @@ func (e Entry) Update(other Entry) (Entry, error) {
 	return e, nil
 }
 
-func (e Entry) JSONBytes() ([]byte, error) {
+func (e Entry) JSONMarshal() ([]byte, error) {
 	return json.Marshal(e)
 }
 

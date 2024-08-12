@@ -67,7 +67,7 @@ func (h Handler) Get(w http.ResponseWriter, r *http.Request) error {
 		return fmt.Errorf("no entry with id %s found", id)
 	}
 
-	bytes, err := ent.JSONBytes()
+	bytes, err := ent.JSONMarshal()
 	if err != nil {
 		return err
 	}
