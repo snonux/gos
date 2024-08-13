@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"testing"
 
 	"codeberg.org/snonux/gos/internal/config/server"
@@ -138,6 +139,55 @@ func TestRepositoryMerge(t *testing.T) {
 	if entGot.Epoch != 12345 {
 		t.Error("unexpected epoch", entGot.Epoch)
 	}
+}
+
+// TODO: Finish implementing this test
+func TestRepositoryMergeFromPartner(t *testing.T) {
+	fs1 := make(vfs.MemoryFS)
+	repo1 := newRepository(server.ServerConfig{DataDir: "./data1"}, fs1)
+	fs2 := make(vfs.MemoryFS)
+	repo2 := newRepository(server.ServerConfig{DataDir: "./data2"}, fs2)
+
+	ent1, _ := makeAnEntry()
+	_ = repo1.put(ent1)
+	ent2, _ := makeAnotherEntry()
+	_ = repo2.put(ent2)
+
+	getPair := func(ctx context.Context, partner string, pairs *[]entryPair) error {
+		var partnerRepo Repository
+
+		switch partner {
+		case "repo1":
+			partnerRepo = repo2
+		case "repo2":
+			partnerRepo = repo1
+		}
+
+		pairs_, err := partnerRepo.List()
+		if err != nil {
+			return err
+		}
+		*pairs = pairs_
+		t.Log("got pairs", *pairs, "from repo", partner)
+
+		return nil
+	}
+
+	getEntry := func(ctx context.Context, partner, id string, ent *types.Entry) error {
+		return nil
+		/*
+			uri := fmt.Sprintf("%s/get?id=%s", partner, id)
+			return easyhttp.GetData(ctx, uri, r.conf.APIKey, ent)
+		*/
+	}
+
+	if err := repo1.mergeFromPartner(context.Background(), "repo2", getPair, getEntry); err != nil {
+		t.Error(err)
+	}
+	if err := repo2.mergeFromPartner(context.Background(), "repo1", getPair, getEntry); err != nil {
+		t.Error(err)
+	}
+
 }
 
 func makeEntries(t *testing.T) []types.Entry {
