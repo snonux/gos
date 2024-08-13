@@ -43,7 +43,7 @@ func Instance(conf server.ServerConfig) Repository {
 	once.Do(func() {
 		instance = newRepository(conf, vfs.RealFS{})
 		if err := instance.load(); err != nil {
-			// TODO: Report this to the health service endpoint, so it will be alerted on
+			// TODO: Report this to the health service endpoint, so it will be alerted on. Maybe via init method????
 			log.Println(err)
 		}
 	})
@@ -205,14 +205,33 @@ func (r Repository) MergeRemotely(ctx context.Context) error {
 	return errors.Join(errs...)
 }
 
+// Makes it mockable/testable
+type getPairDataFunc func(context.Context, string, *[]entryPair) error
+type getEntryDataFunc func(context.Context, string, string, *types.Entry) error
+
 func (r Repository) mergeRemotelyFromPartner(ctx context.Context, partner string) error {
+	getPair := func(ctx context.Context, partner string, pairs *[]entryPair) error {
+		uri := fmt.Sprintf("%s/list", partner)
+		return easyhttp.GetData(ctx, uri, r.conf.APIKey, pairs)
+	}
+
+	getEntry := func(ctx context.Context, partner, id string, ent *types.Entry) error {
+		uri := fmt.Sprintf("%s/get?id=%s", partner, id)
+		return easyhttp.GetData(ctx, uri, r.conf.APIKey, ent)
+	}
+
+	return r.mergeFromPartner(ctx, partner, getPair, getEntry)
+}
+
+func (r Repository) mergeFromPartner(ctx context.Context, partner string,
+	getPair getPairDataFunc, getEntry getEntryDataFunc) error {
+
 	var (
 		errs  []error
-		uri   = fmt.Sprintf("%s/list", partner)
 		pairs []entryPair
 	)
 
-	if err := easyhttp.GetData(ctx, uri, r.conf.APIKey, &pairs); err != nil {
+	if err := getPair(ctx, partner, &pairs); err != nil {
 		return err
 	}
 
@@ -223,12 +242,8 @@ func (r Repository) mergeRemotelyFromPartner(ctx context.Context, partner string
 
 		log.Println("pair", pair, "missing in local reposotory, going to merge it")
 
-		var (
-			ent types.Entry
-			uri = fmt.Sprintf("%s/get?id=%s", partner, pair.ID)
-		)
-
-		if err := easyhttp.GetData(ctx, uri, r.conf.APIKey, &ent); err != nil {
+		var ent types.Entry
+		if err := getEntry(ctx, partner, pair.ID, &ent); err != nil {
 			errs = append(errs, err)
 			continue
 		}
