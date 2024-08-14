@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"codeberg.org/snonux/gos/internal/config/server"
@@ -176,43 +177,72 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 	}
 
 	getEntry := func(ctx context.Context, partner, id string, ent *types.Entry) error {
-		// var (
-		// 	ent_ []types.Entry
-		// 	ok   bool
-		// )
+		var (
+			ent_ types.Entry
+			err  error
+		)
 
-		// switch partner {
-		// case "repo1":
-		// 	ent_, ok = repo1.Get(id)
-		// case "repo2":
-		// 	ent_, ok = repo2.Get(id)
-		// }
+		switch partner {
+		case "repo1":
+			ent_, err = repo1.Get(id)
+		case "repo2":
+			ent_, err = repo2.Get(id)
+		}
+
+		if err != nil {
+			return err
+		}
+		*ent = ent_
+
+		t.Log("got entry", *ent, "from repo", partner)
+		return nil
+	}
+
+	// Merge entries from repo2 into repo1
+	if err := repo1.mergeFromPartner(context.Background(), "repo2", getPair, getEntry); err != nil {
+		t.Error(err)
+	}
+
+	// Merge entries from repo1 into repo2
+	if err := repo2.mergeFromPartner(context.Background(), "repo1", getPair, getEntry); err != nil {
+		t.Error(err)
+	}
+
+	// Compare both repos, they should now contain the same entries
+	compare := func(repo1, repo2 Repository) error {
+		pairs, err := repo1.List()
+		if err != nil {
+			return err
+		}
+
+		for _, pair := range pairs {
+			ent1, err := repo1.Get(pair.ID)
+			if err != nil {
+				return err
+			}
+			ent2, err := repo2.Get(pair.ID)
+			if err != nil {
+				return err
+			}
+
+			t.Log("comparing entries")
+			t.Log("ent1", ent1)
+			t.Log("ent2", ent2)
+
+			if !ent1.Equals(ent2) {
+				return fmt.Errorf("entries ent1 and ent2 don't equal")
+			}
+		}
 
 		return nil
-
-		// if ok != nil {
-		// 	return fmt.Errorf("")
-		// }
-		// *pairs = pairs_
-
-		// t.Log("got pairs", *pairs, "from repo", partner)
-		// return nil
-		/*
-			uri := fmt.Sprintf("%s/get?id=%s", partner, id)
-			return easyhttp.GetData(ctx, uri, r.conf.APIKey, ent)
-		*/
-		// func (r Repository) Get(id string) (types.Entry, bool) {
 	}
 
-	if err := repo1.mergeFromPartner(context.Background(), "repo2", getPair, getEntry); err != nil {
-		t.Log(err)
-		//t.Error(err)
+	if err := compare(repo1, repo2); err != nil {
+		t.Error(err)
 	}
-	if err := repo2.mergeFromPartner(context.Background(), "repo1", getPair, getEntry); err != nil {
-		t.Log(err)
-		// t.Error(err)
+	if err := compare(repo2, repo1); err != nil {
+		t.Error(err)
 	}
-
 }
 
 func makeEntries(t *testing.T) []types.Entry {
