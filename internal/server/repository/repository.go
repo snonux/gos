@@ -153,6 +153,20 @@ func (r Repository) Get(id string) (types.Entry, error) {
 	return ent, nil
 }
 
+func (r Repository) GetJSON(id string) (string, error) {
+	ent, err := r.Get(id)
+	if err != nil {
+		return "", err
+	}
+
+	bytes, err := ent.JSONMarshal()
+	if err != nil {
+		return "", err
+	}
+
+	return string(bytes), err
+}
+
 func (r Repository) hasSameEntry(pair entryPair) bool {
 	_ = r.load()
 	r.mu.Lock()

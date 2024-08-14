@@ -53,20 +53,12 @@ func (h Handler) List(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h Handler) Get(w http.ResponseWriter, r *http.Request) error {
-	id := r.URL.Query().Get("id")
-
-	ent, err := repository.Instance(h.conf).Get(id)
+	json, err := repository.Instance(h.conf).GetJSON(r.URL.Query().Get("id"))
 	if err != nil {
 		return err
 	}
 
-	// TODO: Move to repository.go
-	bytes, err := ent.JSONMarshal()
-	if err != nil {
-		return err
-	}
-
-	fmt.Fprint(w, string(bytes))
+	fmt.Fprint(w, json)
 	return nil
 }
 
