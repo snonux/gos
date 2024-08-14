@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 
 	"codeberg.org/snonux/gos/internal/config/server"
 	"codeberg.org/snonux/gos/internal/server/repository"
@@ -13,15 +12,12 @@ import (
 )
 
 type Handler struct {
-	conf    server.ServerConfig
-	getIdRe *regexp.Regexp
+	conf server.ServerConfig
 }
 
 func New(conf server.ServerConfig) Handler {
 	return Handler{
-		conf:    conf,
-		getIdRe: regexp.MustCompile(`^[a-z0-9]{64}$`),
-		// getIdRe: regexp.MustCompile(`^/[0-9]{4}/[a-z0-9]{64}\.json$`),
+		conf: conf,
 	}
 }
 
@@ -58,15 +54,13 @@ func (h Handler) List(w http.ResponseWriter, r *http.Request) error {
 
 func (h Handler) Get(w http.ResponseWriter, r *http.Request) error {
 	id := r.URL.Query().Get("id")
-	if !h.getIdRe.MatchString(id) {
-		return fmt.Errorf("invalid id %s", id)
+
+	ent, err := repository.Instance(h.conf).Get(id)
+	if err != nil {
+		return err
 	}
 
-	ent, ok := repository.Instance(h.conf).Get(id)
-	if !ok {
-		return fmt.Errorf("no entry with id %s found", id)
-	}
-
+	// TODO: Move to repository.go
 	bytes, err := ent.JSONMarshal()
 	if err != nil {
 		return err

@@ -18,9 +18,9 @@ func TestRepositoryPutGet(t *testing.T) {
 	for _, ent := range makeEntries(t) {
 		t.Run(ent.ID, func(t *testing.T) {
 			_ = repo.put(ent)
-			entGot, ok := repo.Get(ent.ID)
-			if !ok {
-				t.Errorf("could not find entry with id %s in repo", ent.ID)
+			entGot, err := repo.Get(ent.ID)
+			if err != nil {
+				t.Error(err)
 			}
 			if !entGot.Equals(ent) {
 				t.Error("expected to get", ent, "but got", entGot)
@@ -49,9 +49,9 @@ func TestRepositoryLoad(t *testing.T) {
 
 	for _, ent := range entries {
 		t.Run(ent.ID, func(t *testing.T) {
-			entGot, ok := repo.Get(ent.ID)
-			if !ok {
-				t.Errorf("could not find entry with id %s in repo", ent.ID)
+			entGot, err := repo.Get(ent.ID)
+			if err != nil {
+				t.Error(err)
 			}
 			if !entGot.Equals(ent) {
 				t.Error("expected to get", ent, "but got", entGot)
@@ -154,31 +154,54 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 	_ = repo2.put(ent2)
 
 	getPair := func(ctx context.Context, partner string, pairs *[]entryPair) error {
-		var partnerRepo Repository
+		var (
+			pairs_ []entryPair
+			err    error
+		)
 
 		switch partner {
 		case "repo1":
-			partnerRepo = repo2
+			pairs_, err = repo1.List()
 		case "repo2":
-			partnerRepo = repo1
+			pairs_, err = repo2.List()
 		}
 
-		pairs_, err := partnerRepo.List()
 		if err != nil {
 			return err
 		}
 		*pairs = pairs_
-		t.Log("got pairs", *pairs, "from repo", partner)
 
+		t.Log("got pairs", *pairs, "from repo", partner)
 		return nil
 	}
 
 	getEntry := func(ctx context.Context, partner, id string, ent *types.Entry) error {
+		// var (
+		// 	ent_ []types.Entry
+		// 	ok   bool
+		// )
+
+		// switch partner {
+		// case "repo1":
+		// 	ent_, ok = repo1.Get(id)
+		// case "repo2":
+		// 	ent_, ok = repo2.Get(id)
+		// }
+
 		return nil
+
+		// if ok != nil {
+		// 	return fmt.Errorf("")
+		// }
+		// *pairs = pairs_
+
+		// t.Log("got pairs", *pairs, "from repo", partner)
+		// return nil
 		/*
 			uri := fmt.Sprintf("%s/get?id=%s", partner, id)
 			return easyhttp.GetData(ctx, uri, r.conf.APIKey, ent)
 		*/
+		// func (r Repository) Get(id string) (types.Entry, bool) {
 	}
 
 	if err := repo1.mergeFromPartner(context.Background(), "repo2", getPair, getEntry); err != nil {

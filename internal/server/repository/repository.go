@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"sync"
 	"time"
 
@@ -37,6 +38,7 @@ type Repository struct {
 	mu      *sync.Mutex
 	fs      fs
 	loaded  *bool
+	getIdRe *regexp.Regexp
 }
 
 func Instance(conf server.ServerConfig) Repository {
@@ -58,6 +60,8 @@ func newRepository(conf server.ServerConfig, fs fs) Repository {
 		mu:      &sync.Mutex{},
 		fs:      fs,
 		loaded:  &loaded,
+		getIdRe: regexp.MustCompile(`^[a-z0-9]{64}$`),
+		// getIdRe: regexp.MustCompile(`^/[0-9]{4}/[a-z0-9]{64}\.json$`),
 	}
 }
 
@@ -134,13 +138,19 @@ func (r Repository) ListBytes() ([]byte, error) {
 	return json.Marshal(pairs)
 }
 
-func (r Repository) Get(id string) (types.Entry, bool) {
+func (r Repository) Get(id string) (types.Entry, error) {
+	if !r.getIdRe.MatchString(id) {
+		return types.Entry{}, fmt.Errorf("invalid id %s", id)
+	}
 	_ = r.load()
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	ent, ok := r.entries[id]
-	return ent, ok
+	if !ok {
+		return ent, fmt.Errorf("no entry with id %s found", id)
+	}
+	return ent, nil
 }
 
 func (r Repository) hasSameEntry(pair entryPair) bool {
