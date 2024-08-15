@@ -197,10 +197,11 @@ func (r Repository) Merge(otherEnt types.Entry) error {
 		}
 	}
 
-	ent, _ = ent.Update(otherEnt)
+	var changed bool
+	ent, changed, _ = ent.Update(otherEnt)
 	r.entries[otherEnt.ID] = ent
 
-	if !ent.Changed {
+	if !changed {
 		// Hasn't changed, so no need to write anything to file.
 		return nil
 	}

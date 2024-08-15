@@ -34,9 +34,6 @@ type Entry struct {
 	checksum      string
 	checksumDirty bool
 	mu            *sync.Mutex
-
-	// To identify whether this entry was changed.
-	Changed bool `json:"-"`
 }
 
 func NewEntry(bytes []byte) (Entry, error) {
@@ -119,9 +116,9 @@ func (e Entry) Equals(other Entry) bool {
  * updated. If entry is missing, it will be added. If entry is there, the shared
  * Is status will eventually flip to true but never to false.
  */
-func (e Entry) Update(other Entry) (Entry, error) {
+func (e Entry) Update(other Entry) (Entry, bool, error) {
 	if e.ID != other.ID {
-		return e, fmt.Errorf("can update entry only with other entry with same ID: this(%s) other(%s)", e, other)
+		return e, false, fmt.Errorf("can update entry only with other entry with same ID: this(%s) other(%s)", e, other)
 	}
 
 	var changed bool
@@ -161,10 +158,9 @@ func (e Entry) Update(other Entry) (Entry, error) {
 
 	if changed {
 		e.checksumDirty = true
-		e.Changed = true
 	}
 
-	return e, nil
+	return e, changed, nil
 }
 
 func (e Entry) JSONMarshal() ([]byte, error) {
@@ -175,8 +171,10 @@ func (e Entry) String() string {
 	return e.checksumBase()
 }
 
-// Used to calculate the checksum, better don't change the output, otherwise
-// repository database will get confused with entry checksum mismatches.
+/**
+ * Used to calculate the checksum, better don't change the output, otherwise
+ * repository database will get confused with entry checksum mismatches.
+ */
 func (e Entry) checksumBase() string {
 	var sb strings.Builder
 

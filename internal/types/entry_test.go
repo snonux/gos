@@ -63,16 +63,13 @@ func TestUpdate(t *testing.T) {
 		t.Error(err)
 	}
 
-	if ent1.Changed {
-		t.Error("didn't expect the entry to be changed before the update", ent1)
-	}
-
-	ent1, _ = ent1.Update(ent2)
+	var changed bool
+	ent1, changed, _ = ent1.Update(ent2)
 	if len(ent1.Shared) != 3 {
 		t.Error("expected 3 entries after update", ent1)
 	}
 
-	if !ent1.Changed {
+	if !changed {
 		t.Error("expected the entry to be changed after update")
 	}
 
