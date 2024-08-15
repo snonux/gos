@@ -142,8 +142,6 @@ func TestRepositoryMerge(t *testing.T) {
 	}
 }
 
-// TODO: Finish implementing this test
-// TODO: Also test merging Shared update status'
 func TestRepositoryMergeFromPartner(t *testing.T) {
 	fs1 := make(vfs.MemoryFS)
 	repo1 := newRepository(server.ServerConfig{DataDir: "./data1"}, fs1)
@@ -199,16 +197,6 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 		return nil
 	}
 
-	// Merge entries from repo2 into repo1
-	if err := repo1.mergeFromPartner(context.Background(), "repo2", getPair, getEntry); err != nil {
-		t.Error(err)
-	}
-
-	// Merge entries from repo1 into repo2
-	if err := repo2.mergeFromPartner(context.Background(), "repo1", getPair, getEntry); err != nil {
-		t.Error(err)
-	}
-
 	// Compare both repos, they should now contain the same entries
 	compare := func(repo1, repo2 Repository) error {
 		pairs, err := repo1.List()
@@ -238,12 +226,23 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 		return nil
 	}
 
-	if err := compare(repo1, repo2); err != nil {
-		t.Error(err)
-	}
-	if err := compare(repo2, repo1); err != nil {
-		t.Error(err)
-	}
+	t.Run("Merge entries from repo2 into repo1", func(t *testing.T) {
+		if err := repo1.mergeFromPartner(context.Background(), "repo2", getPair, getEntry); err != nil {
+			t.Error(err)
+		}
+		if err := compare(repo2, repo1); err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("Merge entries from repo1 into repo2", func(t *testing.T) {
+		if err := repo2.mergeFromPartner(context.Background(), "repo1", getPair, getEntry); err != nil {
+			t.Error(err)
+		}
+		if err := compare(repo1, repo2); err != nil {
+			t.Error(err)
+		}
+	})
 }
 
 func makeEntries(t *testing.T) []types.Entry {

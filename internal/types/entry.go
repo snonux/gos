@@ -123,15 +123,17 @@ func (e Entry) Update(other Entry) (Entry, error) {
 	if e.ID != other.ID {
 		return e, fmt.Errorf("can update entry only with other entry with same ID: this(%s) other(%s)", e, other)
 	}
-	e.checksumDirty = true
-	e.Changed = true
+
+	var changed bool
 
 	if e.Body != other.Body {
 		e.Body = other.Body
+		changed = true
 	}
 
 	if e.Epoch != other.Epoch {
 		e.Epoch = other.Epoch
+		changed = true
 	}
 
 	sharedMap := make(map[string]Shared)
@@ -144,16 +146,22 @@ func (e Entry) Update(other Entry) (Entry, error) {
 		switch {
 		case !ok:
 			sharedMap[otherShared.Name] = shared
-			continue
-		case otherShared.Is:
+			changed = true
+		case otherShared.Is && !shared.Is:
 			shared.Is = true
 			sharedMap[otherShared.Name] = shared
+			changed = true
 		}
 	}
 
 	e.Shared = e.Shared[:0]
 	for _, shared := range sharedMap {
 		e.Shared = append(e.Shared, shared)
+	}
+
+	if changed {
+		e.checksumDirty = true
+		e.Changed = true
 	}
 
 	return e, nil
@@ -164,6 +172,12 @@ func (e Entry) JSONMarshal() ([]byte, error) {
 }
 
 func (e Entry) String() string {
+	return e.checksumBase()
+}
+
+// Used to calculate the checksum, better don't change the output, otherwise
+// repository database will get confused with entry checksum mismatches.
+func (e Entry) checksumBase() string {
 	var sb strings.Builder
 
 	sb.WriteString("ID:")
@@ -192,7 +206,7 @@ func (e *Entry) Checksum() string {
 		return e.checksum
 	}
 
-	e.checksum = fmt.Sprintf("%x", sha256.Sum256([]byte(e.String())))
+	e.checksum = fmt.Sprintf("%x", sha256.Sum256([]byte(e.checksumBase())))
 	e.checksumDirty = false
 	return e.checksum
 }

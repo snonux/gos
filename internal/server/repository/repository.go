@@ -201,6 +201,7 @@ func (r Repository) Merge(otherEnt types.Entry) error {
 	r.entries[otherEnt.ID] = ent
 
 	if !ent.Changed {
+		// Hasn't changed, so no need to write anything to file.
 		return nil
 	}
 
@@ -208,6 +209,7 @@ func (r Repository) Merge(otherEnt types.Entry) error {
 	if err != err {
 		return err
 	}
+
 	return r.fs.WriteFile(r.entryPath(ent), bytes)
 }
 
