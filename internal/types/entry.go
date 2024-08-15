@@ -20,14 +20,7 @@ func (s Shared) String() string {
 }
 
 func (s Shared) Equals(other Shared) bool {
-	switch {
-	case s.Name != other.Name:
-		return false
-	case s.Is != other.Is:
-		return false
-	default:
-		return true
-	}
+	return s.Name == other.Name && s.Is == other.Is
 }
 
 type Entry struct {
@@ -51,32 +44,41 @@ func NewEntry(bytes []byte) (Entry, error) {
 	if err := json.Unmarshal(bytes, &e); err != nil {
 		return e, fmt.Errorf("unable to deserialise payload: %w", err)
 	}
+
 	e.initialize()
 	if e.ID == "" {
 		e.ID = fmt.Sprintf("%x", sha256.Sum256([]byte(e.Body)))
 	}
+
 	return e, nil
 }
 
 func NewEntryFromCopy(other Entry) (Entry, error) {
-	var e Entry
+	e := other
 	e.initialize()
-	e.ID = other.ID
-	return e.Update(other)
+
+	e.Shared = make([]Shared, len(other.Shared))
+	copy(e.Shared, other.Shared)
+
+	return e, nil
 }
 
 func NewEntryFromTextFile(filePath string) (Entry, error) {
 	var e Entry
+
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return e, err
 	}
+
 	e.Body = string(data)
 	if e.ID == "" {
 		e.ID = fmt.Sprintf("%x", sha256.Sum256([]byte(e.Body)))
 	}
+
 	e.initialize()
 	e.Checksum()
+
 	return e, nil
 }
 

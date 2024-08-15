@@ -143,6 +143,7 @@ func TestRepositoryMerge(t *testing.T) {
 }
 
 // TODO: Finish implementing this test
+// TODO: Also test merging Shared update status'
 func TestRepositoryMergeFromPartner(t *testing.T) {
 	fs1 := make(vfs.MemoryFS)
 	repo1 := newRepository(server.ServerConfig{DataDir: "./data1"}, fs1)
@@ -262,8 +263,8 @@ func makeAnEntry() (types.Entry, error) {
 		{
 			"Body": "Body text here",
 			"Shared": [
-				{ "Name": "Foo", "Is": true },
-				{ "Name": "Bar", "Is": false }
+				{ "Name": "Matodon", "Is": true },
+				{ "Name": "LinkedIn", "Is": false }
 			]
 		}
 	`
@@ -275,9 +276,9 @@ func makeAnotherEntry() (types.Entry, error) {
 		{
 			"Body": "Another text here",
 			"Shared": [
-				{ "Name": "Foo", "Is": true },
-				{ "Name": "Bar", "Is": true },
-				{ "Name": "Baz", "Is": false }
+				{ "Name": "Mastodon", "Is": true },
+				{ "Name": "LinkedIn", "Is": true },
+				{ "Name": "foo.zone", "Is": false }
 			]
 		}
 	`

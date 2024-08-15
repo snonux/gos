@@ -37,6 +37,24 @@ func TestEquals(t *testing.T) {
 	t.Log("both entries differ", ent1, ent2)
 }
 
+func TestNewEntryFromCopy(t *testing.T) {
+	ent1, _, err := twoDifferentEntries()
+	if err != nil {
+		t.Error(err)
+	}
+
+	ent2, err := NewEntryFromCopy(ent1)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !ent1.Equals(ent2) {
+		t.Error("copy of entry ent1 does not equal")
+		t.Error("original:", ent1)
+		t.Error("copy:    ", ent2)
+	}
+}
+
 func TestUpdate(t *testing.T) {
 	t.Parallel()
 
