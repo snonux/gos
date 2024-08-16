@@ -65,18 +65,6 @@ func newRepository(conf server.ServerConfig, fs fs) Repository {
 	}
 }
 
-func (r Repository) Put(ent types.Entry) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.entries[ent.ID] = ent
-
-	bytes, err := ent.JSONMarshal()
-	if err != err {
-		return err
-	}
-	return r.fs.WriteFile(r.entryPath(ent), bytes)
-}
-
 // Load repository into memory if not done yet.
 func (r Repository) load() error {
 	if *r.loaded {
@@ -140,6 +128,21 @@ func (r Repository) ListBytes() ([]byte, error) {
 	return json.Marshal(pairs)
 }
 
+// put writes exact the same entry to the repository. Whereas merge
+// Is a bit more refined, tries to merge the same entry wich are slightly
+// different into the same entry.
+func (r Repository) put(ent types.Entry) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.entries[ent.ID] = ent
+
+	bytes, err := ent.JSONMarshal()
+	if err != err {
+		return err
+	}
+	return r.fs.WriteFile(r.entryPath(ent), bytes)
+}
+
 func (r Repository) Get(id string) (types.Entry, error) {
 	if !r.getIdRe.MatchString(id) {
 		return types.Entry{}, fmt.Errorf("invalid id %s", id)
@@ -183,6 +186,11 @@ func (r Repository) hasSameEntry(pair entryPair) bool {
 
 func (r Repository) entryPath(ent types.Entry) string {
 	return fmt.Sprintf("%s/%s/%s.json", r.conf.DataDir, time.Now().Format("2006"), ent.ID)
+}
+
+func (r Repository) Update(ent types.Entry) error {
+	// Update is just an alias for the merge, makes the intention clearer.
+	return r.Merge(ent)
 }
 
 func (r Repository) Merge(otherEnt types.Entry) error {
