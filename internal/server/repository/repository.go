@@ -65,7 +65,7 @@ func newRepository(conf server.ServerConfig, fs fs) Repository {
 	}
 }
 
-func (r Repository) put(ent types.Entry) error {
+func (r Repository) Put(ent types.Entry) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.entries[ent.ID] = ent
@@ -94,17 +94,19 @@ func (r Repository) load() error {
 
 		bytes, err := r.fs.ReadFile(filePath)
 		if err != nil {
+			errs = append(errs, err)
 			continue
 		}
 
 		ent, err := types.NewEntry(bytes)
-		if err != err {
+		if err != nil {
+			errs = append(errs, err)
 			continue
 		}
 
-		if err := r.put(ent); err != nil {
-			errs = append(errs, err)
-		}
+		r.mu.Lock()
+		r.entries[ent.ID] = ent
+		r.mu.Unlock()
 	}
 
 	if len(errs) == 0 {
@@ -214,7 +216,6 @@ func (r Repository) Merge(otherEnt types.Entry) error {
 	return r.fs.WriteFile(r.entryPath(ent), bytes)
 }
 
-// TODO: WHens omething has merged from remotely, make sure to commit/sync to disk
 func (r Repository) MergeRemotely(ctx context.Context) error {
 	var errs []error
 

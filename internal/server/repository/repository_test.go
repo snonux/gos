@@ -18,7 +18,7 @@ func TestRepositoryPutGet(t *testing.T) {
 
 	for _, ent := range makeEntries(t) {
 		t.Run(ent.ID, func(t *testing.T) {
-			_ = repo.put(ent)
+			_ = repo.Put(ent)
 			entGot, err := repo.Get(ent.ID)
 			if err != nil {
 				t.Error(err)
@@ -69,7 +69,7 @@ func TestRepositoryList(t *testing.T) {
 	entries := makeEntries(t)
 
 	for _, ent := range entries {
-		_ = repo.put(ent)
+		_ = repo.Put(ent)
 	}
 
 	pairs, _ := repo.List()
@@ -98,7 +98,7 @@ func TestRepositoryHasSameEntry(t *testing.T) {
 	fs := make(vfs.MemoryFS)
 	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
 	ent, _ := makeAnEntry()
-	_ = repo.put(ent)
+	_ = repo.Put(ent)
 
 	pair := entryPair{ent.ID, ent.Checksum()}
 	if !repo.hasSameEntry(pair) {
@@ -117,7 +117,7 @@ func TestRepositoryMerge(t *testing.T) {
 	fs := make(vfs.MemoryFS)
 	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
 	ent1, _ := makeAnEntry()
-	_ = repo.put(ent1)
+	_ = repo.Put(ent1)
 
 	ent2, _ := makeAnotherEntry()
 	// Need to have the same IDs so that the entries will actually be merged
@@ -149,9 +149,9 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 	repo2 := newRepository(server.ServerConfig{DataDir: "./data2"}, fs2)
 
 	ent1, _ := makeAnEntry()
-	_ = repo1.put(ent1)
+	_ = repo1.Put(ent1)
 	ent2, _ := makeAnotherEntry()
-	_ = repo2.put(ent2)
+	_ = repo2.Put(ent2)
 
 	getPair := func(ctx context.Context, partner string, pairs *[]entryPair) error {
 		var (
@@ -243,6 +243,34 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 			t.Error(err)
 		}
 	})
+
+	// t.Run("Change shared flag and merge to partner", func(t *testing.T) {
+	// 	// Validate the corrent test setup
+	// 	if ent1.Shared[1].Name != "LinkedIn" || ent1.Shared[1].Is != false {
+	// 		t.Error("for the test expected LinkedIn not to be shared", ent1.Shared[1])
+	// 	}
+
+	// 	// Simulate that the entry was shared to LinkedIn social media!
+	// 	ent1.Shared[1].Is = true
+
+	// 	// Before merging, repos should be out of sync.
+	// 	err := compare(repo1, repo2)
+	// 	if err == nil {
+	// 		t.Error("Expected both repositories to be out of sync")
+	// 	} else {
+	// 		t.Log("as expected repos are out of sync", err)
+	// 	}
+
+	// 	// Partner is merging the repo.
+	// 	if err := repo2.mergeFromPartner(context.Background(), "repo1", getPair, getEntry); err != nil {
+	// 		t.Error(err)
+	// 	}
+
+	// 	// Now, partners should be in sync.
+	// 	if err := compare(repo1, repo2); err != nil {
+	// 		t.Error(err)
+	// 	}
+	// })
 }
 
 func makeEntries(t *testing.T) []types.Entry {
@@ -262,7 +290,7 @@ func makeAnEntry() (types.Entry, error) {
 		{
 			"Body": "Body text here",
 			"Shared": [
-				{ "Name": "Matodon", "Is": true },
+				{ "Name": "Mastodon", "Is": true },
 				{ "Name": "LinkedIn", "Is": false }
 			]
 		}
