@@ -44,9 +44,6 @@ type Repository struct {
 func Instance(conf server.ServerConfig) Repository {
 	once.Do(func() {
 		instance = newRepository(conf, vfs.RealFS{})
-		if err := instance.load(); err != nil {
-			panic(err)
-		}
 	})
 	return instance
 }
@@ -145,7 +142,10 @@ func (r Repository) Get(id string) (types.Entry, error) {
 	if !r.getIdRe.MatchString(id) {
 		return types.Entry{}, fmt.Errorf("invalid id %s", id)
 	}
-	_ = r.load()
+	if err := r.load(); err != nil {
+		return types.Entry{}, err
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -171,7 +171,6 @@ func (r Repository) GetJSON(id string) (string, error) {
 }
 
 func (r Repository) hasSameEntry(pair entryPair) bool {
-	_ = r.load()
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -192,7 +191,10 @@ func (r Repository) Update(ent types.Entry) error {
 }
 
 func (r Repository) Merge(otherEnt types.Entry) error {
-	_ = r.load()
+	if err := r.load(); err != nil {
+		return err
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -259,6 +261,10 @@ func (r Repository) mergeRemotelyFromPartner(ctx context.Context, partner string
 
 func (r Repository) mergeFromPartner(ctx context.Context, partner string,
 	getPair getPairDataFunc, getEntry getEntryDataFunc) error {
+
+	if err := r.load(); err != nil {
+		return err
+	}
 
 	var (
 		errs  []error
