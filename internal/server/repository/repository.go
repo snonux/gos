@@ -45,8 +45,7 @@ func Instance(conf server.ServerConfig) Repository {
 	once.Do(func() {
 		instance = newRepository(conf, vfs.RealFS{})
 		if err := instance.load(); err != nil {
-			// TODO: Report this to the health service endpoint, so it will be alerted on. Maybe via init method????
-			log.Println(err)
+			panic(err)
 		}
 	})
 	return instance
@@ -61,7 +60,6 @@ func newRepository(conf server.ServerConfig, fs fs) Repository {
 		fs:      fs,
 		loaded:  &loaded,
 		getIdRe: regexp.MustCompile(`^[a-z0-9]{64}$`),
-		// getIdRe: regexp.MustCompile(`^/[0-9]{4}/[a-z0-9]{64}\.json$`),
 	}
 }
 

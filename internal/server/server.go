@@ -19,10 +19,12 @@ type Server struct {
 type HandlerFuncWithError func(http.ResponseWriter, *http.Request) error
 
 func New(conf config.ServerConfig) Server {
-	return Server{
+	serv := Server{
 		Conf:   conf,
 		Status: health.NewStatus(),
 	}
+
+	return serv
 }
 
 func (serv Server) Handle(name string, handler HandlerFuncWithError) {

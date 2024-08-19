@@ -250,7 +250,7 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 			t.Error(err)
 		}
 
-		// Validate the corrent test setup
+		// Validate the correct test setup
 		if ent.Shared[1].Name != "LinkedIn" || ent.Shared[1].Is != false {
 			t.Error("for the test expected LinkedIn not to be shared", ent.Shared[1])
 		}
