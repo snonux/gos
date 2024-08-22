@@ -10,14 +10,15 @@ import (
 )
 
 type ServerConfig struct {
-	ListenAddr         string `json:"ListenAddr,omitempty"`
-	Partner            string `json:"Partner,omitempty"`
-	APIKey             string `json:"APIKey,omitempty"`
-	DataDir            string `json:"StateDir,omitempty"`
-	EmailTo            string `json:"EmailTo,omitempty"`
-	EmailFrom          string `json:"EmailFrom,omitempty"`
-	SMTPServer         string `json:"SMTPServer,omitempty"`
-	CRONMergeIntervalS int    `json:"CRONMergeInterval,omitempty"`
+	ListenAddr        string `json:"ListenAddr,omitempty"`
+	Partner           string `json:"Partner,omitempty"`
+	APIKey            string `json:"APIKey,omitempty"`
+	DataDir           string `json:"StateDir,omitempty"`
+	EmailTo           string `json:"EmailTo,omitempty"`
+	EmailFrom         string `json:"EmailFrom,omitempty"`
+	SMTPServer        string `json:"SMTPServer,omitempty"`
+	MergeIntervalS    int    `json:"MergeInterval,omitempty"`
+	ScheduleIntervalS int    `json:"ScheduleInterval,omitempty"`
 }
 
 func New(configFile string) (ServerConfig, error) {
@@ -38,7 +39,10 @@ func New(configFile string) (ServerConfig, error) {
 		return fmt.Sprintf("%s:25", hostname)
 	})
 
-	conf.CRONMergeIntervalS = config.EnvToInt("GOS_CRON_MERGE_INTERVAL", 3600)
+	const oneHour = 3600
+	conf.MergeIntervalS = config.EnvToInt("GOS_MERGE_INTERVAL", oneHour)
+	conf.ScheduleIntervalS = config.EnvToInt("GOS_SCHEDULER_INTERVAL", oneHour*6)
+
 	return conf, nil
 }
 

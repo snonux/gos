@@ -11,6 +11,7 @@ import (
 	"codeberg.org/snonux/gos/internal/server"
 	"codeberg.org/snonux/gos/internal/server/cron"
 	"codeberg.org/snonux/gos/internal/server/handler"
+	"codeberg.org/snonux/gos/internal/server/health"
 )
 
 func main() {
@@ -22,16 +23,15 @@ func main() {
 	}
 
 	var (
-		serv = server.New(conf)
-		hand = handler.New(conf)
+		status = health.NewStatus()
+		serv   = server.New(conf, status)
+		hand   = handler.New(conf)
 	)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if err := cron.Start(ctx, conf); err != nil {
-		panic(err)
-	}
+	go cron.Run(ctx, conf, status)
 
 	serv.Handle("health", func(w http.ResponseWriter, r *http.Request) error {
 		fmt.Fprint(w, serv.Status.String())

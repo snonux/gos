@@ -52,11 +52,12 @@ func NewStatus() Status {
 	}
 }
 
-func (hs Status) Set(s Severity, what, text string) {
-	log.Println("alerting", what, "to", text, "with severity", s)
-
+func (hs Status) Set(s Severity, what string, info any) {
 	hs.mu.Lock()
 	defer hs.mu.Unlock()
+
+	text := fmt.Sprintf("%v", info)
+	log.Println("alerting", what, "to", text, "with severity", s)
 
 	hs.alerts[what] = alert{
 		text:     text,

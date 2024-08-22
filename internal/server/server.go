@@ -18,13 +18,11 @@ type Server struct {
 
 type HandlerFuncWithError func(http.ResponseWriter, *http.Request) error
 
-func New(conf config.ServerConfig) Server {
-	serv := Server{
+func New(conf config.ServerConfig, status health.Status) Server {
+	return Server{
 		Conf:   conf,
-		Status: health.NewStatus(),
+		Status: status,
 	}
-
-	return serv
 }
 
 func (serv Server) Handle(name string, handler HandlerFuncWithError) {
