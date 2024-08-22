@@ -56,11 +56,11 @@ func (hs Status) Set(s Severity, healthStatusKey string, info any) {
 	hs.mu.Lock()
 	defer hs.mu.Unlock()
 
-	text := fmt.Sprintf("%v", info)
-	log.Printf("status: alerting %s as %s: %v", healthStatusKey, s, info)
+	infoStr := fmt.Sprintf("%v", info)
+	log.Printf("status: alerting %s as %s: %s", healthStatusKey, s, infoStr)
 
 	hs.alerts[healthStatusKey] = alert{
-		text:     text,
+		text:     infoStr,
 		severity: s,
 	}
 }
