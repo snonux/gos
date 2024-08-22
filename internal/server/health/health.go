@@ -52,26 +52,26 @@ func NewStatus() Status {
 	}
 }
 
-func (hs Status) Set(s Severity, handlerName string, info any) {
+func (hs Status) Set(s Severity, healthStatusKey string, info any) {
 	hs.mu.Lock()
 	defer hs.mu.Unlock()
 
 	text := fmt.Sprintf("%v", info)
-	log.Printf("status: alerting %s as %s: %v", handlerName, s, info)
+	log.Printf("status: alerting %s as %s: %v", healthStatusKey, s, info)
 
-	hs.alerts[handlerName] = alert{
+	hs.alerts[healthStatusKey] = alert{
 		text:     text,
 		severity: s,
 	}
 }
 
-func (hs Status) Clear(handlerName string) {
+func (hs Status) Clear(healthStatusKey string) {
 	hs.mu.Lock()
 	defer hs.mu.Unlock()
 
-	if _, ok := hs.alerts[handlerName]; ok {
-		log.Println("status: clearing ", handlerName)
-		delete(hs.alerts, handlerName)
+	if _, ok := hs.alerts[healthStatusKey]; ok {
+		log.Println("status: clearing ", healthStatusKey)
+		delete(hs.alerts, healthStatusKey)
 	}
 }
 
@@ -84,8 +84,8 @@ func (hs Status) String() string {
 	hs.mu.Lock()
 	defer hs.mu.Unlock()
 
-	for handlerName, alert := range hs.alerts {
-		str := fmt.Sprintf("%s (handler %s)", alert, handlerName)
+	for healthStatusKey, alert := range hs.alerts {
+		str := fmt.Sprintf("%s (handler %s)", alert, healthStatusKey)
 		alerts[alert.severity] = append(alerts[alert.severity], str)
 	}
 

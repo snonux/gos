@@ -9,8 +9,6 @@ import (
 	"codeberg.org/snonux/gos/internal/server/health"
 )
 
-const HealthHandlerName = `healthHandler`
-
 type Server struct {
 	Status health.Status
 	Conf   config.ServerConfig
@@ -19,10 +17,7 @@ type Server struct {
 type HandlerFuncWithError func(http.ResponseWriter, *http.Request) error
 
 func New(conf config.ServerConfig, status health.Status) Server {
-	return Server{
-		Conf:   conf,
-		Status: status,
-	}
+	return Server{Conf: conf, Status: status}
 }
 
 func (serv Server) Handle(name string, handler HandlerFuncWithError) {
@@ -35,15 +30,18 @@ func (serv Server) Handle(name string, handler HandlerFuncWithError) {
 		log.Println("Someone requested", handlerName)
 
 		// The health endpoint doesn't require an API key
-		if handlerName != HealthHandlerName && r.Header.Get("X-API-KEY") != serv.Conf.APIKey {
-			http.Error(w, "Invalid API key", http.StatusUnauthorized)
-			log.Println("Unauthorized access attempt to", handlerName)
-			return
+		if handlerName != "healthHandler" {
+			accessHealthStatusKey := "server.Handler.Access"
+			if r.Header.Get("X-API-KEY") != serv.Conf.APIKey {
+				http.Error(w, "Invalid API key", http.StatusUnauthorized)
+				serv.Status.Set(health.Critical, accessHealthStatusKey, fmt.Errorf("Unauthorized access attempt to %s", handlerName))
+				return
+			}
+			serv.Status.Clear(accessHealthStatusKey)
 		}
 
 		if err := handler(w, r); err != nil {
-			log.Println(err)
-			serv.Status.Set(health.Critical, handlerName, err.Error())
+			serv.Status.Set(health.Critical, handlerName, err)
 			return
 		}
 		serv.Status.Clear(handlerName)
