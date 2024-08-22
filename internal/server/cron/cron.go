@@ -2,7 +2,6 @@ package cron
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -22,17 +21,23 @@ func Run(ctx context.Context, conf config.ServerConfig, status health.Status) {
 		case <-ctx.Done():
 			return
 		case <-helloTicker.C:
-			log.Println("CRON hello ticker ticked")
+			run(ctx, "cron.Hello", status, func(ctx context.Context) error {
+				log.Println("hello world")
+				return nil
+			})
 		case <-mergeTicker.C:
-			log.Println("CRON ticker initiating remote merge operation")
-			if err := repository.Instance(conf).MergeRemotely(ctx); err != nil {
-				status.Set(health.Critical, "cron", fmt.Errorf("unable to merge remote repository: %w", err))
-			}
+			run(ctx, "cron.Repository.Merge", status, repository.Instance(conf).MergeRemotely)
 		case <-scheduleTicker.C:
-			log.Println("CRON ticker initiating schedule operation")
-			if err := scheduler.Run(ctx); err != nil {
-				status.Set(health.Critical, "cron", fmt.Errorf("unable to schedule post(s): %w", err))
-			}
+			run(ctx, "cron.Scheduler.Run", status, scheduler.Run)
 		}
 	}
+}
+
+func run(ctx context.Context, handlerName string, status health.Status, cb func(ctx context.Context) error) {
+	log.Println("CRON ticker initiating", handlerName)
+	if err := cb(ctx); err != nil {
+		status.Set(health.Critical, handlerName, err)
+		return
+	}
+	status.Clear(handlerName)
 }
