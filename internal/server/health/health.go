@@ -57,7 +57,7 @@ func (hs Status) Set(s Severity, handlerName string, info any) {
 	defer hs.mu.Unlock()
 
 	text := fmt.Sprintf("%v", info)
-	log.Println("alerting", handlerName, "to", text, "with severity", s)
+	log.Printf("status: alerting %s as %s: %v", handlerName, s, info)
 
 	hs.alerts[handlerName] = alert{
 		text:     text,
@@ -70,7 +70,7 @@ func (hs Status) Clear(handlerName string) {
 	defer hs.mu.Unlock()
 
 	if _, ok := hs.alerts[handlerName]; ok {
-		log.Println("clearing alert for handler", handlerName)
+		log.Println("status: clearing ", handlerName)
 		delete(hs.alerts, handlerName)
 	}
 }
