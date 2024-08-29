@@ -77,6 +77,42 @@ func TestEnvToInt(t *testing.T) {
 	t.Logf("got '%d' as expected", expected)
 }
 
+func TestEnvToBool(t *testing.T) {
+	t.Parallel()
+
+	os.Setenv("GOS_TEST_BOOL_FROM_ENV", "true")
+
+	var (
+		expected = true
+		got      = EnvToBool(t, "GOS_TEST_BOOL_FROM_ENV")
+	)
+
+	if got != expected {
+		t.Errorf("got '%t' but expected '%t'", got, expected)
+	}
+	t.Logf("got '%t' as expected", expected)
+
+	expected = false
+	got = EnvToBool("GOS_JAJAJA", expected)
+	if got != expected {
+		t.Errorf("got '%t' but expected '%t'", got, expected)
+	}
+	t.Logf("got '%t' as expected", expected)
+
+	os.Unsetenv("JUJUJU_NOT_EXISTANT_ENV")
+	if got = EnvToBool("JUJUJU_NOT_EXISTANT_ENV"); got {
+		t.Errorf("got '%t' but expected false", got)
+	}
+	t.Logf("got 'false' as expected")
+
+	expected = true
+	got = EnvToBool("JUJUJU_NOT_EXISTANT_ENV", "", "", "", expected, "")
+	if got != expected {
+		t.Errorf("got '%t' but expected '%t'", got, expected)
+	}
+	t.Logf("got '%t' as expected", expected)
+}
+
 func TestSecondENV(t *testing.T) {
 	t.Parallel()
 

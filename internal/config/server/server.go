@@ -10,15 +10,16 @@ import (
 )
 
 type ServerConfig struct {
-	ListenAddr        string `json:"ListenAddr,omitempty"`
-	Partner           string `json:"Partner,omitempty"`
-	APIKey            string `json:"APIKey,omitempty"`
-	DataDir           string `json:"StateDir,omitempty"`
-	EmailTo           string `json:"EmailTo,omitempty"`
-	EmailFrom         string `json:"EmailFrom,omitempty"`
-	SMTPServer        string `json:"SMTPServer,omitempty"`
-	MergeIntervalS    int    `json:"MergeInterval,omitempty"`
-	ScheduleIntervalS int    `json:"ScheduleInterval,omitempty"`
+	ListenAddr        string        `json:"ListenAddr,omitempty"`
+	Partner           string        `json:"Partner,omitempty"`
+	APIKey            string        `json:"APIKey,omitempty"`
+	DataDir           string        `json:"StateDir,omitempty"`
+	EmailTo           string        `json:"EmailTo,omitempty"`
+	EmailFrom         string        `json:"EmailFrom,omitempty"`
+	SMTPServer        string        `json:"SMTPServer,omitempty"`
+	MergeIntervalS    int           `json:"MergeInterval,omitempty"`
+	ScheduleIntervalS int           `json:"ScheduleInterval,omitempty"`
+	Secrets           SecretsConfig `json:"Secrets,omitemtpy"`
 }
 
 func New(configFile string) (ServerConfig, error) {

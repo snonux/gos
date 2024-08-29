@@ -72,6 +72,30 @@ func EnvToInt(keys ...any) int {
 	return 0
 }
 
+func EnvToBool(keys ...any) bool {
+	for _, key := range keys {
+		switch key := key.(type) {
+		case string:
+			if key == "" || !isAllUpperCase(key) {
+				continue
+			}
+			strValue := os.Getenv(key)
+			if strValue == "" {
+				continue
+			}
+			if boolValue, err := strconv.ParseBool(strValue); err == nil {
+				return boolValue
+			}
+		case bool:
+			return key
+		case func() bool:
+			return key()
+		}
+	}
+
+	return false
+}
+
 func isAllUpperCase(s string) bool {
 	for _, r := range s {
 		if unicode.IsLetter(r) && !unicode.IsUpper(r) {
