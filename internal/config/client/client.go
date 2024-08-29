@@ -3,6 +3,7 @@ package client
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -21,7 +22,7 @@ type ClientConfig struct {
 func New(configFile string) (ClientConfig, error) {
 	conf, err := config.FromFile[ClientConfig](configFile)
 	if err != nil {
-		return conf, err
+		log.Println("Proceeding with default config, as:", err)
 	}
 
 	conf.Server = config.EnvToStr("GOS_SERVERS", conf.Server)

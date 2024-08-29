@@ -11,6 +11,7 @@ import (
 
 func main() {
 	configFile := flag.String("cfg", "/etc/gos.json", "The configuration file")
+	flag.Parse()
 
 	conf, err := config.New(*configFile)
 	if err != nil {
