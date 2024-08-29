@@ -72,6 +72,7 @@ func EnvToInt(keys ...any) int {
 	return 0
 }
 
+// TODO: Maybe the EnvTo... can be programmed more generic...?
 func EnvToBool(keys ...any) bool {
 	for _, key := range keys {
 		switch key := key.(type) {

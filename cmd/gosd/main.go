@@ -16,8 +16,9 @@ import (
 
 func main() {
 	configFile := flag.String("cfg", "/etc/gosd.json", "The configuration file")
+	secretsFile := flag.String("cfg", "/etc/gosdsecrets.json", "The secrets file")
 
-	conf, err := config.New(*configFile)
+	conf, err := config.New(*configFile, *secretsFile)
 	if err != nil {
 		log.Fatal("error building config:", err)
 	}

@@ -19,7 +19,10 @@ type ClientConfig struct {
 }
 
 func New(configFile string) (ClientConfig, error) {
-	conf, _ := config.FromFile[ClientConfig](configFile)
+	conf, err := config.FromFile[ClientConfig](configFile)
+	if err != nil {
+		return conf, err
+	}
 
 	conf.Server = config.EnvToStr("GOS_SERVERS", conf.Server)
 	conf.APIKey = config.EnvToStr("GOS_API_KEY", conf.APIKey)

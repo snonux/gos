@@ -19,11 +19,18 @@ type ServerConfig struct {
 	SMTPServer        string        `json:"SMTPServer,omitempty"`
 	MergeIntervalS    int           `json:"MergeInterval,omitempty"`
 	ScheduleIntervalS int           `json:"ScheduleInterval,omitempty"`
-	Secrets           SecretsConfig `json:"Secrets,omitemtpy"`
+	Secrets           SecretsConfig `json:"Secrets,omitempty"`
 }
 
-func New(configFile string) (ServerConfig, error) {
-	conf, _ := config.FromFile[ServerConfig](configFile)
+func New(configFile, secretsFile string) (ServerConfig, error) {
+	conf, err := config.FromFile[ServerConfig](configFile)
+	if err != nil {
+		return conf, err
+	}
+
+	if conf.Secrets, err = newSecretsConfig(secretsFile); err != nil {
+		return conf, err
+	}
 
 	conf.ListenAddr = config.EnvToStr("GOS_LISTEN_ADDR", conf.ListenAddr, "localhost:8080")
 	conf.Partner = config.EnvToStr("GOS_PARTNER", "GOS_PARTNERS", conf.Partner)
