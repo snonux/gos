@@ -25,7 +25,10 @@ type ServerConfig struct {
 func New(configFile, secretsFile string) (ServerConfig, error) {
 	conf, err := config.FromFile[ServerConfig](configFile)
 	if err != nil {
-		log.Println("proceeding with default config, as:", err)
+		if _, ok := err.(*os.PathError); !ok {
+			return conf, err
+		}
+		log.Println("Skipping config file:", err)
 	}
 
 	if conf.Secrets, err = newSecretsConfig(secretsFile); err != nil {

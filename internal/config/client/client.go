@@ -22,7 +22,10 @@ type ClientConfig struct {
 func New(configFile string) (ClientConfig, error) {
 	conf, err := config.FromFile[ClientConfig](configFile)
 	if err != nil {
-		log.Println("Proceeding with default config, as:", err)
+		if _, ok := err.(*os.PathError); !ok {
+			return conf, err
+		}
+		log.Println("Skipping config file:", err)
 	}
 
 	conf.Server = config.EnvToStr("GOS_SERVERS", conf.Server)
