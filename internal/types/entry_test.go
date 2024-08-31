@@ -1,6 +1,62 @@
 package types
 
-import "testing"
+import (
+	"testing"
+)
+
+func oneEntry() (Entry, error) {
+	ent := `
+		{
+			"body": "Body text here",
+			"shared": {
+				"Foo": { "Is": true },
+				"Bar": { "Is": false }
+			}
+		}
+	`
+	return NewEntry([]byte(ent))
+}
+
+func anotherEntry() (Entry, error) {
+	ent := `
+		{
+			"body": "Body text here",
+			"shared": {
+				"Foo": { "Is": true },
+				"Bar": { "Is": true },
+				"Baz": { "Is": false }
+			}
+		}
+	`
+	return NewEntry([]byte(ent))
+}
+
+func twoDifferentEntries() (ent1, ent2 Entry, err error) {
+	if ent1, err = oneEntry(); err != nil {
+		return
+	}
+	ent2, err = anotherEntry()
+	return
+}
+
+func TestNewEntryFromJSON(t *testing.T) {
+	ent1, err := oneEntry()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	t.Log("ent1", ent1)
+	if len(ent1.Shared) != 2 {
+		t.Error("expected to have two shared entries in ent1")
+	}
+	if !ent1.IsShared("Foo") {
+		t.Error("Foo should be shared")
+	}
+	if ent1.IsShared("Bar") {
+		t.Error("Bar should not be shared")
+	}
+}
 
 func TestEntryChecksum(t *testing.T) {
 	t.Parallel()
@@ -11,7 +67,7 @@ func TestEntryChecksum(t *testing.T) {
 		return
 	}
 
-	expected := "e139c0788fbc0d9cce370e4918c1cbc8862184d9461bd1238c02b7f80cb042fe"
+	expected := "4dbd4f04d7917b1f1bd0807cf39a260efe51085d49b40469fca27b7f89cc73bd"
 	got := ent.Checksum()
 
 	if expected != got {
@@ -64,7 +120,10 @@ func TestUpdate(t *testing.T) {
 	}
 
 	var changed bool
-	ent1, changed, _ = ent1.Update(ent2)
+	if ent1, changed, err = ent1.Update(ent2); err != nil {
+		t.Error(err)
+	}
+
 	if len(ent1.Shared) != 3 {
 		t.Error("expected 3 entries after update", ent1)
 	}
@@ -73,43 +132,14 @@ func TestUpdate(t *testing.T) {
 		t.Error("expected the entry to be changed after update")
 	}
 
-	var isShared int
+	var sharedCount int
 	for _, shared := range ent1.Shared {
 		if shared.Is {
-			isShared++
+			sharedCount++
 		}
 	}
 
-	if isShared != 2 {
-		t.Error("expected 2 shared entries after update but got", isShared, ent1)
+	if sharedCount != 2 {
+		t.Error("expected 2 shared entries after update but got", sharedCount, ent1)
 	}
-}
-
-func twoDifferentEntries() (ent1, ent2 Entry, err error) {
-	ent1Str := `
-		{
-			"Body": "Body text here",
-			"Shared": [
-				{ "Name": "Foo", "Is": true },
-				{ "Name": "Bar", "Is": false }
-			]
-		}
-	`
-	ent1, err = NewEntry([]byte(ent1Str))
-	if err != nil {
-		return
-	}
-
-	ent2Str := `
-		{
-			"Body": "Body text here",
-			"Shared": [
-				{ "Name": "Foo", "Is": true },
-				{ "Name": "Bar", "Is": true },
-				{ "Name": "Baz", "Is": false }
-			]
-		}
-	`
-	ent2, err = NewEntry([]byte(ent2Str))
-	return
 }

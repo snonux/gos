@@ -251,12 +251,16 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 		}
 
 		// Validate the correct test setup
-		if ent.Shared[1].Name != "LinkedIn" || ent.Shared[1].Is != false {
-			t.Error("for the test expected LinkedIn not to be shared", ent.Shared[1])
+		if ent.IsShared("LinkedIn") {
+			t.Error("for the test expected LinkedIn not to be shared")
 		}
 
 		// Simulate that the entry was shared to LinkedIn social media!
-		ent.Shared[1].Is = true
+		linkedIn, ok := ent.Shared["LinkedIn"]
+		if !ok {
+			t.Error("expected to have a LinkedIn shared entry")
+		}
+		linkedIn.Is = true
 		if err := repo1.Update(ent); err != nil {
 			t.Error(err)
 		}
@@ -304,10 +308,10 @@ func makeAnEntry() (types.Entry, error) {
 	entry := `
 		{
 			"Body": "Body text here",
-			"Shared": [
-				{ "Name": "Mastodon", "Is": true },
-				{ "Name": "LinkedIn", "Is": false }
-			]
+			"Shared": {
+				"Mastodon": { "Is": true },
+				"LinkedIn": { "Is": false }
+			}
 		}
 	`
 	return types.NewEntry([]byte(entry))
@@ -317,11 +321,11 @@ func makeAnotherEntry() (types.Entry, error) {
 	entry := `
 		{
 			"Body": "Another text here",
-			"Shared": [
-				{ "Name": "Mastodon", "Is": true },
-				{ "Name": "LinkedIn", "Is": true },
-				{ "Name": "foo.zone", "Is": false }
-			]
+			"Shared": {
+				"Mastodon": { "Is": true },
+				"LinkedIn": { "Is": true },
+				"foo.zone": { "Is": false }
+			}
 		}
 	`
 	return types.NewEntry([]byte(entry))

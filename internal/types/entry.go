@@ -4,36 +4,22 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
+	"sort"
 	"strings"
-	"sync"
 )
-
-// Tells me whether the entry was shared to the sm platform named Name
-type Shared struct {
-	Name string `json:"name"`
-	Is   bool   `json:"is,omitempty"`
-}
-
-func (s Shared) String() string {
-	return fmt.Sprintf("Name:%s;Is:%v", s.Name, s.Is)
-}
-
-func (s Shared) Equals(other Shared) bool {
-	return s.Name == other.Name && s.Is == other.Is
-}
 
 type Entry struct {
 	// The unique ID of this entry.
-	ID     string   `json:"id,omitempty"`
-	Body   string   `json:"body"`
-	Shared []Shared `json:"shared,omitempty"`
-	Epoch  int      `json:"epoch,omitempty"`
+	ID     string            `json:"id,omitempty"`
+	Body   string            `json:"body"`
+	Shared map[string]Shared `json:"shared,omitempty"`
+	Epoch  int               `json:"epoch,omitempty"`
 
 	// The checksum of the whole entry, can change depending on the state.
 	checksum      string
 	checksumDirty bool
-	mu            *sync.Mutex
 }
 
 func NewEntry(bytes []byte) (Entry, error) {
@@ -53,9 +39,7 @@ func NewEntry(bytes []byte) (Entry, error) {
 func NewEntryFromCopy(other Entry) (Entry, error) {
 	e := other
 	e.initialize()
-
-	e.Shared = make([]Shared, len(other.Shared))
-	copy(e.Shared, other.Shared)
+	e.Shared = maps.Clone(other.Shared)
 
 	return e, nil
 }
@@ -80,7 +64,9 @@ func NewEntryFromTextFile(filePath string) (Entry, error) {
 }
 
 func (e *Entry) initialize() {
-	e.mu = &sync.Mutex{}
+	if e.Shared == nil {
+		e.Shared = make(map[string]Shared)
+	}
 	e.checksumDirty = true
 }
 
@@ -92,23 +78,19 @@ func (e Entry) Equals(other Entry) bool {
 		return false
 	case e.ID != other.ID:
 		return false
-	case len(e.Shared) != len(other.Shared):
+		// case len(e.Shared) != len(other.Shared):
+		// 	return false
+	}
+
+	return maps.Equal(e.Shared, other.Shared)
+}
+
+func (e Entry) IsShared(name string) bool {
+	shared, ok := e.Shared[name]
+	if !ok {
 		return false
 	}
-
-	otherShared := make(map[string]Shared)
-	for _, shared := range other.Shared {
-		otherShared[shared.Name] = shared
-	}
-
-	for _, shared := range e.Shared {
-		otherShared, ok := otherShared[shared.Name]
-		if !ok || !shared.Equals(otherShared) {
-			return false
-		}
-	}
-
-	return true
+	return shared.Is
 }
 
 /**
@@ -133,27 +115,17 @@ func (e Entry) Update(other Entry) (Entry, bool, error) {
 		changed = true
 	}
 
-	sharedMap := make(map[string]Shared)
-	for _, shared := range e.Shared {
-		sharedMap[shared.Name] = shared
-	}
-
-	for _, otherShared := range other.Shared {
-		shared, ok := sharedMap[otherShared.Name]
+	for otherName, otherShared := range other.Shared {
+		shared, ok := e.Shared[otherName]
 		switch {
 		case !ok:
-			sharedMap[otherShared.Name] = shared
+			e.Shared[otherName] = shared
 			changed = true
 		case otherShared.Is && !shared.Is:
 			shared.Is = true
-			sharedMap[otherShared.Name] = shared
+			e.Shared[otherName] = shared
 			changed = true
 		}
-	}
-
-	e.Shared = e.Shared[:0]
-	for _, shared := range sharedMap {
-		e.Shared = append(e.Shared, shared)
 	}
 
 	if changed {
@@ -182,14 +154,26 @@ func (e Entry) checksumBase() string {
 	sb.WriteString(e.ID)
 	sb.WriteString(";")
 	sb.WriteString(fmt.Sprintf("Epoch:%d;", e.Epoch))
-	sb.WriteString("Shared:[")
-	for i, shared := range e.Shared {
+	sb.WriteString("Shared:{")
+
+	keys := make([]string, 0, len(e.Shared))
+	for key := range e.Shared {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for i, sharedName := range keys {
 		if i > 0 {
 			sb.WriteString(",")
 		}
+		shared := e.Shared[sharedName]
+		sb.WriteString(sharedName)
+		sb.WriteString(":{")
 		sb.WriteString(shared.String())
+		sb.WriteString("}")
 	}
-	sb.WriteString("];")
+
+	sb.WriteString("};")
 	sb.WriteString("Body:")
 	sb.WriteString(e.Body)
 
@@ -197,9 +181,6 @@ func (e Entry) checksumBase() string {
 }
 
 func (e *Entry) Checksum() string {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-
 	if !e.checksumDirty {
 		return e.checksum
 	}
