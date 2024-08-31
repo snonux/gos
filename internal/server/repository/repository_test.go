@@ -261,6 +261,8 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 			t.Error("expected to have a LinkedIn shared entry")
 		}
 		linkedIn.Is = true
+		ent.Shared["LinkedIn"] = linkedIn
+
 		if err := repo1.Update(ent); err != nil {
 			t.Error(err)
 		}
@@ -307,10 +309,10 @@ func makeEntries(t *testing.T) []types.Entry {
 func makeAnEntry() (types.Entry, error) {
 	entry := `
 		{
-			"Body": "Body text here",
-			"Shared": {
-				"Mastodon": { "Is": true },
-				"LinkedIn": { "Is": false }
+			"body": "Body text here",
+			"shared": {
+				"Mastodon": { "is": true },
+				"LinkedIn": { "is": false }
 			}
 		}
 	`
@@ -320,11 +322,11 @@ func makeAnEntry() (types.Entry, error) {
 func makeAnotherEntry() (types.Entry, error) {
 	entry := `
 		{
-			"Body": "Another text here",
-			"Shared": {
-				"Mastodon": { "Is": true },
-				"LinkedIn": { "Is": true },
-				"foo.zone": { "Is": false }
+			"body": "Another text here",
+			"shared": {
+				"Mastodon": { "is": true },
+				"LinkedIn": { "is": true },
+				"foo.zone": { "is": false }
 			}
 		}
 	`

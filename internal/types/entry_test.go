@@ -9,8 +9,8 @@ func oneEntry() (Entry, error) {
 		{
 			"body": "Body text here",
 			"shared": {
-				"Foo": { "Is": true },
-				"Bar": { "Is": false }
+				"Foo": { "is": true },
+				"Bar": { "is": false }
 			}
 		}
 	`
@@ -22,9 +22,9 @@ func anotherEntry() (Entry, error) {
 		{
 			"body": "Body text here",
 			"shared": {
-				"Foo": { "Is": true },
-				"Bar": { "Is": true },
-				"Baz": { "Is": false }
+				"Foo": { "is": true },
+				"Bar": { "is": true },
+				"Baz": { "is": false }
 			}
 		}
 	`
