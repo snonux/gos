@@ -45,19 +45,19 @@ func Env[U enver[T], T enverConstraint](keys ...any) T {
 	return enver.zero()
 }
 
-type ToString struct{}
+type Str struct{}
 
-func (ToString) fromStr(str string) (string, error) {
+func (Str) fromStr(str string) (string, error) {
 	return str, nil
 }
 
-func (ToString) zero() string {
+func (Str) zero() string {
 	return ""
 }
 
-type ToStringSlice struct{}
+type StrSlice struct{}
 
-func (s ToStringSlice) fromStr(str string) ([]string, error) {
+func (s StrSlice) fromStr(str string) ([]string, error) {
 	result := strings.Split(str, ",")
 	if len(result) == 1 && result[0] == "" {
 		return s.zero(), nil
@@ -65,26 +65,26 @@ func (s ToStringSlice) fromStr(str string) ([]string, error) {
 	return result, nil
 }
 
-func (ToStringSlice) zero() []string {
+func (StrSlice) zero() []string {
 	return []string{}
 }
 
-type ToInteger struct{}
+type Int struct{}
 
-func (ToInteger) fromStr(str string) (int, error) {
+func (Int) fromStr(str string) (int, error) {
 	return strconv.Atoi(str)
 }
 
-func (ToInteger) zero() int {
+func (Int) zero() int {
 	return 0
 }
 
-type ToBool struct{}
+type Bool struct{}
 
-func (ToBool) fromStr(str string) (bool, error) {
+func (Bool) fromStr(str string) (bool, error) {
 	return strconv.ParseBool(str)
 }
 
-func (ToBool) zero() bool {
+func (Bool) zero() bool {
 	return false
 }
