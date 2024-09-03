@@ -6,34 +6,32 @@ import (
 	"strings"
 )
 
-type enverConstraint interface {
+type configTypes interface {
 	~int | ~bool | ~string | []string
 }
 
-type enver[T enverConstraint] interface {
-	// Return T value from input string
-	fromStr(value string) (T, error)
-	// Return T's zero value
-	zero() T
+type enver[T configTypes] interface {
+	fromStr(value string) (T, error) // Return T value from input string
+	zero() T                         // Return T's zero value
 }
 
 func Str(keys ...any) string {
-	return fromEnv[ToStr](keys...)
+	return fromEnv[toStr](keys...)
 }
 
 func StrSlice(keys ...any) []string {
-	return fromEnv[ToStrSlice](keys...)
+	return fromEnv[toStrSlice](keys...)
 }
 
 func Int(keys ...any) int {
-	return fromEnv[ToInt](keys...)
+	return fromEnv[toInt](keys...)
 }
 
 func Bool(keys ...any) bool {
-	return fromEnv[ToBool](keys...)
+	return fromEnv[toBool](keys...)
 }
 
-func fromEnv[U enver[T], T enverConstraint](keys ...any) T {
+func fromEnv[U enver[T], T configTypes](keys ...any) T {
 	var enver U
 
 	for _, key := range keys {
@@ -61,19 +59,19 @@ func fromEnv[U enver[T], T enverConstraint](keys ...any) T {
 	return enver.zero()
 }
 
-type ToStr struct{}
+type toStr struct{}
 
-func (ToStr) fromStr(str string) (string, error) {
+func (toStr) fromStr(str string) (string, error) {
 	return str, nil
 }
 
-func (ToStr) zero() string {
+func (toStr) zero() string {
 	return ""
 }
 
-type ToStrSlice struct{}
+type toStrSlice struct{}
 
-func (s ToStrSlice) fromStr(str string) ([]string, error) {
+func (s toStrSlice) fromStr(str string) ([]string, error) {
 	result := strings.Split(str, ",")
 	if len(result) == 1 && result[0] == "" {
 		return s.zero(), nil
@@ -81,26 +79,26 @@ func (s ToStrSlice) fromStr(str string) ([]string, error) {
 	return result, nil
 }
 
-func (ToStrSlice) zero() []string {
+func (toStrSlice) zero() []string {
 	return []string{}
 }
 
-type ToInt struct{}
+type toInt struct{}
 
-func (ToInt) fromStr(str string) (int, error) {
+func (toInt) fromStr(str string) (int, error) {
 	return strconv.Atoi(str)
 }
 
-func (ToInt) zero() int {
+func (toInt) zero() int {
 	return 0
 }
 
-type ToBool struct{}
+type toBool struct{}
 
-func (ToBool) fromStr(str string) (bool, error) {
+func (toBool) fromStr(str string) (bool, error) {
 	return strconv.ParseBool(str)
 }
 
-func (ToBool) zero() bool {
+func (toBool) zero() bool {
 	return false
 }
