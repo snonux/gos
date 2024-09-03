@@ -26,16 +26,16 @@ func New(configFile string) (ClientConfig, error) {
 		log.Println("Skipping config file:", err)
 	}
 
-	conf.Servers = config.Env[config.StrSlice]("GOS_SERVERS", conf.Servers)
-	conf.APIKey = config.Env[config.Str]("GOS_API_KEY", conf.APIKey)
-	conf.Editor = config.Env[config.Str]("GOS_EDITOR", "EDITOR", conf.Editor, "vi")
+	conf.Servers = config.StrSlice("GOS_SERVERS", conf.Servers)
+	conf.APIKey = config.Str("GOS_API_KEY", conf.APIKey)
+	conf.Editor = config.Str("GOS_EDITOR", "EDITOR", conf.Editor, "vi")
 
 	defaultDataDir := fmt.Sprintf("%s/.gos/data", os.Getenv("HOME"))
-	conf.DataDir = config.Env[config.Str]("GOS_DATA_DIR", conf.DataDir, defaultDataDir)
-	conf.ComposeFile = config.Env[config.Str]("GOS_COMPOSE_FILE", conf.ComposeFile, "compose.txt")
+	conf.DataDir = config.Str("GOS_DATA_DIR", conf.DataDir, defaultDataDir)
+	conf.ComposeFile = config.Str("GOS_COMPOSE_FILE", conf.ComposeFile, "compose.txt")
 
 	defaultLogFile := fmt.Sprintf("%s/.gos/gos.log", os.Getenv("HOME"))
-	conf.LogFile = config.Env[config.Str]("GOS_LOG_FILE", conf.LogFile, defaultLogFile)
+	conf.LogFile = config.Str("GOS_LOG_FILE", conf.LogFile, defaultLogFile)
 
 	return conf, nil
 }

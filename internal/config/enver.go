@@ -17,7 +17,23 @@ type enver[T enverConstraint] interface {
 	zero() T
 }
 
-func Env[U enver[T], T enverConstraint](keys ...any) T {
+func Str(keys ...any) string {
+	return fromEnv[ToStr](keys...)
+}
+
+func StrSlice(keys ...any) []string {
+	return fromEnv[ToStrSlice](keys...)
+}
+
+func Int(keys ...any) int {
+	return fromEnv[ToInt](keys...)
+}
+
+func Bool(keys ...any) bool {
+	return fromEnv[ToBool](keys...)
+}
+
+func fromEnv[U enver[T], T enverConstraint](keys ...any) T {
 	var enver U
 
 	for _, key := range keys {
@@ -45,19 +61,19 @@ func Env[U enver[T], T enverConstraint](keys ...any) T {
 	return enver.zero()
 }
 
-type Str struct{}
+type ToStr struct{}
 
-func (Str) fromStr(str string) (string, error) {
+func (ToStr) fromStr(str string) (string, error) {
 	return str, nil
 }
 
-func (Str) zero() string {
+func (ToStr) zero() string {
 	return ""
 }
 
-type StrSlice struct{}
+type ToStrSlice struct{}
 
-func (s StrSlice) fromStr(str string) ([]string, error) {
+func (s ToStrSlice) fromStr(str string) ([]string, error) {
 	result := strings.Split(str, ",")
 	if len(result) == 1 && result[0] == "" {
 		return s.zero(), nil
@@ -65,26 +81,26 @@ func (s StrSlice) fromStr(str string) ([]string, error) {
 	return result, nil
 }
 
-func (StrSlice) zero() []string {
+func (ToStrSlice) zero() []string {
 	return []string{}
 }
 
-type Int struct{}
+type ToInt struct{}
 
-func (Int) fromStr(str string) (int, error) {
+func (ToInt) fromStr(str string) (int, error) {
 	return strconv.Atoi(str)
 }
 
-func (Int) zero() int {
+func (ToInt) zero() int {
 	return 0
 }
 
-type Bool struct{}
+type ToBool struct{}
 
-func (Bool) fromStr(str string) (bool, error) {
+func (ToBool) fromStr(str string) (bool, error) {
 	return strconv.ParseBool(str)
 }
 
-func (Bool) zero() bool {
+func (ToBool) zero() bool {
 	return false
 }
