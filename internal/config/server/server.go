@@ -4,21 +4,20 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"codeberg.org/snonux/gos/internal/config"
 )
 
 type ServerConfig struct {
-	ListenAddr        string `json:"ListenAddr,omitempty"`
-	Partner           string `json:"Partner,omitempty"`
-	APIKey            string `json:"APIKey,omitempty"`
-	DataDir           string `json:"StateDir,omitempty"`
-	EmailTo           string `json:"EmailTo,omitempty"`
-	EmailFrom         string `json:"EmailFrom,omitempty"`
-	SMTPServer        string `json:"SMTPServer,omitempty"`
-	MergeIntervalS    int    `json:"MergeInterval,omitempty"`
-	ScheduleIntervalS int    `json:"ScheduleInterval,omitempty"`
+	ListenAddr        string   `json:"ListenAddr,omitempty"`
+	Partners          []string `json:"Partners,omitempty"`
+	APIKey            string   `json:"APIKey,omitempty"`
+	DataDir           string   `json:"StateDir,omitempty"`
+	EmailTo           string   `json:"EmailTo,omitempty"`
+	EmailFrom         string   `json:"EmailFrom,omitempty"`
+	SMTPServer        string   `json:"SMTPServer,omitempty"`
+	MergeIntervalS    int      `json:"MergeInterval,omitempty"`
+	ScheduleIntervalS int      `json:"ScheduleInterval,omitempty"`
 	// SocialPlatformsEnable []string      `json:"SocialPlatformsEnable,omitempty"`
 	Secrets SecretsConfig `json:"Secrets,omitempty"`
 }
@@ -37,8 +36,7 @@ func New(configFile, secretsFile string) (ServerConfig, error) {
 	}
 
 	conf.ListenAddr = config.EnvToStr("GOS_LISTEN_ADDR", conf.ListenAddr, "localhost:8080")
-	// TODO: Return an array or slice
-	conf.Partner = config.EnvToStr("GOS_PARTNER", "GOS_PARTNERS", conf.Partner)
+	conf.Partners = config.EnvToStrSlice("GOS_PARTNERS", conf.Partners)
 	conf.APIKey = config.EnvToStr("GOS_API_KEY", conf.APIKey)
 	conf.DataDir = config.EnvToStr("GOS_DATA_DIR", conf.DataDir, "data")
 	conf.EmailTo = config.EnvToStr("GOS_EMAIL_TO", conf.EmailTo)
@@ -57,12 +55,4 @@ func New(configFile, secretsFile string) (ServerConfig, error) {
 	conf.ScheduleIntervalS = config.EnvToInt("GOS_SCHEDULER_INTERVAL", oneHour*6)
 
 	return conf, nil
-}
-
-func (conf ServerConfig) Partners() ([]string, error) {
-	if partners := strings.Split(conf.Partner, ","); partners[0] != "" {
-		return partners, nil
-	}
-
-	return []string{}, fmt.Errorf("no partners configured")
 }

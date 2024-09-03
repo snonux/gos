@@ -2,6 +2,7 @@ package tui
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -29,9 +30,8 @@ func submitEntryCmd(ctx context.Context, conf client.ClientConfig, composeFile s
 }
 
 func submitEntry(ctx context.Context, conf client.ClientConfig, composeFile string) error {
-	servers, err := conf.Servers()
-	if err != nil {
-		return err
+	if len(conf.Servers) == 0 {
+		return errors.New("no server configured")
 	}
 
 	ent, err := types.NewEntryFromTextFile(composeFile)
@@ -39,7 +39,7 @@ func submitEntry(ctx context.Context, conf client.ClientConfig, composeFile stri
 		return err
 	}
 
-	if err := easyhttp.PostData(ctx, "submit", conf.APIKey, &ent, servers...); err != nil {
+	if err := easyhttp.PostData(ctx, "submit", conf.APIKey, &ent, conf.Servers...); err != nil {
 		return err
 	}
 
