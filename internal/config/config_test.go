@@ -2,12 +2,14 @@ package config
 
 import (
 	"os"
+	"slices"
 	"testing"
 )
 
 func TestEnvToStr(t *testing.T) {
 	t.Parallel()
 
+	os.Unsetenv("NON_EXISTENT_ENV")
 	os.Setenv("GOS_TEST_FROM_ENV", "foobarbaz")
 
 	var (
@@ -21,14 +23,13 @@ func TestEnvToStr(t *testing.T) {
 	t.Logf("got '%s' as expected", expected)
 
 	expected = "default value"
-	got = EnvToStr("GOS_JAJAJA", expected)
+	got = EnvToStr("NON_EXISTENT_ENV", expected)
 	if got != expected {
 		t.Errorf("got '%s' but expected '%s'", got, expected)
 	}
 	t.Logf("got '%s' as expected", expected)
 
-	os.Unsetenv("JUJUJU_NOT_EXISTANT_ENV")
-	if got = EnvToStr("JUJUJU_NOT_EXISTANT_ENV"); got != "" {
+	if got = EnvToStr("NON_EXISTENT_ENV"); got != "" {
 		t.Errorf("got '%s' but expected empty string", got)
 	}
 	t.Logf("got empty string as expected")
@@ -41,9 +42,45 @@ func TestEnvToStr(t *testing.T) {
 	t.Logf("got '%s' as expected", expected)
 }
 
+func TestEnvToStrSlice(t *testing.T) {
+	t.Parallel()
+
+	os.Setenv("GOS_TEST_SLICE_FROM_ENV", "foo,bar,baz")
+
+	var (
+		expected = []string{"foo", "bar", "baz"}
+		got      = EnvToStrSlice("GOS_TEST_SLICE_FROM_ENV")
+	)
+	if !slices.Equal(got, expected) {
+		t.Errorf("got '%v' but expected '%v'", got, expected)
+	}
+	t.Logf("got '%v' as expected", expected)
+
+	expected = []string{"default value"}
+	got = EnvToStrSlice("NON_EXISTENT_ENV_SLICE", "default value")
+	if !slices.Equal(got, expected) {
+		t.Errorf("got '%v' but expected '%v'", got, expected)
+	}
+	t.Logf("got '%v' as expected", expected)
+
+	os.Unsetenv("NON_EXISTENT_ENV")
+	if got = EnvToStrSlice("NON_EXISTENT_ENV"); len(got) > 0 {
+		t.Errorf("got '%s' of len '%d' but expected empty slice", got, len(got))
+	}
+	t.Logf("got empty slice as expected")
+
+	expected = []string{"casio", "g-shock"}
+	got = EnvToStrSlice("NON_EXISTENT_ENV", "", "", "", "casio,g-shock", "")
+	if !slices.Equal(got, expected) {
+		t.Errorf("got '%v' but expected '%v'", got, expected)
+	}
+	t.Logf("got '%v' as expected", expected)
+}
+
 func TestEnvToInt(t *testing.T) {
 	t.Parallel()
 
+	os.Unsetenv("NON_EXISTENT_ENV")
 	os.Setenv("GOS_TEST_INT_FROM_ENV", "1")
 
 	var (
@@ -57,14 +94,13 @@ func TestEnvToInt(t *testing.T) {
 	t.Logf("got '%d' as expected", expected)
 
 	expected = 999
-	got = EnvToInt("GOS_JAJAJA", expected)
+	got = EnvToInt("NON_EXISTENT_ENV", expected)
 	if got != expected {
 		t.Errorf("got '%d' but expected '%d'", got, expected)
 	}
 	t.Logf("got '%d' as expected", expected)
 
-	os.Unsetenv("JUJUJU_NOT_EXISTANT_ENV")
-	if got = EnvToInt("JUJUJU_NOT_EXISTANT_ENV"); got != 0 {
+	if got = EnvToInt("NON_EXISTENT_ENV"); got != 0 {
 		t.Errorf("got '%d' but expected zero", got)
 	}
 	t.Logf("got zero as expected")
@@ -80,6 +116,7 @@ func TestEnvToInt(t *testing.T) {
 func TestEnvToBool(t *testing.T) {
 	t.Parallel()
 
+	os.Unsetenv("NON_EXISTENT_ENV")
 	os.Setenv("GOS_TEST_BOOL_FROM_ENV", "true")
 
 	var (
@@ -93,20 +130,19 @@ func TestEnvToBool(t *testing.T) {
 	t.Logf("got '%t' as expected", expected)
 
 	expected = false
-	got = EnvToBool("GOS_JAJAJA", expected)
+	got = EnvToBool("NON_EXISTENT_ENV", expected)
 	if got != expected {
 		t.Errorf("got '%t' but expected '%t'", got, expected)
 	}
 	t.Logf("got '%t' as expected", expected)
 
-	os.Unsetenv("JUJUJU_NOT_EXISTANT_ENV")
-	if got = EnvToBool("JUJUJU_NOT_EXISTANT_ENV"); got {
+	if got = EnvToBool("NON_EXISTENT_ENV"); got {
 		t.Errorf("got '%t' but expected false", got)
 	}
 	t.Logf("got 'false' as expected")
 
 	expected = true
-	got = EnvToBool("JUJUJU_NOT_EXISTANT_ENV", "", "", "", expected, "")
+	got = EnvToBool("NON_EXISTENT_ENV", "", "", "", expected, "")
 	if got != expected {
 		t.Errorf("got '%t' but expected '%t'", got, expected)
 	}

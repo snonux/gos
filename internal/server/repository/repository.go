@@ -48,6 +48,7 @@ func Instance(conf server.ServerConfig) Repository {
 	return instance
 }
 
+// Need to register all social platforms for in-memory representation of shared posts and so on.
 func newRepository(conf server.ServerConfig, fs fs) Repository {
 	var loaded bool
 	return Repository{

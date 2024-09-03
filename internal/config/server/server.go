@@ -10,16 +10,17 @@ import (
 )
 
 type ServerConfig struct {
-	ListenAddr        string        `json:"ListenAddr,omitempty"`
-	Partner           string        `json:"Partner,omitempty"`
-	APIKey            string        `json:"APIKey,omitempty"`
-	DataDir           string        `json:"StateDir,omitempty"`
-	EmailTo           string        `json:"EmailTo,omitempty"`
-	EmailFrom         string        `json:"EmailFrom,omitempty"`
-	SMTPServer        string        `json:"SMTPServer,omitempty"`
-	MergeIntervalS    int           `json:"MergeInterval,omitempty"`
-	ScheduleIntervalS int           `json:"ScheduleInterval,omitempty"`
-	Secrets           SecretsConfig `json:"Secrets,omitempty"`
+	ListenAddr        string `json:"ListenAddr,omitempty"`
+	Partner           string `json:"Partner,omitempty"`
+	APIKey            string `json:"APIKey,omitempty"`
+	DataDir           string `json:"StateDir,omitempty"`
+	EmailTo           string `json:"EmailTo,omitempty"`
+	EmailFrom         string `json:"EmailFrom,omitempty"`
+	SMTPServer        string `json:"SMTPServer,omitempty"`
+	MergeIntervalS    int    `json:"MergeInterval,omitempty"`
+	ScheduleIntervalS int    `json:"ScheduleInterval,omitempty"`
+	// SocialPlatformsEnable []string      `json:"SocialPlatformsEnable,omitempty"`
+	Secrets SecretsConfig `json:"Secrets,omitempty"`
 }
 
 func New(configFile, secretsFile string) (ServerConfig, error) {
@@ -36,6 +37,7 @@ func New(configFile, secretsFile string) (ServerConfig, error) {
 	}
 
 	conf.ListenAddr = config.EnvToStr("GOS_LISTEN_ADDR", conf.ListenAddr, "localhost:8080")
+	// TODO: Return an array or slice
 	conf.Partner = config.EnvToStr("GOS_PARTNER", "GOS_PARTNERS", conf.Partner)
 	conf.APIKey = config.EnvToStr("GOS_API_KEY", conf.APIKey)
 	conf.DataDir = config.EnvToStr("GOS_DATA_DIR", conf.DataDir, "data")

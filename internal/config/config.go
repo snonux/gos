@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 	"unicode"
 )
 
@@ -48,6 +49,14 @@ func EnvToStr(keys ...any) string {
 	return ""
 }
 
+func EnvToStrSlice(keys ...any) []string {
+	result := strings.Split(EnvToStr(keys...), ",")
+	if len(result) == 1 && result[0] == "" {
+		return []string{}
+	}
+	return result
+}
+
 func EnvToInt(keys ...any) int {
 	for _, key := range keys {
 		switch key := key.(type) {
@@ -72,7 +81,6 @@ func EnvToInt(keys ...any) int {
 	return 0
 }
 
-// TODO: Maybe the EnvTo... can be programmed more generic...?
 func EnvToBool(keys ...any) bool {
 	for _, key := range keys {
 		switch key := key.(type) {
