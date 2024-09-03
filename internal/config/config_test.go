@@ -20,26 +20,23 @@ func TestEnvToStr(t *testing.T) {
 	if got != expected {
 		t.Errorf("got '%s' but expected '%s'", got, expected)
 	}
-	t.Logf("got '%s' as expected", expected)
 
 	expected = "default value"
 	got = Env[ToString]("NON_EXISTENT_ENV", expected)
 	if got != expected {
 		t.Errorf("got '%s' but expected '%s'", got, expected)
 	}
-	t.Logf("got '%s' as expected", expected)
 
 	if got = Env[ToString]("NON_EXISTENT_ENV"); got != "" {
 		t.Errorf("got '%s' but expected empty string", got)
 	}
-	t.Logf("got empty string as expected")
 
 	expected = "casio g-shock"
+	os.Setenv("GOS_WATCH", expected)
 	got = Env[ToString]("GOS_WATCH", "", "", "", expected, "")
 	if got != expected {
 		t.Errorf("got '%s' but expected '%s'", got, expected)
 	}
-	t.Logf("got '%s' as expected", expected)
 }
 
 func TestEnvToStrSlice(t *testing.T) {
@@ -54,27 +51,23 @@ func TestEnvToStrSlice(t *testing.T) {
 	if !slices.Equal(got, expected) {
 		t.Errorf("got '%v' but expected '%v'", got, expected)
 	}
-	t.Logf("got '%v' as expected", expected)
 
 	expected = []string{"default value"}
 	got = Env[ToStringSlice]("NON_EXISTENT_ENV_SLICE", "default value")
 	if !slices.Equal(got, expected) {
 		t.Errorf("got '%v' but expected '%v'", got, expected)
 	}
-	t.Logf("got '%v' as expected", expected)
 
 	os.Unsetenv("NON_EXISTENT_ENV")
 	if got = Env[ToStringSlice]("NON_EXISTENT_ENV"); len(got) > 0 {
 		t.Errorf("got '%s' of len '%d' but expected empty slice", got, len(got))
 	}
-	t.Logf("got empty slice as expected")
 
 	expected = []string{"casio", "g-shock"}
 	got = Env[ToStringSlice]("NON_EXISTENT_ENV", "", "", "", "casio,g-shock", "")
 	if !slices.Equal(got, expected) {
 		t.Errorf("got '%v' but expected '%v'", got, expected)
 	}
-	t.Logf("got '%v' as expected", expected)
 }
 
 func TestEnvToInt(t *testing.T) {
@@ -91,26 +84,22 @@ func TestEnvToInt(t *testing.T) {
 	if got != expected {
 		t.Errorf("got '%d' but expected '%d'", got, expected)
 	}
-	t.Logf("got '%d' as expected", expected)
 
 	expected = 999
 	got = Env[ToInteger]("NON_EXISTENT_ENV", expected)
 	if got != expected {
 		t.Errorf("got '%d' but expected '%d'", got, expected)
 	}
-	t.Logf("got '%d' as expected", expected)
 
 	if got = Env[ToInteger]("NON_EXISTENT_ENV"); got != 0 {
 		t.Errorf("got '%d' but expected zero", got)
 	}
-	t.Logf("got zero as expected")
 
 	expected = 1234
 	got = Env[ToInteger]("GOS_WATCH", "", "", "", expected, "")
 	if got != expected {
 		t.Errorf("got '%d' but expected '%d'", got, expected)
 	}
-	t.Logf("got '%d' as expected", expected)
 }
 
 func TestEnvToBool(t *testing.T) {
@@ -121,32 +110,28 @@ func TestEnvToBool(t *testing.T) {
 
 	var (
 		expected = true
-		got      = Env[ToBool](t, "GOS_TEST_BOOL_FROM_ENV")
+		got      = Env[ToBool]("GOS_TEST_BOOL_FROM_ENV")
 	)
 
 	if got != expected {
 		t.Errorf("got '%t' but expected '%t'", got, expected)
 	}
-	t.Logf("got '%t' as expected", expected)
 
 	expected = false
 	got = Env[ToBool]("NON_EXISTENT_ENV", expected)
 	if got != expected {
 		t.Errorf("got '%t' but expected '%t'", got, expected)
 	}
-	t.Logf("got '%t' as expected", expected)
 
 	if got = Env[ToBool]("NON_EXISTENT_ENV"); got {
 		t.Errorf("got '%t' but expected false", got)
 	}
-	t.Logf("got 'false' as expected")
 
 	expected = true
 	got = Env[ToBool]("NON_EXISTENT_ENV", "", "", "", expected, "")
 	if got != expected {
 		t.Errorf("got '%t' but expected '%t'", got, expected)
 	}
-	t.Logf("got '%t' as expected", expected)
 }
 
 func TestSecondENV(t *testing.T) {

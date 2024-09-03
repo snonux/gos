@@ -12,7 +12,7 @@ type enverConstraint interface {
 
 type enver[T enverConstraint] interface {
 	// Return T value from input string
-	fromStr(value string) T
+	fromStr(value string) (T, error)
 	// Return T's zero value
 	zero() T
 }
@@ -27,11 +27,16 @@ func Env[U enver[T], T enverConstraint](keys ...any) T {
 				continue
 			}
 			if !isAllUpperCase(key) {
-				return enver.fromStr(key)
+				if val, err := enver.fromStr(key); err == nil {
+					return val
+				}
+			} else if strVal := os.Getenv(key); strVal != "" {
+				if val, err := enver.fromStr(strVal); err == nil {
+					return val
+				}
 			}
-			if value := os.Getenv(key); value != "" {
-				return enver.fromStr(value)
-			}
+		case T:
+			return key
 		case func() T:
 			return key()
 		}
@@ -42,8 +47,8 @@ func Env[U enver[T], T enverConstraint](keys ...any) T {
 
 type ToString struct{}
 
-func (ToString) fromStr(str string) string {
-	return str
+func (ToString) fromStr(str string) (string, error) {
+	return str, nil
 }
 
 func (ToString) zero() string {
@@ -52,12 +57,12 @@ func (ToString) zero() string {
 
 type ToStringSlice struct{}
 
-func (s ToStringSlice) fromStr(str string) []string {
+func (s ToStringSlice) fromStr(str string) ([]string, error) {
 	result := strings.Split(str, ",")
 	if len(result) == 1 && result[0] == "" {
-		return s.zero()
+		return s.zero(), nil
 	}
-	return result
+	return result, nil
 }
 
 func (ToStringSlice) zero() []string {
@@ -66,12 +71,8 @@ func (ToStringSlice) zero() []string {
 
 type ToInteger struct{}
 
-// TODO: Return an error if can't convert to int
-func (s ToInteger) fromStr(str string) int {
-	if result, err := strconv.Atoi(str); err == nil {
-		return result
-	}
-	return s.zero()
+func (ToInteger) fromStr(str string) (int, error) {
+	return strconv.Atoi(str)
 }
 
 func (ToInteger) zero() int {
@@ -80,12 +81,8 @@ func (ToInteger) zero() int {
 
 type ToBool struct{}
 
-// TODO: Return an error if can't convert to bool
-func (s ToBool) fromStr(str string) bool {
-	if result, err := strconv.ParseBool(str); err == nil {
-		return result
-	}
-	return s.zero()
+func (ToBool) fromStr(str string) (bool, error) {
+	return strconv.ParseBool(str)
 }
 
 func (ToBool) zero() bool {
