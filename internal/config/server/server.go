@@ -35,14 +35,14 @@ func New(configFile, secretsFile string) (ServerConfig, error) {
 		return conf, err
 	}
 
-	conf.ListenAddr = config.EnvToStr("GOS_LISTEN_ADDR", conf.ListenAddr, "localhost:8080")
-	conf.Partners = config.EnvToStrSlice("GOS_PARTNERS", conf.Partners)
-	conf.APIKey = config.EnvToStr("GOS_API_KEY", conf.APIKey)
-	conf.DataDir = config.EnvToStr("GOS_DATA_DIR", conf.DataDir, "data")
-	conf.EmailTo = config.EnvToStr("GOS_EMAIL_TO", conf.EmailTo)
-	conf.EmailFrom = config.EnvToStr("GOS_EMAIL_FROM", conf.EmailFrom)
+	conf.ListenAddr = config.Env[config.ToString]("GOS_LISTEN_ADDR", conf.ListenAddr, "localhost:8080")
+	conf.Partners = config.Env[config.ToStringSlice]("GOS_PARTNERS", conf.Partners)
+	conf.APIKey = config.Env[config.ToString]("GOS_API_KEY", conf.APIKey)
+	conf.DataDir = config.Env[config.ToString]("GOS_DATA_DIR", conf.DataDir, "data")
+	conf.EmailTo = config.Env[config.ToString]("GOS_EMAIL_TO", conf.EmailTo)
+	conf.EmailFrom = config.Env[config.ToString]("GOS_EMAIL_FROM", conf.EmailFrom)
 
-	conf.SMTPServer = config.EnvToStr("GOS_SMTP_SERVER", conf.SMTPServer, func() string {
+	conf.SMTPServer = config.Env[config.ToString]("GOS_SMTP_SERVER", conf.SMTPServer, func() string {
 		hostname, err := os.Hostname()
 		if err != nil {
 			log.Fatal(err)
@@ -51,8 +51,8 @@ func New(configFile, secretsFile string) (ServerConfig, error) {
 	})
 
 	const oneHour = 3600
-	conf.MergeIntervalS = config.EnvToInt("GOS_MERGE_INTERVAL", oneHour)
-	conf.ScheduleIntervalS = config.EnvToInt("GOS_SCHEDULER_INTERVAL", oneHour*6)
+	conf.MergeIntervalS = config.Env[config.ToInteger]("GOS_MERGE_INTERVAL", oneHour)
+	conf.ScheduleIntervalS = config.Env[config.ToInteger]("GOS_SCHEDULER_INTERVAL", oneHour*6)
 
 	return conf, nil
 }
