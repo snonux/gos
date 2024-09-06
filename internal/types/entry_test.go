@@ -5,7 +5,7 @@ import (
 )
 
 func oneEntry() (Entry, error) {
-	ent := `
+	entry := `
 		{
 			"body": "Body text here",
 			"shared": {
@@ -14,11 +14,11 @@ func oneEntry() (Entry, error) {
 			}
 		}
 	`
-	return NewEntry([]byte(ent))
+	return NewEntry([]byte(entry))
 }
 
 func anotherEntry() (Entry, error) {
-	ent := `
+	entry := `
 		{
 			"body": "Body text here",
 			"shared": {
@@ -28,32 +28,32 @@ func anotherEntry() (Entry, error) {
 			}
 		}
 	`
-	return NewEntry([]byte(ent))
+	return NewEntry([]byte(entry))
 }
 
-func twoDifferentEntries() (ent1, ent2 Entry, err error) {
-	if ent1, err = oneEntry(); err != nil {
+func twoDifferentEntries() (entry1, entry2 Entry, err error) {
+	if entry1, err = oneEntry(); err != nil {
 		return
 	}
-	ent2, err = anotherEntry()
+	entry2, err = anotherEntry()
 	return
 }
 
 func TestNewEntryFromJSON(t *testing.T) {
-	ent1, err := oneEntry()
+	entry1, err := oneEntry()
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	t.Log("ent1", ent1)
-	if len(ent1.Shared) != 2 {
-		t.Error("expected to have two shared entries in ent1")
+	t.Log("entry1", entry1)
+	if len(entry1.Shared) != 2 {
+		t.Error("expected to have two shared entries in entry1")
 	}
-	if !ent1.IsShared("Foo") {
+	if !entry1.IsShared("Foo") {
 		t.Error("Foo should be shared")
 	}
-	if ent1.IsShared("Bar") {
+	if entry1.IsShared("Bar") {
 		t.Error("Bar should not be shared")
 	}
 }
@@ -61,71 +61,71 @@ func TestNewEntryFromJSON(t *testing.T) {
 func TestEntryChecksum(t *testing.T) {
 	t.Parallel()
 
-	ent, err := NewEntry([]byte(`{"Body": "Body text here"}`))
+	entry, err := NewEntry([]byte(`{"Body": "Body text here"}`))
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
 	expected := "4dbd4f04d7917b1f1bd0807cf39a260efe51085d49b40469fca27b7f89cc73bd"
-	got := ent.Checksum()
+	got := entry.Checksum()
 
 	if expected != got {
 		t.Errorf("expected checksum '%s' but got '%s'", expected, got)
 		return
 	}
-	t.Log(ent.Checksum())
+	t.Log(entry.Checksum())
 }
 
 func TestEquals(t *testing.T) {
 	t.Parallel()
 
-	ent1, ent2, err := twoDifferentEntries()
+	entry1, entry2, err := twoDifferentEntries()
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	if ent1.Equals(ent2) {
-		t.Error("entries should not be equal", ent1, ent2)
+	if entry1.Equals(entry2) {
+		t.Error("entries should not be equal", entry1, entry2)
 	}
 
-	t.Log("both entries differ", ent1, ent2)
+	t.Log("both entries differ", entry1, entry2)
 }
 
 func TestNewEntryFromCopy(t *testing.T) {
-	ent1, _, err := twoDifferentEntries()
+	entry1, _, err := twoDifferentEntries()
 	if err != nil {
 		t.Error(err)
 	}
 
-	ent2, err := NewEntryFromCopy(ent1)
+	entry2, err := NewEntryFromCopy(entry1)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if !ent1.Equals(ent2) {
-		t.Error("copy of entry ent1 does not equal")
-		t.Error("original:", ent1)
-		t.Error("copy:    ", ent2)
+	if !entry1.Equals(entry2) {
+		t.Error("copy of entry entry1 does not equal")
+		t.Error("original:", entry1)
+		t.Error("copy:    ", entry2)
 	}
 }
 
 func TestUpdate(t *testing.T) {
 	t.Parallel()
 
-	ent1, ent2, err := twoDifferentEntries()
+	entry1, entry2, err := twoDifferentEntries()
 	if err != nil {
 		t.Error(err)
 	}
 
 	var changed bool
-	if ent1, changed, err = ent1.Update(ent2); err != nil {
+	if entry1, changed, err = entry1.Update(entry2); err != nil {
 		t.Error(err)
 	}
 
-	if len(ent1.Shared) != 3 {
-		t.Error("expected 3 entries after update", ent1)
+	if len(entry1.Shared) != 3 {
+		t.Error("expected 3 entries after update", entry1)
 	}
 
 	if !changed {
@@ -133,13 +133,13 @@ func TestUpdate(t *testing.T) {
 	}
 
 	var sharedCount int
-	for _, shared := range ent1.Shared {
+	for _, shared := range entry1.Shared {
 		if shared.Is {
 			sharedCount++
 		}
 	}
 
 	if sharedCount != 2 {
-		t.Error("expected 2 shared entries after update but got", sharedCount, ent1)
+		t.Error("expected 2 shared entries after update but got", sharedCount, entry1)
 	}
 }

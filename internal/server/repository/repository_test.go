@@ -16,15 +16,15 @@ func TestRepositoryPutGet(t *testing.T) {
 	fs := make(vfs.MemoryFS)
 	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
 
-	for _, ent := range makeEntries(t) {
-		t.Run(ent.ID, func(t *testing.T) {
-			_ = repo.put(ent)
-			entGot, err := repo.Get(ent.ID)
+	for _, entry := range makeEntries(t) {
+		t.Run(entry.ID, func(t *testing.T) {
+			_ = repo.put(entry)
+			entGot, err := repo.Get(entry.ID)
 			if err != nil {
 				t.Error(err)
 			}
-			if !entGot.Equals(ent) {
-				t.Error("expected to get", ent, "but got", entGot)
+			if !entGot.Equals(entry) {
+				t.Error("expected to get", entry, "but got", entGot)
 			}
 		})
 	}
@@ -38,9 +38,9 @@ func TestRepositoryLoad(t *testing.T) {
 	entries := makeEntries(t)
 
 	// Write entries into the VFS
-	for _, ent := range entries {
-		bytes, _ := ent.JSONMarshal()
-		_ = repo.fs.WriteFile(repo.entryPath(ent), bytes)
+	for _, entry := range entries {
+		bytes, _ := entry.JSONMarshal()
+		_ = repo.fs.WriteFile(repo.entryPath(entry), bytes)
 	}
 
 	// Load entries from VFS into the repo
@@ -48,14 +48,14 @@ func TestRepositoryLoad(t *testing.T) {
 		t.Error(err)
 	}
 
-	for _, ent := range entries {
-		t.Run(ent.ID, func(t *testing.T) {
-			entGot, err := repo.Get(ent.ID)
+	for _, entry := range entries {
+		t.Run(entry.ID, func(t *testing.T) {
+			entGot, err := repo.Get(entry.ID)
 			if err != nil {
 				t.Error(err)
 			}
-			if !entGot.Equals(ent) {
-				t.Error("expected to get", ent, "but got", entGot)
+			if !entGot.Equals(entry) {
+				t.Error("expected to get", entry, "but got", entGot)
 			}
 		})
 	}
@@ -68,8 +68,8 @@ func TestRepositoryList(t *testing.T) {
 	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
 	entries := makeEntries(t)
 
-	for _, ent := range entries {
-		_ = repo.put(ent)
+	for _, entry := range entries {
+		_ = repo.put(entry)
 	}
 
 	pairs, _ := repo.List()
@@ -77,17 +77,17 @@ func TestRepositoryList(t *testing.T) {
 		t.Error("expected as many entries as pairs")
 	}
 
-	for _, ent := range entries {
+	for _, entry := range entries {
 		var found bool
 		for _, pair := range pairs {
-			if ent.ID == pair.ID && ent.Checksum() == pair.Checksum {
+			if entry.ID == pair.ID && entry.Checksum() == pair.Checksum {
 				found = true
-				t.Log("entry matches pair", ent, pair)
+				t.Log("entry matches pair", entry, pair)
 				break
 			}
 		}
 		if !found {
-			t.Error("could not find entry", ent, "in", pairs)
+			t.Error("could not find entry", entry, "in", pairs)
 		}
 	}
 }
@@ -97,10 +97,10 @@ func TestRepositoryHasSameEntry(t *testing.T) {
 
 	fs := make(vfs.MemoryFS)
 	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
-	ent, _ := makeAnEntry()
-	_ = repo.put(ent)
+	entry, _ := makeAnEntry()
+	_ = repo.put(entry)
 
-	pair := entryPair{ent.ID, ent.Checksum()}
+	pair := entryPair{entry.ID, entry.Checksum()}
 	if !repo.hasSameEntry(pair) {
 		t.Error("repo does not contain entry corresponding to pair", pair)
 	}
@@ -116,16 +116,16 @@ func TestRepositoryMerge(t *testing.T) {
 
 	fs := make(vfs.MemoryFS)
 	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
-	ent1, _ := makeAnEntry()
-	_ = repo.put(ent1)
+	entry1, _ := makeAnEntry()
+	_ = repo.put(entry1)
 
-	ent2, _ := makeAnotherEntry()
+	entry2, _ := makeAnotherEntry()
 	// Need to have the same IDs so that the entries will actually be merged
-	ent2.ID = ent1.ID
-	// Merge a modified ent2 into the repository.
-	ent2.Body = "merged"
-	ent2.Epoch = 12345
-	_ = repo.Merge(ent2)
+	entry2.ID = entry1.ID
+	// Merge a modified entry2 into the repository.
+	entry2.Body = "merged"
+	entry2.Epoch = 12345
+	_ = repo.Merge(entry2)
 
 	pairs, _ := repo.List()
 	// Ensuring the merge didn't add a new entry
@@ -133,7 +133,7 @@ func TestRepositoryMerge(t *testing.T) {
 		t.Error("expected exactly one element in the repo but got", pairs)
 	}
 
-	entGot, _ := repo.Get(ent1.ID)
+	entGot, _ := repo.Get(entry1.ID)
 	if entGot.Body != "merged" {
 		t.Error("unexpected body", entGot.Body)
 	}
@@ -148,10 +148,10 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 	fs2 := make(vfs.MemoryFS)
 	repo2 := newRepository(server.ServerConfig{DataDir: "./data2"}, fs2)
 
-	ent1, _ := makeAnEntry()
-	_ = repo1.put(ent1)
-	ent2, _ := makeAnotherEntry()
-	_ = repo2.put(ent2)
+	entry1, _ := makeAnEntry()
+	_ = repo1.put(entry1)
+	entry2, _ := makeAnotherEntry()
+	_ = repo2.put(entry2)
 
 	getPair := func(ctx context.Context, partner string, pairs *[]entryPair) error {
 		var (
@@ -175,7 +175,7 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 		return nil
 	}
 
-	getEntry := func(ctx context.Context, partner, id string, ent *types.Entry) error {
+	getEntry := func(ctx context.Context, partner, id string, entry *types.Entry) error {
 		var (
 			ent_ types.Entry
 			err  error
@@ -191,9 +191,9 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		*ent = ent_
+		*entry = ent_
 
-		t.Log("got entry", *ent, "from repo", partner)
+		t.Log("got entry", *entry, "from repo", partner)
 		return nil
 	}
 
@@ -205,21 +205,21 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 		}
 
 		for _, pair := range pairs {
-			ent1, err := repo1.Get(pair.ID)
+			entry1, err := repo1.Get(pair.ID)
 			if err != nil {
 				return err
 			}
-			ent2, err := repo2.Get(pair.ID)
+			entry2, err := repo2.Get(pair.ID)
 			if err != nil {
 				return err
 			}
 
 			t.Log("comparing entries")
-			t.Log("ent1", ent1)
-			t.Log("ent2", ent2)
+			t.Log("entry1", entry1)
+			t.Log("entry2", entry2)
 
-			if !ent1.Equals(ent2) {
-				return fmt.Errorf("entries ent1 and ent2 don't equal")
+			if !entry1.Equals(entry2) {
+				return fmt.Errorf("entries entry1 and entry2 don't equal")
 			}
 		}
 
@@ -245,25 +245,25 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 	})
 
 	t.Run("Change shared flag and merge to partner", func(t *testing.T) {
-		ent, err := repo1.Get(ent1.ID)
+		entry, err := repo1.Get(entry1.ID)
 		if err != nil {
 			t.Error(err)
 		}
 
 		// Validate the correct test setup
-		if ent.IsShared("LinkedIn") {
+		if entry.IsShared("LinkedIn") {
 			t.Error("for the test expected LinkedIn not to be shared")
 		}
 
 		// Simulate that the entry was shared to LinkedIn social media!
-		linkedIn, ok := ent.Shared["LinkedIn"]
+		linkedIn, ok := entry.Shared["LinkedIn"]
 		if !ok {
 			t.Error("expected to have a LinkedIn shared entry")
 		}
 		linkedIn.Is = true
-		ent.Shared["LinkedIn"] = linkedIn
+		entry.Shared["LinkedIn"] = linkedIn
 
-		if err := repo1.Update(ent); err != nil {
+		if err := repo1.Update(entry); err != nil {
 			t.Error(err)
 		}
 
@@ -301,12 +301,12 @@ func TestRepositoryNext(t *testing.T) {
 	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
 	entries := makeEntries(t)
 
-	for _, ent := range entries {
-		_ = repo.put(ent)
+	for _, entry := range entries {
+		_ = repo.put(entry)
 	}
 
-	if ent, ok := repo.Next("Mastodon"); ok {
-		t.Error("expected no Mastodon entry to be found", ent)
+	if entry, ok := repo.Next("Mastodon"); ok {
+		t.Error("expected no Mastodon entry to be found", entry)
 	}
 
 	if _, ok := repo.Next("LinkedIn"); !ok {
@@ -319,15 +319,15 @@ func TestRepositoryNext(t *testing.T) {
 }
 
 func makeEntries(t *testing.T) []types.Entry {
-	ent1, err := makeAnEntry()
+	entry1, err := makeAnEntry()
 	if err != nil {
 		t.Error(err)
 	}
-	ent2, err := makeAnotherEntry()
+	entry2, err := makeAnotherEntry()
 	if err != nil {
 		t.Error(err)
 	}
-	return []types.Entry{ent1, ent2}
+	return []types.Entry{entry1, entry2}
 }
 
 func makeAnEntry() (types.Entry, error) {

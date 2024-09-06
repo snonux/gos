@@ -66,9 +66,9 @@ func (r Repository) Next(platform types.PlatformName) (types.Entry, bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	for _, ent := range r.entries {
-		if !ent.IsShared(platform) {
-			return ent, true
+	for _, entry := range r.entries {
+		if !entry.IsShared(platform) {
+			return entry, true
 		}
 	}
 
@@ -96,14 +96,14 @@ func (r Repository) load() error {
 			continue
 		}
 
-		ent, err := types.NewEntry(bytes)
+		entry, err := types.NewEntry(bytes)
 		if err != nil {
 			errs = append(errs, err)
 			continue
 		}
 
 		r.mu.Lock()
-		r.entries[ent.ID] = ent
+		r.entries[entry.ID] = entry
 		r.mu.Unlock()
 	}
 
@@ -123,8 +123,8 @@ func (r Repository) List() ([]entryPair, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	for _, ent := range r.entries {
-		pairs = append(pairs, entryPair{ent.ID, ent.Checksum()})
+	for _, entry := range r.entries {
+		pairs = append(pairs, entryPair{entry.ID, entry.Checksum()})
 	}
 
 	return pairs, nil
@@ -141,16 +141,16 @@ func (r Repository) ListBytes() ([]byte, error) {
 // put writes exact the same entry to the repository. Whereas merge
 // Is a bit more refined, tries to merge the same entry wich are slightly
 // different into the same entry.
-func (r Repository) put(ent types.Entry) error {
+func (r Repository) put(entry types.Entry) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	r.entries[ent.ID] = ent
+	r.entries[entry.ID] = entry
 
-	bytes, err := ent.JSONMarshal()
+	bytes, err := entry.JSONMarshal()
 	if err != err {
 		return err
 	}
-	return r.fs.WriteFile(r.entryPath(ent), bytes)
+	return r.fs.WriteFile(r.entryPath(entry), bytes)
 }
 
 func (r Repository) Get(id types.EntryID) (types.Entry, error) {
@@ -164,20 +164,20 @@ func (r Repository) Get(id types.EntryID) (types.Entry, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	ent, ok := r.entries[id]
+	entry, ok := r.entries[id]
 	if !ok {
-		return ent, fmt.Errorf("no entry with id %s found", id)
+		return entry, fmt.Errorf("no entry with id %s found", id)
 	}
-	return ent, nil
+	return entry, nil
 }
 
 func (r Repository) GetJSON(id types.EntryID) (string, error) {
-	ent, err := r.Get(id)
+	entry, err := r.Get(id)
 	if err != nil {
 		return "", err
 	}
 
-	bytes, err := ent.JSONMarshal()
+	bytes, err := entry.JSONMarshal()
 	if err != nil {
 		return "", err
 	}
@@ -189,8 +189,8 @@ func (r Repository) hasSameEntry(pair entryPair) bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	ent, ok := r.entries[pair.ID]
-	if !ok || ent.Checksum() != pair.Checksum {
+	entry, ok := r.entries[pair.ID]
+	if !ok || entry.Checksum() != pair.Checksum {
 		return false
 	}
 	return true
@@ -213,30 +213,30 @@ func (r Repository) Merge(otherEnt types.Entry) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	ent, ok := r.entries[otherEnt.ID]
+	entry, ok := r.entries[otherEnt.ID]
 	if !ok {
 		log.Println("can't find entry with ID", otherEnt.ID, "in local db, create new from copy")
 		var err error
-		if ent, err = types.NewEntryFromCopy(otherEnt); err != nil {
+		if entry, err = types.NewEntryFromCopy(otherEnt); err != nil {
 			return err
 		}
 	}
 
 	var changed bool
-	ent, changed, _ = ent.Update(otherEnt)
-	r.entries[otherEnt.ID] = ent
+	entry, changed, _ = entry.Update(otherEnt)
+	r.entries[otherEnt.ID] = entry
 
 	if !changed {
 		// Hasn't changed, so no need to write anything to file.
 		return nil
 	}
 
-	bytes, err := ent.JSONMarshal()
+	bytes, err := entry.JSONMarshal()
 	if err != err {
 		return err
 	}
 
-	return r.fs.WriteFile(r.entryPath(ent), bytes)
+	return r.fs.WriteFile(r.entryPath(entry), bytes)
 }
 
 func (r Repository) MergeRemotely(ctx context.Context) error {
@@ -266,9 +266,9 @@ func (r Repository) mergeRemotelyFromPartner(ctx context.Context, partner string
 		return easyhttp.GetData(ctx, uri, r.conf.APIKey, pairs)
 	}
 
-	getEntry := func(ctx context.Context, partner, id types.EntryID, ent *types.Entry) error {
+	getEntry := func(ctx context.Context, partner, id types.EntryID, entry *types.Entry) error {
 		uri := fmt.Sprintf("%s/get?id=%s", partner, id)
-		return easyhttp.GetData(ctx, uri, r.conf.APIKey, ent)
+		return easyhttp.GetData(ctx, uri, r.conf.APIKey, entry)
 	}
 
 	return r.mergeFromPartner(ctx, partner, getPair, getEntry)
@@ -297,19 +297,19 @@ func (r Repository) mergeFromPartner(ctx context.Context, partner string,
 
 		log.Println("pair", pair, "missing in local reposotory, going to merge it")
 
-		var ent types.Entry
-		if err := getEntry(ctx, partner, pair.ID, &ent); err != nil {
+		var entry types.Entry
+		if err := getEntry(ctx, partner, pair.ID, &entry); err != nil {
 			errs = append(errs, err)
 			continue
 		}
 
 		// In theory, this should never happen
-		if pair.ID != ent.ID {
-			errs = append(errs, fmt.Errorf("pair ID %s does not match entry id %s", pair.ID, ent.ID))
+		if pair.ID != entry.ID {
+			errs = append(errs, fmt.Errorf("pair ID %s does not match entry id %s", pair.ID, entry.ID))
 			continue
 		}
 
-		errs = append(errs, r.Merge(ent))
+		errs = append(errs, r.Merge(entry))
 	}
 
 	return errors.Join(errs...)

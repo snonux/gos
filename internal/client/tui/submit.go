@@ -34,12 +34,12 @@ func submitEntry(ctx context.Context, conf client.ClientConfig, composeFile stri
 		return errors.New("no server configured")
 	}
 
-	ent, err := types.NewEntryFromTextFile(composeFile)
+	entry, err := types.NewEntryFromTextFile(composeFile)
 	if err != nil {
 		return err
 	}
 
-	if err := easyhttp.PostData(ctx, "submit", conf.APIKey, &ent, conf.Servers...); err != nil {
+	if err := easyhttp.PostData(ctx, "submit", conf.APIKey, &entry, conf.Servers...); err != nil {
 		return err
 	}
 

@@ -31,11 +31,11 @@ func (h Handler) Submit(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		return err
 	}
 
-	ent, err := types.NewEntry(bytes)
+	entry, err := types.NewEntry(bytes)
 	if err != nil {
 		return err
 	}
-	return repository.Instance(h.conf).Merge(ent)
+	return repository.Instance(h.conf).Merge(entry)
 }
 
 func (h Handler) List(w http.ResponseWriter, r *http.Request) error {
