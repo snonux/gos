@@ -12,10 +12,10 @@ import (
 
 type Entry struct {
 	// The unique ID of this entry.
-	ID     string            `json:"id,omitempty"`
-	Body   string            `json:"body"`
-	Shared map[string]Shared `json:"shared,omitempty"`
-	Epoch  int               `json:"epoch,omitempty"`
+	ID     string                  `json:"id,omitempty"`
+	Body   string                  `json:"body"`
+	Shared map[PlatformName]Shared `json:"shared,omitempty"`
+	Epoch  int                     `json:"epoch,omitempty"`
 
 	// The checksum of the whole entry, can change depending on the state.
 	checksum      string
@@ -65,7 +65,7 @@ func NewEntryFromTextFile(filePath string) (Entry, error) {
 
 func (e *Entry) initialize() {
 	if e.Shared == nil {
-		e.Shared = make(map[string]Shared)
+		e.Shared = make(map[PlatformName]Shared)
 	}
 	e.checksumDirty = true
 }
@@ -78,15 +78,13 @@ func (e Entry) Equals(other Entry) bool {
 		return false
 	case e.ID != other.ID:
 		return false
-		// case len(e.Shared) != len(other.Shared):
-		// 	return false
 	}
 
 	return maps.Equal(e.Shared, other.Shared)
 }
 
-func (e Entry) IsShared(name string) bool {
-	shared, ok := e.Shared[name]
+func (e Entry) IsShared(platform PlatformName) bool {
+	shared, ok := e.Shared[platform]
 	if !ok {
 		return false
 	}
@@ -115,15 +113,15 @@ func (e Entry) Update(other Entry) (Entry, bool, error) {
 		changed = true
 	}
 
-	for otherName, otherShared := range other.Shared {
-		shared, ok := e.Shared[otherName]
+	for otherPlatform, otherShared := range other.Shared {
+		shared, ok := e.Shared[otherPlatform]
 		switch {
 		case !ok:
-			e.Shared[otherName] = shared
+			e.Shared[otherPlatform] = shared
 			changed = true
 		case otherShared.Is && !shared.Is:
 			shared.Is = true
-			e.Shared[otherName] = shared
+			e.Shared[otherPlatform] = shared
 			changed = true
 		}
 	}
@@ -156,18 +154,22 @@ func (e Entry) checksumBase() string {
 	sb.WriteString(fmt.Sprintf("Epoch:%d;", e.Epoch))
 	sb.WriteString("Shared:{")
 
-	keys := make([]string, 0, len(e.Shared))
-	for key := range e.Shared {
-		keys = append(keys, key)
+	platforms := make([]PlatformName, 0, len(e.Shared))
+	for platform := range e.Shared {
+		platforms = append(platforms, platform)
 	}
-	sort.Strings(keys)
 
-	for i, sharedName := range keys {
+	sort.Strings(platforms)
+	// slices.SortFunc(platforms, func(a, b SocialPlatform) int {
+	// 	return cmp.Compare(a.Name(), b.Name())
+	// })
+
+	for i, patform := range platforms {
 		if i > 0 {
 			sb.WriteString(",")
 		}
-		shared := e.Shared[sharedName]
-		sb.WriteString(sharedName)
+		shared := e.Shared[patform]
+		sb.WriteString(patform)
 		sb.WriteString(":{")
 		sb.WriteString(shared.String())
 		sb.WriteString("}")

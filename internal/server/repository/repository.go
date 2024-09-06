@@ -300,3 +300,8 @@ func (r Repository) mergeFromPartner(ctx context.Context, partner string,
 
 	return errors.Join(errs...)
 }
+
+// Gets next entry to be shared for the given social platform.
+func (r Repository) Next(name string) (types.Entry, bool) {
+	return types.Entry{}, false
+}
