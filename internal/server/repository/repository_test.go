@@ -177,21 +177,21 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 
 	getEntry := func(ctx context.Context, partner, id string, entry *types.Entry) error {
 		var (
-			ent_ types.Entry
-			err  error
+			entry_ types.Entry
+			err    error
 		)
 
 		switch partner {
 		case "repo1":
-			ent_, err = repo1.Get(id)
+			entry_, err = repo1.Get(id)
 		case "repo2":
-			ent_, err = repo2.Get(id)
+			entry_, err = repo2.Get(id)
 		}
 
 		if err != nil {
 			return err
 		}
-		*entry = ent_
+		*entry = entry_
 
 		t.Log("got entry", *entry, "from repo", partner)
 		return nil

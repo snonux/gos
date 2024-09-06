@@ -12,13 +12,14 @@ import (
 
 type PlatformName = string
 type EntryID = string
+type Epoch = int
 
 type Entry struct {
 	// The unique ID of this entry.
 	ID     EntryID                 `json:"id,omitempty"`
 	Body   string                  `json:"body"`
 	Shared map[PlatformName]Shared `json:"shared,omitempty"`
-	Epoch  int                     `json:"epoch,omitempty"`
+	Epoch  Epoch                   `json:"epoch,omitempty"`
 
 	// The checksum of the whole entry, can change depending on the state.
 	checksum      string

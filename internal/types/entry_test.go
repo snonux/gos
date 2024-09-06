@@ -4,41 +4,6 @@ import (
 	"testing"
 )
 
-func oneEntry() (Entry, error) {
-	entry := `
-		{
-			"body": "Body text here",
-			"shared": {
-				"Foo": { "is": true },
-				"Bar": { "is": false }
-			}
-		}
-	`
-	return NewEntry([]byte(entry))
-}
-
-func anotherEntry() (Entry, error) {
-	entry := `
-		{
-			"body": "Body text here",
-			"shared": {
-				"Foo": { "is": true },
-				"Bar": { "is": true },
-				"Baz": { "is": false }
-			}
-		}
-	`
-	return NewEntry([]byte(entry))
-}
-
-func twoDifferentEntries() (entry1, entry2 Entry, err error) {
-	if entry1, err = oneEntry(); err != nil {
-		return
-	}
-	entry2, err = anotherEntry()
-	return
-}
-
 func TestNewEntryFromJSON(t *testing.T) {
 	entry1, err := oneEntry()
 	if err != nil {
@@ -142,4 +107,39 @@ func TestUpdate(t *testing.T) {
 	if sharedCount != 2 {
 		t.Error("expected 2 shared entries after update but got", sharedCount, entry1)
 	}
+}
+
+func oneEntry() (Entry, error) {
+	entry := `
+		{
+			"body": "Body text here",
+			"shared": {
+				"Foo": { "is": true },
+				"Bar": { "is": false }
+			}
+		}
+	`
+	return NewEntry([]byte(entry))
+}
+
+func anotherEntry() (Entry, error) {
+	entry := `
+		{
+			"body": "Body text here",
+			"shared": {
+				"Foo": { "is": true },
+				"Bar": { "is": true },
+				"Baz": { "is": false }
+			}
+		}
+	`
+	return NewEntry([]byte(entry))
+}
+
+func twoDifferentEntries() (entry1, entry2 Entry, err error) {
+	if entry1, err = oneEntry(); err != nil {
+		return
+	}
+	entry2, err = anotherEntry()
+	return
 }
