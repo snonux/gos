@@ -294,6 +294,30 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 	})
 }
 
+func TestRepositoryNext(t *testing.T) {
+	t.Parallel()
+
+	fs := make(vfs.MemoryFS)
+	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
+	entries := makeEntries(t)
+
+	for _, ent := range entries {
+		_ = repo.put(ent)
+	}
+
+	if ent, ok := repo.Next("Mastodon"); ok {
+		t.Error("expected no Mastodon entry to be found", ent)
+	}
+
+	if _, ok := repo.Next("LinkedIn"); !ok {
+		t.Error("expected an unshared LinkedIn entry to be found")
+	}
+
+	if _, ok := repo.Next("DoesNotYetExist"); !ok {
+		t.Error("expected an unshared DoesNotYetExist entry to be found")
+	}
+}
+
 func makeEntries(t *testing.T) []types.Entry {
 	ent1, err := makeAnEntry()
 	if err != nil {

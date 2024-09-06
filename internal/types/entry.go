@@ -10,9 +10,12 @@ import (
 	"strings"
 )
 
+type PlatformName = string
+type EntryID = string
+
 type Entry struct {
 	// The unique ID of this entry.
-	ID     string                  `json:"id,omitempty"`
+	ID     EntryID                 `json:"id,omitempty"`
 	Body   string                  `json:"body"`
 	Shared map[PlatformName]Shared `json:"shared,omitempty"`
 	Epoch  int                     `json:"epoch,omitempty"`
@@ -158,11 +161,7 @@ func (e Entry) checksumBase() string {
 	for platform := range e.Shared {
 		platforms = append(platforms, platform)
 	}
-
 	sort.Strings(platforms)
-	// slices.SortFunc(platforms, func(a, b SocialPlatform) int {
-	// 	return cmp.Compare(a.Name(), b.Name())
-	// })
 
 	for i, patform := range platforms {
 		if i > 0 {

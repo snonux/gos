@@ -34,7 +34,7 @@ type entryPair struct {
 
 type Repository struct {
 	conf    server.ServerConfig
-	entries map[string]types.Entry
+	entries map[types.EntryID]types.Entry
 	mu      *sync.Mutex
 	fs      fs
 	loaded  *bool
@@ -53,12 +53,26 @@ func newRepository(conf server.ServerConfig, fs fs) Repository {
 	var loaded bool
 	return Repository{
 		conf:    conf,
-		entries: make(map[string]types.Entry),
+		entries: make(map[types.EntryID]types.Entry),
 		mu:      &sync.Mutex{},
 		fs:      fs,
 		loaded:  &loaded,
 		getIdRe: regexp.MustCompile(`^[a-z0-9]{64}$`),
 	}
+}
+
+// Gets next entry to be shared for the given social platform.
+func (r Repository) Next(platform types.PlatformName) (types.Entry, bool) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, ent := range r.entries {
+		if !ent.IsShared(platform) {
+			return ent, true
+		}
+	}
+
+	return types.Entry{}, false // No entry found
 }
 
 // Load repository into memory if not done yet.
@@ -139,7 +153,7 @@ func (r Repository) put(ent types.Entry) error {
 	return r.fs.WriteFile(r.entryPath(ent), bytes)
 }
 
-func (r Repository) Get(id string) (types.Entry, error) {
+func (r Repository) Get(id types.EntryID) (types.Entry, error) {
 	if !r.getIdRe.MatchString(id) {
 		return types.Entry{}, fmt.Errorf("invalid id %s", id)
 	}
@@ -157,7 +171,7 @@ func (r Repository) Get(id string) (types.Entry, error) {
 	return ent, nil
 }
 
-func (r Repository) GetJSON(id string) (string, error) {
+func (r Repository) GetJSON(id types.EntryID) (string, error) {
 	ent, err := r.Get(id)
 	if err != nil {
 		return "", err
@@ -252,7 +266,7 @@ func (r Repository) mergeRemotelyFromPartner(ctx context.Context, partner string
 		return easyhttp.GetData(ctx, uri, r.conf.APIKey, pairs)
 	}
 
-	getEntry := func(ctx context.Context, partner, id string, ent *types.Entry) error {
+	getEntry := func(ctx context.Context, partner, id types.EntryID, ent *types.Entry) error {
 		uri := fmt.Sprintf("%s/get?id=%s", partner, id)
 		return easyhttp.GetData(ctx, uri, r.conf.APIKey, ent)
 	}
@@ -299,9 +313,4 @@ func (r Repository) mergeFromPartner(ctx context.Context, partner string,
 	}
 
 	return errors.Join(errs...)
-}
-
-// Gets next entry to be shared for the given social platform.
-func (r Repository) Next(name string) (types.Entry, bool) {
-	return types.Entry{}, false
 }
