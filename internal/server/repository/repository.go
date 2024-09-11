@@ -32,7 +32,9 @@ type entryPair struct {
 	ID, Checksum string
 }
 
+// Holds all entries in the database / stores them to the disks..
 type Repository struct {
+	pending
 	conf    server.ServerConfig
 	entries map[types.EntryID]types.Entry
 	mu      *sync.Mutex
@@ -52,6 +54,7 @@ func Instance(conf server.ServerConfig) Repository {
 func newRepository(conf server.ServerConfig, fs fs) Repository {
 	var loaded bool
 	return Repository{
+		pending: newPending(),
 		conf:    conf,
 		entries: make(map[types.EntryID]types.Entry),
 		mu:      &sync.Mutex{},
