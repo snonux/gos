@@ -54,7 +54,7 @@ func Instance(conf server.ServerConfig) Repository {
 func newRepository(conf server.ServerConfig, fs fs) Repository {
 	var loaded bool
 	return Repository{
-		pending: newPending(),
+		pending: newPending(), // TODO: Make use of the pending for the selection algoritmh for the next post
 		conf:    conf,
 		entries: make(map[types.EntryID]types.Entry),
 		mu:      &sync.Mutex{},
