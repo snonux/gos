@@ -18,7 +18,7 @@ func TestRepositoryPutGet(t *testing.T) {
 
 	for _, entry := range makeEntries(t) {
 		t.Run(entry.ID, func(t *testing.T) {
-			_ = repo.persist(entry)
+			_ = repo.addAndPersist(entry)
 			entGot, err := repo.Get(entry.ID)
 			if err != nil {
 				t.Error(err)
@@ -69,7 +69,7 @@ func TestRepositoryList(t *testing.T) {
 	entries := makeEntries(t)
 
 	for _, entry := range entries {
-		_ = repo.persist(entry)
+		_ = repo.addAndPersist(entry)
 	}
 
 	pairs, _ := repo.List()
@@ -98,7 +98,7 @@ func TestRepositoryHasSameEntry(t *testing.T) {
 	fs := make(vfs.MemoryFS)
 	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
 	entry, _ := makeAnEntry()
-	_ = repo.persist(entry)
+	_ = repo.addAndPersist(entry)
 
 	pair := entryPair{entry.ID, entry.Checksum()}
 	if !repo.hasSameEntry(pair) {
@@ -117,7 +117,7 @@ func TestRepositoryMerge(t *testing.T) {
 	fs := make(vfs.MemoryFS)
 	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
 	entry1, _ := makeAnEntry()
-	_ = repo.persist(entry1)
+	_ = repo.addAndPersist(entry1)
 
 	entry2, _ := makeAnotherEntry()
 	// Need to have the same IDs so that the entries will actually be merged
@@ -149,9 +149,9 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 	repo2 := newRepository(server.ServerConfig{DataDir: "./data2"}, fs2)
 
 	entry1, _ := makeAnEntry()
-	_ = repo1.persist(entry1)
+	_ = repo1.addAndPersist(entry1)
 	entry2, _ := makeAnotherEntry()
-	_ = repo2.persist(entry2)
+	_ = repo2.addAndPersist(entry2)
 
 	getPair := func(ctx context.Context, partner string, pairs *[]entryPair) error {
 		var (
@@ -302,7 +302,7 @@ func TestRepositoryNext(t *testing.T) {
 	entries := makeEntries(t)
 
 	for _, entry := range entries {
-		_ = repo.persist(entry)
+		_ = repo.addAndPersist(entry)
 	}
 
 	if entry, ok := repo.Next(types.Mastodon); ok {

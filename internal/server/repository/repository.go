@@ -153,13 +153,16 @@ func (r Repository) add(entry types.Entry) {
 }
 
 func (r Repository) persist(entry types.Entry) error {
-	r.add(entry)
-
 	bytes, err := entry.JSONMarshal()
 	if err != err {
 		return err
 	}
 	return r.fs.WriteFile(r.entryPath(entry), bytes)
+}
+
+func (r Repository) addAndPersist(entry types.Entry) error {
+	r.add(entry)
+	return r.persist(entry)
 }
 
 func (r Repository) Get(id types.EntryID) (types.Entry, error) {
@@ -233,7 +236,7 @@ func (r Repository) Merge(otherEnt types.Entry) error {
 
 	var changed bool
 	entry, changed, _ = entry.Update(otherEnt)
-	r.entries[otherEnt.ID] = entry
+	r.add(entry)
 
 	if !changed {
 		// Hasn't changed, so no need to write anything to file.
