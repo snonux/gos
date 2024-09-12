@@ -8,6 +8,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 )
 
 type EntryID = string
@@ -92,6 +93,14 @@ func (e Entry) IsShared(platform PlatformName) bool {
 		return false
 	}
 	return shared.Is
+}
+
+func (e Entry) SetShared(platform PlatformName) Entry {
+	e.Shared[platform] = Shared{
+		Is:        true,
+		Timestamp: time.Now().Format("20060102150405"),
+	}
+	return e
 }
 
 /**
