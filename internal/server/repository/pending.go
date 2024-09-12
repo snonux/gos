@@ -2,7 +2,7 @@ package repository
 
 import "codeberg.org/snonux/gos/internal/types"
 
-type pendingEntries []types.EntryID
+type pendingEntries map[types.EntryID]struct{}
 
 // Keep track of pending entries per social platform
 type pending struct {
@@ -14,8 +14,12 @@ func newPending() pending {
 }
 
 func (p pending) add(platform types.PlatformName, id types.EntryID) {
-	pe, _ := p.get(platform)
-	p.platforms[platform] = append(pe, id)
+	pe, ok := p.get(platform)
+	if !ok {
+		pe = make(pendingEntries)
+	}
+	pe[id] = struct{}{}
+	p.platforms[platform] = pe
 }
 
 func (p pending) get(platform types.PlatformName) (pendingEntries, bool) {

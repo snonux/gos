@@ -17,10 +17,8 @@ func TestPendingAdd(t *testing.T) {
 		t.Error("expected no entries")
 	}
 
-	// TODO REFACTOR: Use constants for types.PlatformName's
-	// TODO REFACTOR: Don't use a type alias for types.PlatformName anymore, but an own type.
-	pending.add(types.LinkedIn, "foo")
-	pending.add(types.LinkedIn, "bar")
+	pending.add(types.LinkedIn, "fooid")
+	pending.add(types.LinkedIn, "barid")
 
 	entries, ok = pending.get(types.LinkedIn)
 	if !ok {
