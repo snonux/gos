@@ -31,10 +31,6 @@ func TestPendingAdd(t *testing.T) {
 
 func TestPendingDelete(t *testing.T) {
 	pending := newPending()
-	if entries, ok := pending.get(types.LinkedIn); ok {
-		t.Error("expected not an ok", entries)
-	}
-
 	pending.add(types.LinkedIn, "fooid")
 
 	entries, ok := pending.get(types.LinkedIn)
@@ -46,7 +42,7 @@ func TestPendingDelete(t *testing.T) {
 	}
 
 	pending.delete(types.LinkedIn, "fooid")
-	if entries, _ = pending.get(types.LinkedIn); len(entries) > 0 {
-		t.Error("expected zero results", entries)
+	if entries, ok = pending.get(types.LinkedIn); ok {
+		t.Error("expected not an ok", entries)
 	}
 }

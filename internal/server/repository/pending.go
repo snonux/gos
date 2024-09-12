@@ -33,5 +33,5 @@ func (p pending) delete(platform types.PlatformName, id types.EntryID) {
 
 func (p pending) get(platform types.PlatformName) (pendingEntries, bool) {
 	pe, ok := p.platforms[platform]
-	return pe, ok
+	return pe, ok && len(pe) > 0
 }
