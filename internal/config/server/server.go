@@ -43,7 +43,7 @@ func New(configFile, secretsFile string) (ServerConfig, error) {
 	conf.EmailTo = config.Str("GOS_EMAIL_TO", conf.EmailTo)
 	conf.EmailFrom = config.Str("GOS_EMAIL_FROM", conf.EmailFrom)
 	conf.SocialPlatformsEnabled = config.StrSlice("GOS_SOCIAL_PLATFORMS_ENABLED",
-		[]string{types.Mastodon, types.LinkedIn})
+		[]string{types.Mastodon, types.LinkedIn, types.Textfile})
 
 	conf.SMTPServer = config.Str("GOS_SMTP_SERVER", conf.SMTPServer, func() string {
 		hostname, err := os.Hostname()

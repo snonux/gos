@@ -35,3 +35,14 @@ func (p pending) get(platform types.PlatformName) (pendingEntries, bool) {
 	pe, ok := p.platforms[platform]
 	return pe, ok && len(pe) > 0
 }
+
+func (p pending) next(platform types.PlatformName) (types.EntryID, bool) {
+	pe, ok := p.get(platform)
+	if !ok {
+		return "", false
+	}
+	for id := range pe {
+		return id, true
+	}
+	return "", false
+}

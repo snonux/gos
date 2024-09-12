@@ -46,3 +46,21 @@ func TestPendingDelete(t *testing.T) {
 		t.Error("expected not an ok", entries)
 	}
 }
+
+func TestPendingNext(t *testing.T) {
+	pending := newPending()
+
+	id, ok := pending.next(types.LinkedIn)
+	if ok {
+		t.Error("not expected ok return status", id)
+	}
+
+	pending.add(types.LinkedIn, "fooid")
+	id, ok = pending.next(types.LinkedIn)
+	if !ok {
+		t.Error("expected ok return status")
+	}
+	if id != "fooid" {
+		t.Error("expected entry ID fooid")
+	}
+}

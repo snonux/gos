@@ -298,7 +298,12 @@ func TestRepositoryNext(t *testing.T) {
 	t.Parallel()
 
 	fs := make(vfs.MemoryFS)
-	repo := newRepository(server.ServerConfig{DataDir: "./data"}, fs)
+	repo := newRepository(server.ServerConfig{
+		DataDir: "./data",
+		SocialPlatformsEnabled: []types.PlatformName{
+			types.LinkedIn, types.Mastodon, types.Textfile,
+		},
+	}, fs)
 	entries := makeEntries(t)
 
 	for _, entry := range entries {
@@ -313,8 +318,8 @@ func TestRepositoryNext(t *testing.T) {
 		t.Error("expected an unshared LinkedIn entry to be found")
 	}
 
-	if _, ok := repo.Next("DoesNotYetExist"); !ok {
-		t.Error("expected an unshared DoesNotYetExist entry to be found")
+	if _, ok := repo.Next(types.Textfile); !ok {
+		t.Error("expected an unshared Textfile entry to be found")
 	}
 }
 

@@ -69,13 +69,17 @@ func (r Repository) Next(platform types.PlatformName) (types.Entry, bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	for _, entry := range r.entries {
-		if !entry.IsShared(platform) {
-			return entry, true
-		}
+	id, ok := r.pending.next(platform)
+	if !ok {
+		return types.Entry{}, false // No entry found
 	}
 
-	return types.Entry{}, false // No entry found
+	var entry types.Entry
+	entry, ok = r.entries[id]
+	if !ok {
+		panic("did not expect that!")
+	}
+	return entry, true
 }
 
 // Load repository into memory if not done yet.
