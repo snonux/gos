@@ -153,16 +153,13 @@ func (r Repository) add(entry types.Entry) {
 }
 
 func (r Repository) persist(entry types.Entry) error {
+	r.add(entry)
+
 	bytes, err := entry.JSONMarshal()
 	if err != err {
 		return err
 	}
 	return r.fs.WriteFile(r.entryPath(entry), bytes)
-}
-
-func (r Repository) addAndPersist(entry types.Entry) error {
-	r.add(entry)
-	return r.persist(entry)
 }
 
 func (r Repository) Get(id types.EntryID) (types.Entry, error) {
@@ -212,11 +209,6 @@ func (r Repository) entryPath(ent types.Entry) string {
 	return fmt.Sprintf("%s/%s/%s.json", r.conf.DataDir, time.Now().Format("2006"), ent.ID)
 }
 
-func (r Repository) Update(ent types.Entry) error {
-	// Update is just an alias for the merge, makes the intention clearer.
-	return r.Merge(ent)
-}
-
 func (r Repository) Merge(otherEnt types.Entry) error {
 	if err := r.load(); err != nil {
 		return err
@@ -232,18 +224,16 @@ func (r Repository) Merge(otherEnt types.Entry) error {
 		if entry, err = types.NewEntryFromCopy(otherEnt); err != nil {
 			return err
 		}
+		return r.persist(entry)
 	}
 
-	var changed bool
-	entry, changed, _ = entry.Update(otherEnt)
-	r.add(entry)
-
-	if !changed {
-		// Hasn't changed, so no need to write anything to file.
-		return nil
+	if entry, changed, err := entry.Update(otherEnt); changed {
+		if err != nil {
+			return err
+		}
+		return r.persist(entry)
 	}
-
-	return r.persist(entry)
+	return nil
 }
 
 func (r Repository) MergeRemotely(ctx context.Context) error {
