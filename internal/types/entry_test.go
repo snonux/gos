@@ -15,11 +15,11 @@ func TestNewEntryFromJSON(t *testing.T) {
 	if len(entry1.Shared) != 2 {
 		t.Error("expected to have two shared entries in entry1")
 	}
-	if !entry1.IsShared("Foo") {
-		t.Error("Foo should be shared")
+	if !entry1.IsShared("Mastodon") {
+		t.Error("Mastodon should be shared")
 	}
-	if entry1.IsShared("Bar") {
-		t.Error("Bar should not be shared")
+	if entry1.IsShared("LinkedIn") {
+		t.Error("LinkedIn should not be shared")
 	}
 }
 
@@ -114,8 +114,8 @@ func oneEntry() (Entry, error) {
 		{
 			"body": "Body text here",
 			"shared": {
-				"Foo": { "is": true },
-				"Bar": { "is": false }
+				"Mastodon": { "is": true },
+				"LinkedIn": { "is": false }
 			}
 		}
 	`
@@ -127,9 +127,9 @@ func anotherEntry() (Entry, error) {
 		{
 			"body": "Body text here",
 			"shared": {
-				"Foo": { "is": true },
-				"Bar": { "is": true },
-				"Baz": { "is": false }
+				"Mastodon": { "is": true },
+				"LinkedIn": { "is": true },
+				"Textfile": { "is": false }
 			}
 		}
 	`

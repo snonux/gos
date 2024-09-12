@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-type PlatformName = string
 type EntryID = string
 type Epoch = int
 

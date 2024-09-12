@@ -251,17 +251,17 @@ func TestRepositoryMergeFromPartner(t *testing.T) {
 		}
 
 		// Validate the correct test setup
-		if entry.IsShared("LinkedIn") {
+		if entry.IsShared(types.LinkedIn) {
 			t.Error("for the test expected LinkedIn not to be shared")
 		}
 
 		// Simulate that the entry was shared to LinkedIn social media!
-		linkedIn, ok := entry.Shared["LinkedIn"]
+		linkedIn, ok := entry.Shared[types.LinkedIn]
 		if !ok {
 			t.Error("expected to have a LinkedIn shared entry")
 		}
 		linkedIn.Is = true
-		entry.Shared["LinkedIn"] = linkedIn
+		entry.Shared[types.LinkedIn] = linkedIn
 
 		if err := repo1.Update(entry); err != nil {
 			t.Error(err)
@@ -305,11 +305,11 @@ func TestRepositoryNext(t *testing.T) {
 		_ = repo.put(entry)
 	}
 
-	if entry, ok := repo.Next("Mastodon"); ok {
+	if entry, ok := repo.Next(types.Mastodon); ok {
 		t.Error("expected no Mastodon entry to be found", entry)
 	}
 
-	if _, ok := repo.Next("LinkedIn"); !ok {
+	if _, ok := repo.Next(types.LinkedIn); !ok {
 		t.Error("expected an unshared LinkedIn entry to be found")
 	}
 
@@ -350,7 +350,7 @@ func makeAnotherEntry() (types.Entry, error) {
 			"shared": {
 				"Mastodon": { "is": true },
 				"LinkedIn": { "is": true },
-				"foo.zone": { "is": false }
+				"Textfile": { "is": false }
 			}
 		}
 	`
