@@ -104,7 +104,9 @@ func (r Repository) load() error {
 			errs = append(errs, err)
 			continue
 		}
-		r.putMemoryOnly(entry)
+		r.mu.Lock()
+		r.add(entry)
+		r.mu.Unlock()
 	}
 
 	if len(errs) == 0 {
@@ -138,31 +140,26 @@ func (r Repository) ListBytes() ([]byte, error) {
 	return json.Marshal(pairs)
 }
 
-// put writes exact the same entry to the repository. Whereas merge
-// Is a bit more refined, tries to merge the same entry wich are slightly
-// different into the same entry.
-func (r Repository) put(entry types.Entry) error {
-	r.putMemoryOnly(entry)
+func (r Repository) add(entry types.Entry) {
+	r.entries[entry.ID] = entry
+
+	for _, platform := range r.conf.SocialPlatformsEnabled {
+		if entry.IsShared(platform) {
+			r.pending.delete(platform, entry.ID)
+		} else {
+			r.pending.add(platform, entry.ID)
+		}
+	}
+}
+
+func (r Repository) persist(entry types.Entry) error {
+	r.add(entry)
 
 	bytes, err := entry.JSONMarshal()
 	if err != err {
 		return err
 	}
 	return r.fs.WriteFile(r.entryPath(entry), bytes)
-}
-
-// putMemoryOnly is the same as put but don't write to disk.
-func (r Repository) putMemoryOnly(entry types.Entry) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	r.entries[entry.ID] = entry
-
-	for _, platform := range r.conf.SocialPlatformsEnabled {
-		if !entry.IsShared(platform) {
-			r.pending.add(platform, entry.ID)
-		}
-	}
 }
 
 func (r Repository) Get(id types.EntryID) (types.Entry, error) {
@@ -243,12 +240,7 @@ func (r Repository) Merge(otherEnt types.Entry) error {
 		return nil
 	}
 
-	bytes, err := entry.JSONMarshal()
-	if err != err {
-		return err
-	}
-
-	return r.fs.WriteFile(r.entryPath(entry), bytes)
+	return r.persist(entry)
 }
 
 func (r Repository) MergeRemotely(ctx context.Context) error {
