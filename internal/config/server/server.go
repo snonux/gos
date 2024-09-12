@@ -6,20 +6,21 @@ import (
 	"os"
 
 	"codeberg.org/snonux/gos/internal/config"
+	"codeberg.org/snonux/gos/internal/types"
 )
 
 type ServerConfig struct {
-	ListenAddr        string   `json:"ListenAddr,omitempty"`
-	Partners          []string `json:"Partners,omitempty"`
-	APIKey            string   `json:"APIKey,omitempty"`
-	DataDir           string   `json:"StateDir,omitempty"`
-	EmailTo           string   `json:"EmailTo,omitempty"`
-	EmailFrom         string   `json:"EmailFrom,omitempty"`
-	SMTPServer        string   `json:"SMTPServer,omitempty"`
-	MergeIntervalS    int      `json:"MergeInterval,omitempty"`
-	ScheduleIntervalS int      `json:"ScheduleInterval,omitempty"`
-	// SocialPlatformsEnable []string      `json:"SocialPlatformsEnable,omitempty"`
-	Secrets SecretsConfig `json:"Secrets,omitempty"`
+	ListenAddr             string        `json:"ListenAddr,omitempty"`
+	Partners               []string      `json:"Partners,omitempty"`
+	APIKey                 string        `json:"APIKey,omitempty"`
+	DataDir                string        `json:"StateDir,omitempty"`
+	EmailTo                string        `json:"EmailTo,omitempty"`
+	EmailFrom              string        `json:"EmailFrom,omitempty"`
+	SMTPServer             string        `json:"SMTPServer,omitempty"`
+	MergeIntervalS         int           `json:"MergeInterval,omitempty"`
+	ScheduleIntervalS      int           `json:"ScheduleInterval,omitempty"`
+	SocialPlatformsEnabled []string      `json:"SocialPlatformsEnabled,omitempty"`
+	Secrets                SecretsConfig `json:"Secrets,omitempty"`
 }
 
 func New(configFile, secretsFile string) (ServerConfig, error) {
@@ -41,6 +42,8 @@ func New(configFile, secretsFile string) (ServerConfig, error) {
 	conf.DataDir = config.Str("GOS_DATA_DIR", conf.DataDir, "data")
 	conf.EmailTo = config.Str("GOS_EMAIL_TO", conf.EmailTo)
 	conf.EmailFrom = config.Str("GOS_EMAIL_FROM", conf.EmailFrom)
+	conf.SocialPlatformsEnabled = config.StrSlice("GOS_SOCIAL_PLATFORMS_ENABLED",
+		[]string{types.Mastodon, types.LinkedIn})
 
 	conf.SMTPServer = config.Str("GOS_SMTP_SERVER", conf.SMTPServer, func() string {
 		hostname, err := os.Hostname()

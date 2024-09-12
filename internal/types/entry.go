@@ -125,6 +125,7 @@ func (e Entry) Update(other Entry) (Entry, bool, error) {
 		case otherShared.Is && !shared.Is:
 			shared.Is = true
 			e.Shared[otherPlatform] = shared
+			// Update pending
 			changed = true
 		}
 	}

@@ -10,15 +10,24 @@ type pending struct {
 }
 
 func newPending() pending {
-	return pending{platforms: make(map[types.PlatformName]pendingEntries)}
+	return pending{make(map[types.PlatformName]pendingEntries)}
 }
 
 func (p pending) add(platform types.PlatformName, id types.EntryID) {
-	pe, ok := p.get(platform)
+	pe, ok := p.platforms[platform]
 	if !ok {
 		pe = make(pendingEntries)
 	}
 	pe[id] = struct{}{}
+	p.platforms[platform] = pe
+}
+
+func (p pending) delete(platform types.PlatformName, id types.EntryID) {
+	pe, ok := p.platforms[platform]
+	if !ok {
+		return
+	}
+	delete(pe, id)
 	p.platforms[platform] = pe
 }
 
