@@ -8,7 +8,6 @@ import (
 	"os"
 	"sort"
 	"strings"
-	"time"
 )
 
 type EntryID = string
@@ -68,10 +67,12 @@ func NewEntryFromTextFile(filePath string) (Entry, error) {
 }
 
 func (e *Entry) initialize() {
+	e.checksumDirty = true
+
 	if e.Shared == nil {
 		e.Shared = make(map[PlatformName]Shared)
+		return
 	}
-	e.checksumDirty = true
 }
 
 func (e Entry) Equals(other Entry) bool {
@@ -96,10 +97,7 @@ func (e Entry) IsShared(platform PlatformName) bool {
 }
 
 func (e Entry) SetShared(platform PlatformName) Entry {
-	e.Shared[platform] = Shared{
-		Is:        true,
-		Timestamp: time.Now().Format("20060102150405"),
-	}
+	e.Shared[platform] = newShared(true)
 	return e
 }
 

@@ -20,6 +20,7 @@ type ServerConfig struct {
 	MergeIntervalS         int           `json:"MergeInterval,omitempty"`
 	ScheduleIntervalS      int           `json:"ScheduleInterval,omitempty"`
 	SocialPlatformsEnabled []string      `json:"SocialPlatformsEnabled,omitempty"`
+	PostsPerWeek           int           `json:"PostsPerWeek,omitempty"`
 	Secrets                SecretsConfig `json:"Secrets,omitempty"`
 }
 
@@ -44,7 +45,7 @@ func New(configFile, secretsFile string) (ServerConfig, error) {
 	conf.EmailFrom = config.Str("GOS_EMAIL_FROM", conf.EmailFrom)
 	conf.SocialPlatformsEnabled = config.StrSlice("GOS_SOCIAL_PLATFORMS_ENABLED",
 		[]string{types.Mastodon, types.LinkedIn, types.Textfile})
-
+	conf.PostsPerWeek = config.Int("GOS_POSTS_PER_WEEK", conf.PostsPerWeek, 2)
 	conf.SMTPServer = config.Str("GOS_SMTP_SERVER", conf.SMTPServer, func() string {
 		hostname, err := os.Hostname()
 		if err != nil {

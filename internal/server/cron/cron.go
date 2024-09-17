@@ -28,7 +28,9 @@ func Run(ctx context.Context, conf config.ServerConfig, status health.Status) {
 		case <-mergeTicker.C:
 			run(ctx, "cron->repository.Merge", status, repository.Instance(conf).MergeRemotely)
 		case <-scheduleTicker.C:
-			run(ctx, "cron->scheduler.Run", status, scheduler.Run)
+			run(ctx, "cron->scheduler.Run", status, func(ctx context.Context) error {
+				return scheduler.Run(ctx, conf)
+			})
 		}
 	}
 }

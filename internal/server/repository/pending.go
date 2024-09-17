@@ -13,6 +13,15 @@ func newPending() pending {
 	return pending{make(map[types.PlatformName]pendingEntries)}
 }
 
+// Returns number of pending entries for the platform
+// func (p pending) num(platform types.PlatformName) int {
+// 	pe, ok := p.platforms[platform]
+// 	if !ok {
+// 		return 0
+// 	}
+// 	return len(pe)
+// }
+
 func (p pending) add(platform types.PlatformName, id types.EntryID) {
 	pe, ok := p.platforms[platform]
 	if !ok {

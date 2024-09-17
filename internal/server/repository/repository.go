@@ -33,8 +33,10 @@ type entryPair struct {
 }
 
 // Holds all entries in the database / stores them to the disks..
+// TODO: Keep track of how many posts were made this week already.
 type Repository struct {
-	pending
+	pending pending
+	stats   stats
 	conf    server.ServerConfig
 	entries map[types.EntryID]types.Entry
 	mu      *sync.Mutex
@@ -55,6 +57,7 @@ func newRepository(conf server.ServerConfig, fs fs) Repository {
 	var loaded bool
 	return Repository{
 		pending: newPending(), // TODO: Make use of the pending for the selection algoritmh for the next post
+		stats:   newStats(),   // TODO: Make use of this.
 		conf:    conf,
 		entries: make(map[types.EntryID]types.Entry),
 		mu:      &sync.Mutex{},

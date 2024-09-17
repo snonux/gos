@@ -1,9 +1,16 @@
 package scheduler
 
-import "context"
+import (
+	"context"
+	"log"
 
-// TODO: Implement this
-func Run(ctx context.Context) error {
-	// Need to figure out which posts to post where.
+	"codeberg.org/snonux/gos/internal/config/server"
+)
+
+// TODO: Finish implementing this
+func Run(ctx context.Context, config server.ServerConfig) error {
+	for _, platform := range config.SocialPlatformsEnabled {
+		log.Println("TODO: implement ... posting a post now or what on", platform)
+	}
 	return nil
 }
