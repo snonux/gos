@@ -14,6 +14,10 @@ func EnsureDirExists(dir string) error {
 	return nil
 }
 
+func EnsureParentDirExists(dir string) error {
+	return EnsureDirExists(filepath.Dir(dir))
+}
+
 func ReadDirFilter(dir string, filter func(file os.DirEntry) bool) (chan string, error) {
 	ch := make(chan string)
 
@@ -72,7 +76,7 @@ func CopyFile(srcPath, dstPath string) error {
 	}
 	defer source.Close()
 
-	if err := EnsureDirExists(dstPath); err != nil {
+	if err := EnsureParentDirExists(dstPath); err != nil {
 		return err
 	}
 
@@ -84,4 +88,11 @@ func CopyFile(srcPath, dstPath string) error {
 
 	_, err = io.Copy(destination, source)
 	return err
+}
+
+func Rename(srcPath, dstPath string) error {
+	if err := EnsureParentDirExists(dstPath); err != nil {
+		return err
+	}
+	return os.Rename(srcPath, dstPath)
 }

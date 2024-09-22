@@ -40,7 +40,7 @@ func queueEntries(args config.Args) error {
 	for filePath := range ch {
 		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir,
 			filepath.Base(filePath), now.Format("20060102-150405"))
-		if err := os.Rename(filePath, destPath); err != nil {
+		if err := oi.Rename(filePath, destPath); err != nil {
 			return err
 		}
 	}
