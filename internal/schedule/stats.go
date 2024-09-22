@@ -1,6 +1,7 @@
 package schedule
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -37,6 +38,7 @@ func newStats(dir string) (stats, error) {
 	return stats, nil
 }
 
+// TODO: Only take entries into consideration from last n days
 func (s *stats) gatherPostedStats(dir string) error {
 	ch, err := oi.ReadDirFilter(dir, func(file os.DirEntry) bool {
 		return strings.HasSuffix(file.Name(), ".posted")
@@ -50,10 +52,12 @@ func (s *stats) gatherPostedStats(dir string) error {
 		oldest time.Time = now
 	)
 
+	var errs []error
 	for filePath := range ch {
 		newOldest, err := parseEntryPath(filePath)
 		if err != nil {
-			return err
+			errs = append(errs, err)
+			continue
 		}
 		if newOldest.Before(oldest) {
 			oldest = newOldest
@@ -64,7 +68,7 @@ func (s *stats) gatherPostedStats(dir string) error {
 	since := now.Sub(oldest)
 	s.sinceDays = since.Abs().Hours() / 24
 	s.postsPerDay = float64(s.posted) / s.sinceDays
-	return nil
+	return errors.Join(errs...)
 }
 
 func (s *stats) gatherQueuedStats(dir string) error {
@@ -75,10 +79,14 @@ func (s *stats) gatherQueuedStats(dir string) error {
 		return err
 	}
 
-	var firstQueuedPath string
+	var (
+		firstQueuedPath string
+		errs            []error
+	)
 	for filePath := range ch {
 		if _, err := parseEntryPath(filePath); err != nil {
-			return err
+			errs = append(errs, err)
+			continue
 		}
 		if firstQueuedPath == "" {
 			firstQueuedPath = filePath
@@ -86,7 +94,7 @@ func (s *stats) gatherQueuedStats(dir string) error {
 		s.queued++
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 // Make a simpler "now" time which gets rid of any extra information like offsets etc.
