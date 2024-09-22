@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"codeberg.org/snonux/gos/internal/config"
+	"codeberg.org/snonux/gos/internal/format"
 	"codeberg.org/snonux/gos/internal/oi"
 )
 
@@ -39,7 +40,7 @@ func queueEntries(args config.Args) error {
 	now := time.Now()
 	for filePath := range ch {
 		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir,
-			filepath.Base(filePath), now.Format("20060102-150405"))
+			filepath.Base(filePath), now.Format(format.Time))
 		if err := oi.Rename(filePath, destPath); err != nil {
 			return err
 		}
