@@ -25,10 +25,10 @@ func (s stats) String() string {
 	)
 }
 
-func newStats(dir string) (stats, error) {
+func newStats(dir string, lookback time.Duration) (stats, error) {
 	var stats stats
 
-	if err := stats.gatherPostedStats(dir); err != nil {
+	if err := stats.gatherPostedStats(dir, pastTime(lookback)); err != nil {
 		return stats, err
 	}
 	if err := stats.gatherQueuedStats(dir); err != nil {
@@ -38,8 +38,7 @@ func newStats(dir string) (stats, error) {
 	return stats, nil
 }
 
-// TODO: Only take entries into consideration from last n days
-func (s *stats) gatherPostedStats(dir string) error {
+func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 	ch, err := oi.ReadDirFilter(dir, func(file os.DirEntry) bool {
 		return strings.HasSuffix(file.Name(), ".posted")
 	})
@@ -53,14 +52,18 @@ func (s *stats) gatherPostedStats(dir string) error {
 	)
 
 	var errs []error
+	// TODO: Maybe refactor to include in ReadDirFilter filter
 	for filePath := range ch {
-		newOldest, err := parseEntryPath(filePath)
+		entryTime, err := parseEntryPath(filePath)
 		if err != nil {
 			errs = append(errs, err)
 			continue
 		}
-		if newOldest.Before(oldest) {
-			oldest = newOldest
+		if entryTime.Before(lookbackTime) {
+			continue
+		}
+		if entryTime.Before(oldest) {
+			oldest = entryTime
 		}
 		s.posted++
 	}
@@ -104,6 +107,10 @@ func nowTime() time.Time {
 		panic(err)
 	}
 	return simplerNow
+}
+
+func pastTime(duration time.Duration) time.Time {
+	return nowTime().Add(-duration)
 }
 
 func parseEntryPath(filePath string) (time.Time, error) {

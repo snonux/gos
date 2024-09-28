@@ -13,7 +13,7 @@ var NothingToSchedule = errors.New("nothing to schedule")
 
 func Run(args config.Args, platform string) (string, error) {
 	dir := fmt.Sprintf("%s/db/platforms/%s", args.GosDir, strings.ToLower(platform))
-	stats, err := newStats(dir)
+	stats, err := newStats(dir, args.Lookback)
 	if err != nil {
 		return "", err
 	}

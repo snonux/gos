@@ -19,12 +19,14 @@ func main() {
 	version := flag.Bool("version", false, "Display version")
 	gosDir := flag.String("gosDir", "./gosdir", "Gos' directory")
 	platforms := flag.String("platforms", "Mastodon,LinkedIn", "Platforms enabled")
+	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
 	flag.Parse()
 
 	args := config.Args{
 		DryRun:    *dry,
 		GosDir:    *gosDir,
 		Platforms: strings.Split(*platforms, ","),
+		Lookback:  time.Duration(*lookback) * time.Hour * 24,
 	}
 
 	if *version {
