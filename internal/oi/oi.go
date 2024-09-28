@@ -11,6 +11,8 @@ import (
 	"golang.org/x/exp/rand"
 )
 
+var ErrNotFound = errors.New("no file/entry found")
+
 func EnsureDirExists(dir string) error {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return os.MkdirAll(dir, os.ModePerm)
@@ -67,7 +69,7 @@ func ReadDirRandomEntry(dir string, filter func(file os.DirEntry) bool) (string,
 		return "", err
 	}
 	if len(files) == 0 {
-		return "", errors.New("no entry/file found")
+		return "", ErrNotFound
 	}
 
 	rand.Seed(uint64(time.Now().UnixNano()))

@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"codeberg.org/snonux/gos/internal/config"
@@ -20,8 +21,10 @@ func Run(ctx context.Context, args config.Args) error {
 		case nil:
 			log.Println("Scheduling", path)
 			// TODO: Implement action here to post it
-		case schedule.NothingToSchedule:
+		case schedule.ErrNothingToSchedule:
 			log.Println("Nothing to be scheduled for", platform)
+		case schedule.ErrNothingQueued
+			log.Println("Nothing queued for", platform)
 		default:
 			return err
 		}
