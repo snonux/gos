@@ -1,10 +1,14 @@
 package oi
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"time"
+
+	"golang.org/x/exp/rand"
 )
 
 func EnsureDirExists(dir string) error {
@@ -55,6 +59,19 @@ func ReadDirSlurp(dir string, filter func(file os.DirEntry) bool) ([]string, err
 	}
 
 	return files, nil
+}
+
+func ReadDirRandomEntry(dir string, filter func(file os.DirEntry) bool) (string, error) {
+	files, err := ReadDirSlurp(dir, filter)
+	if err != nil {
+		return "", err
+	}
+	if len(files) == 0 {
+		return "", errors.New("no entry/file found")
+	}
+
+	rand.Seed(uint64(time.Now().UnixNano()))
+	return files[rand.Intn(len(files))], nil
 }
 
 func IsRegular(path string) bool {

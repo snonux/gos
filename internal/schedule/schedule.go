@@ -4,9 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"codeberg.org/snonux/gos/internal/config"
+	"codeberg.org/snonux/gos/internal/oi"
 )
 
 var NothingToSchedule = errors.New("nothing to schedule")
@@ -24,5 +26,8 @@ func Run(args config.Args, platform string) (string, error) {
 		return "", NothingToSchedule
 	}
 
-	return "", NothingToSchedule
+	// Schedule random qeued entry for platform
+	return oi.ReadDirRandomEntry(dir, func(file os.DirEntry) bool {
+		return strings.HasSuffix(file.Name(), ".queued")
+	})
 }

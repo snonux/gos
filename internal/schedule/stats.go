@@ -117,6 +117,7 @@ func pastTime(duration time.Duration) time.Time {
 	return nowTime().Add(-duration)
 }
 
+// TODO: Maybe introduce types.Entry struct, which encapsulates all the parsing
 func parseEntryPath(filePath string) (time.Time, error) {
 	// Format: foobarbaz.something.here.txt.STAMP.{posted,queued}
 	// We want to get the STAMP!
