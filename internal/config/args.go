@@ -13,6 +13,7 @@ type Args struct {
 	GosDir    string
 	DryRun    bool
 	Platforms []string
+	Target    int
 	Lookback  time.Duration
 }
 

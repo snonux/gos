@@ -13,20 +13,21 @@ import (
 
 // Posting stats
 type stats struct {
-	posted      int
-	queued      int
-	sinceDays   float64
-	postsPerDay float64
+	posted            int
+	queued            int
+	sinceDays         float64
+	postsPerDay       float64
+	postsPerDayTarget float64
 }
 
 func (s stats) String() string {
-	return fmt.Sprintf("posted:%d,queued:%d,sinceDays:%v,postsPerDay:%v",
-		s.posted, s.queued, s.sinceDays, s.postsPerDay,
+	return fmt.Sprintf("posted:%d,queued:%d,sinceDays:%v,postsPerDay:%v >? %v",
+		s.posted, s.queued, s.sinceDays, s.postsPerDay, s.postsPerDayTarget,
 	)
 }
 
-func newStats(dir string, lookback time.Duration) (stats, error) {
-	var stats stats
+func newStats(dir string, lookback time.Duration, target int) (stats, error) {
+	stats := stats{postsPerDayTarget: float64(target) / 7}
 
 	if err := stats.gatherPostedStats(dir, pastTime(lookback)); err != nil {
 		return stats, err
@@ -36,6 +37,10 @@ func newStats(dir string, lookback time.Duration) (stats, error) {
 	}
 
 	return stats, nil
+}
+
+func (s stats) targetHit() bool {
+	return s.postsPerDayTarget <= s.postsPerDay
 }
 
 func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
@@ -69,7 +74,7 @@ func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 
 	since := now.Sub(oldest)
 	s.sinceDays = since.Abs().Hours() / 24
-	s.postsPerDay = float64(s.posted) / s.sinceDays
+	s.postsPerDay = float64(s.posted) / float64(s.sinceDays)
 	return errors.Join(errs...)
 }
 
