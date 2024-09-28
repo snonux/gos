@@ -52,7 +52,6 @@ func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 	)
 
 	var errs []error
-	// TODO: Maybe refactor to include in ReadDirFilter filter
 	for filePath := range ch {
 		entryTime, err := parseEntryPath(filePath)
 		if err != nil {

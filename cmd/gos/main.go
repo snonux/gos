@@ -29,6 +29,10 @@ func main() {
 		Lookback:  time.Duration(*lookback) * time.Hour * 24,
 	}
 
+	if err := args.Validate(); err != nil {
+		log.Fatal(err)
+	}
+
 	if *version {
 		fmt.Printf("This is Gos version %s; (C) by Paul Buetow\n", versionStr)
 		fmt.Println("https://codeberg.org/snonux/gos")
