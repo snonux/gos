@@ -35,7 +35,6 @@ func Run(args config.Args, platform string) (string, error) {
 	})
 
 	if err != nil {
-		// TODO: FIX THIS
 		return randomEntry, fmt.Errorf("%w: %w", ErrNothingQueued, err)
 	}
 	return randomEntry, nil
