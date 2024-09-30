@@ -18,16 +18,15 @@ func Run(ctx context.Context, args config.Args) error {
 	for _, platform := range args.Platforms {
 		path, err := schedule.Run(args, platform)
 		switch {
-		case err == nil:
-			log.Println("Scheduling", path)
-			// TODO: Implement action here to post it
 		case errors.Is(err, schedule.ErrNothingToSchedule):
 			log.Println("Nothing to be scheduled for", platform)
 		case errors.Is(err, schedule.ErrNothingQueued):
 			log.Println("Nothing queued for", platform)
-		default:
+		case err != nil:
 			return err
 		}
+
+		log.Println("Scheduling", path)
 	}
 
 	return nil
