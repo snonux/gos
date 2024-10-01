@@ -1,10 +1,9 @@
 package schedule
 
 import (
-	"errors"
 	"fmt"
 	"os"
-	"strings"
+	"path/filepath"
 	"time"
 
 	"codeberg.org/snonux/gos/internal/entry"
@@ -45,65 +44,55 @@ func (s stats) targetHit() bool {
 }
 
 func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
-	ch, err := oi.ReadDirFilter(dir, func(file os.DirEntry) bool {
-		return strings.HasSuffix(file.Name(), ".posted")
-	})
-	if err != nil {
-		return err
-	}
-
 	var (
 		now    time.Time = nowTime()
 		oldest time.Time = now
 	)
 
-	var errs []error
-	for filePath := range ch {
+	err := oi.TraverseDir(dir, func(file os.DirEntry) error {
+		filePath := filepath.Join(dir, file.Name())
 		ent, err := entry.New(filePath)
 		if err != nil {
-			errs = append(errs, err)
-			continue
+			return err
 		}
-		if ent.Time.Before(lookbackTime) {
-			continue
+		if ent.State != entry.Posted || ent.Time.Before(lookbackTime) {
+			return nil
 		}
 		if ent.Time.Before(oldest) {
 			oldest = ent.Time
 		}
 		s.posted++
-	}
-
-	since := now.Sub(oldest)
-	s.sinceDays = since.Abs().Hours() / 24
-	s.postsPerDay = float64(s.posted) / float64(s.sinceDays)
-	return errors.Join(errs...)
-}
-
-func (s *stats) gatherQueuedStats(dir string) error {
-	ch, err := oi.ReadDirFilter(dir, func(file os.DirEntry) bool {
-		return strings.HasSuffix(file.Name(), ".queued")
+		return nil
 	})
 	if err != nil {
 		return err
 	}
 
-	var (
-		firstQueuedPath string
-		errs            []error
-	)
-	for filePath := range ch {
-		// Here, we only test whether we can parse the entry.
-		if _, err := entry.New(filePath); err != nil {
-			errs = append(errs, err)
-			continue
-		}
-		if firstQueuedPath == "" {
-			firstQueuedPath = filePath
-		}
-		s.queued++
-	}
+	since := now.Sub(oldest)
+	s.sinceDays = since.Abs().Hours() / 24
+	s.postsPerDay = float64(s.posted) / float64(s.sinceDays)
+	return nil
+}
 
-	return errors.Join(errs...)
+func (s *stats) gatherQueuedStats(dir string) error {
+	var firstQueuedPath string
+
+	err := oi.TraverseDir(dir, func(file os.DirEntry) error {
+		filePath := filepath.Join(dir, file.Name())
+		ent, err := entry.New(filePath)
+		if err != nil {
+			return err
+		}
+		if ent.State == entry.Queued {
+			if firstQueuedPath == "" {
+				firstQueuedPath = filePath
+			}
+			s.queued++
+		}
+		return nil
+	})
+
+	return err
 }
 
 // Make a simpler "now" time which gets rid of any extra information like offsets etc.

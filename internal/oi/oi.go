@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"codeberg.org/snonux/gos/internal/entry"
 	"golang.org/x/exp/rand"
 )
 
@@ -25,8 +24,9 @@ func EnsureParentDirExists(dir string) error {
 	return EnsureDirExists(filepath.Dir(dir))
 }
 
-func ReadDirFilter(dir string, filter func(file os.DirEntry) bool) (chan string, error) {
-	ch := make(chan string)
+// Rename to ReadDirCh
+func ReadDirFilter[T any](dir string, cb func(file os.DirEntry) (T, bool)) (chan T, error) {
+	ch := make(chan T)
 
 	if err := EnsureDirExists(dir); err != nil {
 		return ch, err
@@ -40,41 +40,65 @@ func ReadDirFilter(dir string, filter func(file os.DirEntry) bool) (chan string,
 	go func() {
 		defer close(ch)
 		for _, file := range files {
-			if filter(file) {
-				ch <- filepath.Join(dir, file.Name())
+			if val, ok := cb(file); ok {
+				ch <- val
 			}
 		}
 	}()
 
 	return ch, nil
 }
+func TraverseDir(dir string, cb func(file os.DirEntry) error) error {
+	if err := EnsureDirExists(dir); err != nil {
+		return err
+	}
 
-func ReadDirSlurp(dir string, filter func(file os.DirEntry) bool) ([]string, error) {
-	var files []string
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
 
-	ch, err := ReadDirFilter(dir, filter)
+	var errs []error
+
+	for _, file := range files {
+		if err := cb(file); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return errors.Join(errs...)
+}
+
+// Rename to ReadDir
+func ReadDirSlurp[T any](dir string, cb func(file os.DirEntry) (T, bool)) ([]T, error) {
+	var results []T
+
+	ch, err := ReadDirFilter(dir, cb)
 	if err != err {
-		return files, err
+		return results, err
 	}
 
 	for file := range ch {
-		files = append(files, file)
+		results = append(results, file)
 	}
 
-	return files, nil
+	return results, nil
 }
 
-func ReadDirRandomEntry(dir string, filter func(file os.DirEntry) bool) (entry.Entry, error) {
-	files, err := ReadDirSlurp(dir, filter)
+func ReadDirRandomEntry[T any](dir string, cb func(file os.DirEntry) (T, bool)) (T, error) {
+	results, err := ReadDirSlurp(dir, cb)
+
 	if err != nil {
-		return entry.Zero, err
+		var zero T
+		return zero, err
 	}
-	if len(files) == 0 {
-		return entry.Zero, ErrNotFound
+	if len(results) == 0 {
+		var zero T
+		return zero, ErrNotFound
 	}
 
 	rand.Seed(uint64(time.Now().UnixNano()))
-	return entry.New(files[rand.Intn(len(files))])
+	return results[rand.Intn(len(results))], nil
 }
 
 func IsRegular(path string) bool {

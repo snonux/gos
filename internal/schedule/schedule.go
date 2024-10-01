@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"codeberg.org/snonux/gos/internal/config"
@@ -31,8 +32,12 @@ func Run(args config.Args, platform string) (entry.Entry, error) {
 	}
 
 	// Schedule random qeued entry for platform
-	ent, err := oi.ReadDirRandomEntry(dir, func(file os.DirEntry) bool {
-		return strings.HasSuffix(file.Name(), ".queued")
+	// TODO: Rename ReadDirRandomEntry to ReadDirRandom
+	ent, err := oi.ReadDirRandomEntry(dir, func(file os.DirEntry) (entry.Entry, bool) {
+		if ent, err := entry.New(filepath.Join(dir, file.Name())); err != nil {
+			return ent, ent.State == entry.Queued
+		}
+		return entry.Zero, false
 	})
 
 	if err != nil {
