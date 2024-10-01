@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/format"
 	"codeberg.org/snonux/gos/internal/oi"
 )
@@ -58,16 +59,16 @@ func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 
 	var errs []error
 	for filePath := range ch {
-		entryTime, err := parseEntryPath(filePath)
+		ent, err := entry.New(filePath)
 		if err != nil {
 			errs = append(errs, err)
 			continue
 		}
-		if entryTime.Before(lookbackTime) {
+		if ent.Time.Before(lookbackTime) {
 			continue
 		}
-		if entryTime.Before(oldest) {
-			oldest = entryTime
+		if ent.Time.Before(oldest) {
+			oldest = ent.Time
 		}
 		s.posted++
 	}
@@ -91,7 +92,8 @@ func (s *stats) gatherQueuedStats(dir string) error {
 		errs            []error
 	)
 	for filePath := range ch {
-		if _, err := parseEntryPath(filePath); err != nil {
+		// Here, we only test whether we can parse the entry.
+		if _, err := entry.New(filePath); err != nil {
 			errs = append(errs, err)
 			continue
 		}
@@ -115,15 +117,4 @@ func nowTime() time.Time {
 
 func pastTime(duration time.Duration) time.Time {
 	return nowTime().Add(-duration)
-}
-
-// TODO: Maybe introduce types.Entry struct, which encapsulates all the parsing
-func parseEntryPath(filePath string) (time.Time, error) {
-	// Format: foobarbaz.something.here.txt.STAMP.{posted,queued}
-	// We want to get the STAMP!
-	parts := strings.Split(filePath, ".")
-	if len(parts) < 4 {
-		return time.Time{}, fmt.Errorf("not a valid entry path: %s", filePath)
-	}
-	return time.Parse(format.Time, parts[len(parts)-2])
 }

@@ -30,7 +30,7 @@ func (s State) String() string {
 }
 
 // The time this code was written a:round, actually.
-const oldestValidTime = "20240922-102800"
+const oldestValidTime = "20240912-102800"
 
 type Entry struct {
 	Path  string
@@ -38,28 +38,35 @@ type Entry struct {
 	State State
 }
 
+func (e Entry) String() string {
+	return fmt.Sprintf("Path:%s;Stamp:%s,State:%s",
+		e.Path, e.Time.Format(format.Time), e.State)
+}
+
+var Zero = Entry{}
+
 // filePath format: /foo/foobarbaz.something.here.txt.STAMP.{posted,queued}
 func New(filePath string) (Entry, error) {
-	ent := Entry{Path: filePath}
+	e := Entry{Path: filePath}
 
 	// We want to get the STAMP!
 	parts := strings.Split(filePath, ".")
 	if len(parts) < 4 {
-		return ent, fmt.Errorf("not a valid entry path: %s", filePath)
+		return e, fmt.Errorf("not a valid entry path: %s", filePath)
 	}
 
 	switch parts[len(parts)-1] {
 	case "queued":
-		ent.State = Queued
+		e.State = Queued
 	case "posted":
-		ent.State = Posted
+		e.State = Posted
 	default:
-		return ent, fmt.Errorf("can't parse state from path: %s", filePath)
+		return e, fmt.Errorf("can't parse state from path: %s", filePath)
 	}
 
 	var err error
-	if ent.Time, err = time.Parse(format.Time, parts[len(parts)-2]); err != nil {
-		return ent, err
+	if e.Time, err = time.Parse(format.Time, parts[len(parts)-2]); err != nil {
+		return e, err
 	}
 
 	oldestValid, err := time.Parse(format.Time, oldestValidTime)
@@ -67,9 +74,9 @@ func New(filePath string) (Entry, error) {
 		panic(err)
 	}
 
-	if ent.Time.Before(oldestValid) {
-		return ent, fmt.Errorf("entry time does not seem legic, it is too old: %v", ent.Time)
+	if e.Time.Before(oldestValid) {
+		return e, fmt.Errorf("entry time does not seem legit, it is too old: %v", e.Time)
 	}
 
-	return ent, nil
+	return e, nil
 }

@@ -16,7 +16,7 @@ func Run(ctx context.Context, args config.Args) error {
 	}
 
 	for _, platform := range args.Platforms {
-		path, err := schedule.Run(args, platform)
+		ent, err := schedule.Run(args, platform)
 		switch {
 		case errors.Is(err, schedule.ErrNothingToSchedule):
 			log.Println("Nothing to be scheduled for", platform)
@@ -26,7 +26,7 @@ func Run(ctx context.Context, args config.Args) error {
 			return err
 		}
 
-		log.Println("Scheduling", path)
+		log.Println("Scheduling", ent)
 	}
 
 	return nil

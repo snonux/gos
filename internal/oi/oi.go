@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"codeberg.org/snonux/gos/internal/entry"
 	"golang.org/x/exp/rand"
 )
 
@@ -63,17 +64,17 @@ func ReadDirSlurp(dir string, filter func(file os.DirEntry) bool) ([]string, err
 	return files, nil
 }
 
-func ReadDirRandomEntry(dir string, filter func(file os.DirEntry) bool) (string, error) {
+func ReadDirRandomEntry(dir string, filter func(file os.DirEntry) bool) (entry.Entry, error) {
 	files, err := ReadDirSlurp(dir, filter)
 	if err != nil {
-		return "", err
+		return entry.Zero, err
 	}
 	if len(files) == 0 {
-		return "", ErrNotFound
+		return entry.Zero, ErrNotFound
 	}
 
 	rand.Seed(uint64(time.Now().UnixNano()))
-	return files[rand.Intn(len(files))], nil
+	return entry.New(files[rand.Intn(len(files))])
 }
 
 func IsRegular(path string) bool {
