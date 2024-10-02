@@ -13,22 +13,21 @@ import (
 
 var ErrNotFound = errors.New("no file/entry found")
 
-func EnsureDirExists(dir string) error {
+func EnsureDir(dir string) error {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return os.MkdirAll(dir, os.ModePerm)
 	}
 	return nil
 }
 
-func EnsureParentDirExists(dir string) error {
-	return EnsureDirExists(filepath.Dir(dir))
+func EnsureParentDir(dir string) error {
+	return EnsureDir(filepath.Dir(dir))
 }
 
-// Rename to ReadDirCh
-func ReadDirFilter[T any](dir string, cb func(file os.DirEntry) (T, bool)) (chan T, error) {
+func ReadDirCh[T any](dir string, cb func(file os.DirEntry) (T, bool)) (chan T, error) {
 	ch := make(chan T)
 
-	if err := EnsureDirExists(dir); err != nil {
+	if err := EnsureDir(dir); err != nil {
 		return ch, err
 	}
 
@@ -48,8 +47,9 @@ func ReadDirFilter[T any](dir string, cb func(file os.DirEntry) (T, bool)) (chan
 
 	return ch, nil
 }
+
 func TraverseDir(dir string, cb func(file os.DirEntry) error) error {
-	if err := EnsureDirExists(dir); err != nil {
+	if err := EnsureDir(dir); err != nil {
 		return err
 	}
 
@@ -68,11 +68,10 @@ func TraverseDir(dir string, cb func(file os.DirEntry) error) error {
 	return errors.Join(errs...)
 }
 
-// Rename to ReadDir
-func ReadDirSlurp[T any](dir string, cb func(file os.DirEntry) (T, bool)) ([]T, error) {
+func ReadDir[T any](dir string, cb func(file os.DirEntry) (T, bool)) ([]T, error) {
 	var results []T
 
-	ch, err := ReadDirFilter(dir, cb)
+	ch, err := ReadDirCh(dir, cb)
 	if err != err {
 		return results, err
 	}
@@ -84,9 +83,8 @@ func ReadDirSlurp[T any](dir string, cb func(file os.DirEntry) (T, bool)) ([]T, 
 	return results, nil
 }
 
-// Rename to ReadDirRandom
-func ReadDirRandomEntry[T any](dir string, cb func(file os.DirEntry) (T, bool)) (T, error) {
-	results, err := ReadDirSlurp(dir, cb)
+func ReadDirRandom[T any](dir string, cb func(file os.DirEntry) (T, bool)) (T, error) {
+	results, err := ReadDir(dir, cb)
 
 	if err != nil {
 		var zero T
@@ -120,7 +118,7 @@ func CopyFile(srcPath, dstPath string) error {
 	}
 	defer source.Close()
 
-	if err := EnsureParentDirExists(dstPath); err != nil {
+	if err := EnsureParentDir(dstPath); err != nil {
 		return err
 	}
 
@@ -135,7 +133,7 @@ func CopyFile(srcPath, dstPath string) error {
 }
 
 func Rename(srcPath, dstPath string) error {
-	if err := EnsureParentDirExists(dstPath); err != nil {
+	if err := EnsureParentDir(dstPath); err != nil {
 		return err
 	}
 	return os.Rename(srcPath, dstPath)
