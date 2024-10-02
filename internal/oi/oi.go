@@ -59,7 +59,6 @@ func TraverseDir(dir string, cb func(file os.DirEntry) error) error {
 	}
 
 	var errs []error
-
 	for _, file := range files {
 		if err := cb(file); err != nil {
 			errs = append(errs, err)
@@ -85,6 +84,7 @@ func ReadDirSlurp[T any](dir string, cb func(file os.DirEntry) (T, bool)) ([]T, 
 	return results, nil
 }
 
+// Rename to ReadDirRandom
 func ReadDirRandomEntry[T any](dir string, cb func(file os.DirEntry) (T, bool)) (T, error) {
 	results, err := ReadDirSlurp(dir, cb)
 
