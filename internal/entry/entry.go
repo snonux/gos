@@ -45,6 +45,16 @@ func (e Entry) String() string {
 
 var Zero = Entry{}
 
+// TODO: UNDO
+// func New(filePath string) (Entry, error) {
+// 	ent, err := new(filePath)
+// 	if err != nil {
+// 		panic(fmt.Sprintf("%s: %v", filePath, err))
+// 	}
+// 	log.Println("Creating new entry from", filePath, ent)
+// 	return ent, err
+// }
+
 // filePath format: /foo/foobarbaz.something.here.txt.STAMP.{posted,queued}
 func New(filePath string) (Entry, error) {
 	e := Entry{Path: filePath}

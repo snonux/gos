@@ -20,8 +20,10 @@ func Run(ctx context.Context, args config.Args) error {
 		switch {
 		case errors.Is(err, schedule.ErrNothingToSchedule):
 			log.Println("Nothing to be scheduled for", platform)
+			return nil
 		case errors.Is(err, schedule.ErrNothingQueued):
 			log.Println("Nothing queued for", platform)
+			return nil
 		case err != nil:
 			return err
 		}

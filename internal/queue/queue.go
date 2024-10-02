@@ -80,7 +80,7 @@ func queuePlatforms(args config.Args) error {
 
 // Queue ./db/queued/*.txt.STAMP.queued to ./db/platforms/PLATFORM/*.txt.STAMP.queued
 func queuePlatform(entryPath, gosDir, platform string) error {
-	destDir := filepath.Join(gosDir, "db/platform", strings.ToLower(platform))
+	destDir := filepath.Join(gosDir, "db/platforms", strings.ToLower(platform))
 	destPath := filepath.Join(destDir, filepath.Base(entryPath))
 	postedFile := fmt.Sprintf("%s.posted", strings.TrimSuffix(destPath, ".queued"))
 

@@ -33,10 +33,12 @@ func Run(args config.Args, platform string) (entry.Entry, error) {
 
 	// Schedule random qeued entry for platform
 	ent, err := oi.ReadDirRandom(dir, func(file os.DirEntry) (entry.Entry, bool) {
-		if ent, err := entry.New(filepath.Join(dir, file.Name())); err != nil {
-			return ent, ent.State == entry.Queued
+		ent, err := entry.New(filepath.Join(dir, file.Name()))
+		if err != nil {
+			log.Println(err)
+			return entry.Zero, false
 		}
-		return entry.Zero, false
+		return ent, ent.State == entry.Queued
 	})
 
 	if err != nil {

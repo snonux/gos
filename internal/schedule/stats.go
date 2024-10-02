@@ -21,7 +21,7 @@ type stats struct {
 }
 
 func (s stats) String() string {
-	return fmt.Sprintf("posted:%d,queued:%d,sinceDays:%v,postsPerDay:%v >? %v",
+	return fmt.Sprintf("posted:%d,queued:%d,sinceDays:%v,postsPerDay:%v >? postsPerDayTarget:%v",
 		s.posted, s.queued, s.sinceDays, s.postsPerDay, s.postsPerDayTarget,
 	)
 }
@@ -40,7 +40,7 @@ func newStats(dir string, lookback time.Duration, target int) (stats, error) {
 }
 
 func (s stats) targetHit() bool {
-	return s.postsPerDayTarget <= s.postsPerDay
+	return s.postsPerDay >= s.postsPerDayTarget
 }
 
 func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
