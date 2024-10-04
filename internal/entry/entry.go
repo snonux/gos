@@ -1,7 +1,9 @@
 package entry
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -79,4 +81,23 @@ func New(filePath string) (Entry, error) {
 	}
 
 	return e, nil
+}
+
+func (e Entry) Content() (string, error) {
+	bytes, err := os.ReadFile(e.Path)
+	return string(bytes), err
+}
+
+func (e *Entry) MarkPosted() error {
+	if e.State != Queued {
+		return errors.New("entry is not queued")
+	}
+	if e.State == Posted {
+		return errors.New("entry is already posted")
+	}
+	if err := os.Rename(e.Path, strings.TrimSuffix(e.Path, ".queued")+".posted"); err != nil {
+		return err
+	}
+	e.State = Posted
+	return nil
 }
