@@ -124,13 +124,16 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("Successfully posted a message to LinkedIn!\n"))
 }
 
+// TODO: Check for how logn the access token is valid for
+// TODO: Fetch the access token and user ID and store it i na file in .config/gos/...
+// TODO: Refresh access token when it is about to expire or expired
+// TODO: Separate posting of the message and fetching of the userID and access token
 func oauth(args config.Args) error {
-	// Configure the OAuth2 client
 	oauthConfig = &oauth2.Config{
 		ClientID:     args.Secrets.LinkedInClientID,
 		ClientSecret: args.Secrets.LinkedInSecret,
 		RedirectURL:  args.Secrets.LinkedInRedirectURL,
-		Scopes:       []string{"profile", "openid", "w_member_social"},
+		Scopes:       []string{"openid", "profile", "w_member_social"},
 		Endpoint:     linkedin.Endpoint,
 	}
 
