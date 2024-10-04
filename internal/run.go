@@ -45,7 +45,9 @@ func Run(ctx context.Context, args config.Args) error {
 			}
 			log.Println("Posted", ent, "to", platform)
 		default:
-			log.Println("WARNING: Platform", platform, "not yet implemented")
+			// TODO: Once we have LinkedIn implemented, make the above code
+			// more generic so that it can be used with LinkedIn as well.
+			log.Fatal("Platform", platform, "(not yet) implemented")
 		}
 	}
 
