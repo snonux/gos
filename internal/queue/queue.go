@@ -14,6 +14,9 @@ import (
 	"codeberg.org/snonux/gos/internal/oi"
 )
 
+// Strictly, we only operate on .txt files, but we also accept .md as Obsidian creates only .md files.
+var validExtensions = []string{".txt", ".md"}
+
 func Run(args config.Args) error {
 	if err := queueEntries(args); err != nil {
 		return err
@@ -26,9 +29,6 @@ func Run(args config.Args) error {
 
 // Queue all *.txt into ./db/*.txt.STAMP.queued
 func queueEntries(args config.Args) error {
-	// Strictly, we only operate on .txt files, but we also accept .md as Obsidian creates only .md files.
-	var validExtensions = []string{".txt", ".md"}
-
 	ch, err := oi.ReadDirCh(args.GosDir, func(file os.DirEntry) (string, bool) {
 		filePath := filepath.Join(args.GosDir, file.Name())
 		return filePath, slices.Contains(validExtensions, filepath.Ext(file.Name())) &&
@@ -42,6 +42,10 @@ func queueEntries(args config.Args) error {
 	for filePath := range ch {
 		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir,
 			filepath.Base(filePath), now.Format(format.Time))
+		if args.DryRun {
+			log.Println("Not queueing entry", filePath, "to", destPath, "as dry-run mode enabled")
+			continue
+		}
 		if err := oi.Rename(filePath, destPath); err != nil {
 			return err
 		}
@@ -68,11 +72,13 @@ func queuePlatforms(args config.Args) error {
 				return err
 			}
 		}
+		if args.DryRun {
+			continue
+		}
 		log.Println("Removing", filePath)
 		if err := os.Remove(filePath); err != nil {
 			return err
 		}
-
 	}
 
 	return nil

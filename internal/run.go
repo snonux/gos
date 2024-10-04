@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"log"
+	"strings"
 
 	"codeberg.org/snonux/gos/internal/config"
+	"codeberg.org/snonux/gos/internal/platforms/mastodon"
 	"codeberg.org/snonux/gos/internal/queue"
 	"codeberg.org/snonux/gos/internal/schedule"
 )
@@ -29,6 +31,22 @@ func Run(ctx context.Context, args config.Args) error {
 		}
 
 		log.Println("Scheduling", ent)
+		switch strings.ToLower(platform) {
+		case "mastodon":
+			if args.DryRun {
+				log.Println("Not posting", ent, "to", platform, "as dry-run enabled")
+				continue
+			}
+			if err := mastodon.Post(ctx, args, ent); err != nil {
+				return err
+			}
+			if err := ent.MarkPosted(); err != nil {
+				return err
+			}
+			log.Println("Posted", ent, "to", platform)
+		default:
+			log.Println("WARNING: Platform", platform, "not yet implemented")
+		}
 	}
 
 	return nil
