@@ -5,6 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -18,10 +20,17 @@ func main() {
 	dry := flag.Bool("dry", false, "Dry run")
 	version := flag.Bool("version", false, "Display version")
 	gosDir := flag.String("gosDir", "./gosdir", "Gos' directory")
+	secretsConfig := filepath.Join(os.Getenv("HOME"), ".config/gos/gosec.json")
+	secretsConfig = *flag.String("secretsConfig", secretsConfig, "Gos' secret config")
 	platforms := flag.String("platforms", "Mastodon,LinkedIn", "Platforms enabled")
 	target := flag.Int("target", 2, "How many posts per week are the target?")
 	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
 	flag.Parse()
+
+	secrets, err := config.NewSecrets(secretsConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	args := config.Args{
 		DryRun:    *dry,
@@ -29,6 +38,7 @@ func main() {
 		Platforms: strings.Split(*platforms, ","),
 		Target:    *target,
 		Lookback:  time.Duration(*lookback) * time.Hour * 24,
+		Secrets:   secrets,
 	}
 
 	if err := args.Validate(); err != nil {

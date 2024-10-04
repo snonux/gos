@@ -15,6 +15,7 @@ type Args struct {
 	Platforms []string
 	Target    int
 	Lookback  time.Duration
+	Secrets   Secrets
 }
 
 func (a Args) Validate() error {
