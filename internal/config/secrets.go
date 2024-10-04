@@ -10,6 +10,9 @@ import (
 type Secrets struct {
 	MastodonURL         string
 	MastodonAccessToken string
+	LinkedInClientID    string
+	LinkedInSecret      string
+	LinkedInRedirectURL string
 }
 
 func NewSecrets(configPath string) (Secrets, error) {

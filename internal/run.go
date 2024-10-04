@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"codeberg.org/snonux/gos/internal/config"
+	"codeberg.org/snonux/gos/internal/platforms/linkedin"
 	"codeberg.org/snonux/gos/internal/platforms/mastodon"
 	"codeberg.org/snonux/gos/internal/queue"
 	"codeberg.org/snonux/gos/internal/schedule"
@@ -38,6 +39,18 @@ func Run(ctx context.Context, args config.Args) error {
 				continue
 			}
 			if err := mastodon.Post(ctx, args, ent); err != nil {
+				return err
+			}
+			if err := ent.MarkPosted(); err != nil {
+				return err
+			}
+			log.Println("Posted", ent, "to", platform)
+		case "linkedin":
+			if args.DryRun {
+				log.Println("Not posting", ent, "to", platform, "as dry-run enabled")
+				continue
+			}
+			if err := linkedin.Post(ctx, args, ent); err != nil {
 				return err
 			}
 			if err := ent.MarkPosted(); err != nil {
