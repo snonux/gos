@@ -81,7 +81,7 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("Successfully fetched LinkedIn person ID\n"))
 }
 
-func LinkedInOauth2Creds(args config.Args) (string, string, error) {
+func LinkedInOAuth2Creds(args config.Args) (string, string, error) {
 	secrets := args.Secrets
 	if secrets.LinkedInAccessToken != "" && secrets.LinkedInPersonID != "" {
 		// TODO: Check, whether the access token is still valid. If not, get a new one.
@@ -95,13 +95,13 @@ func LinkedInOauth2Creds(args config.Args) (string, string, error) {
 		Scopes:       []string{"openid", "profile", "w_member_social"},
 		Endpoint:     linkedin.Endpoint,
 	}
-	errCh := make(chan error)
+	errCh = make(chan error)
 
 	http.HandleFunc("/", oauthIndexHandler)
 	http.HandleFunc("/callback", oauthCallbackHandler)
 
+	log.Println("Listening on http://localhost:8080 for LinkedIn oauth2")
 	go func() {
-		log.Println("Listening on http://localhost:8080 for LinkedIn oauth2")
 		if err := http.ListenAndServe(":8080", nil); err != nil {
 			errCh <- err
 		}
