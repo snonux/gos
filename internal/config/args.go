@@ -10,12 +10,13 @@ import (
 var validPlatforms = []string{"mastodon", "linkedin"}
 
 type Args struct {
-	GosDir    string
-	DryRun    bool
-	Platforms []string
-	Target    int
-	Lookback  time.Duration
-	Secrets   Secrets
+	GosDir            string
+	DryRun            bool
+	Platforms         []string
+	Target            int
+	Lookback          time.Duration
+	SecretsConfigPath string
+	Secrets           Secrets
 }
 
 func (a Args) Validate() error {

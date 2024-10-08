@@ -1,7 +1,6 @@
-package linkedin
+package oauth2
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -14,7 +13,11 @@ import (
 	"golang.org/x/oauth2/linkedin"
 )
 
-var oauthConfig *oauth2.Config
+var (
+	oauthConfig      *oauth2.Config
+	oauthPersonId    string
+	oauthAccessToken string
+)
 
 func getLinkedInID(token *oauth2.Token) (string, error) {
 	const url = "https://api.linkedin.com/v2/userinfo"
@@ -50,50 +53,6 @@ func getLinkedInID(token *oauth2.Token) (string, error) {
 	return user.Sub, nil
 }
 
-func postMessage(token *oauth2.Token, linkedInID, message string) error {
-	const url = "https://api.linkedin.com/v2/posts"
-
-	post := map[string]interface{}{
-		"author":     fmt.Sprintf("urn:li:person:%s", linkedInID),
-		"commentary": message,
-		"visibility": "PUBLIC",
-		"distribution": map[string]interface{}{
-			"feedDistribution":               "MAIN_FEED",
-			"targetEntities":                 []string{},
-			"thirdPartyDistributionChannels": []string{},
-		},
-		"lifecycleState":            "PUBLISHED",
-		"isReshareDisabledByAuthor": false,
-	}
-
-	payload, err := json.Marshal(post)
-	if err != nil {
-		return fmt.Errorf("Error encoding JSON:%w", err)
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
-	if err != nil {
-		return fmt.Errorf("Error creating request: %w", err)
-	}
-
-	req.Header.Add("Authorization", "Bearer "+token.AccessToken)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("X-RestLi-Protocol-Version", "2.0.0")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("Error sending request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("Failed to post to LinkedIn. Status: %s\n%s\n\n", resp.Status, body)
-	}
-	return nil
-}
-
 func oauthIndexHandler(w http.ResponseWriter, r *http.Request) {
 	url := oauthConfig.AuthCodeURL("state", oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
@@ -124,11 +83,14 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("Successfully posted a message to LinkedIn!\n"))
 }
 
-// TODO: Check for how logn the access token is valid for
 // TODO: Fetch the access token and user ID and store it i na file in .config/gos/...
-// TODO: Refresh access token when it is about to expire or expired
 // TODO: Separate posting of the message and fetching of the userID and access token
-func oauth(args config.Args) error {
+func AccessToken(args config.Args) (config.Secrets, error) {
+	if args.Secrets.LinkedInAccessToken != "" && args.Secrets.LinkedInPersonID != "" {
+		// TODO: Check, whether the access token is still valid. If not, get a new one.
+		return args.Secrets, nil
+	}
+
 	oauthConfig = &oauth2.Config{
 		ClientID:     args.Secrets.LinkedInClientID,
 		ClientSecret: args.Secrets.LinkedInSecret,
@@ -141,5 +103,10 @@ func oauth(args config.Args) error {
 	http.HandleFunc("/callback", oauthCallbackHandler)
 
 	log.Println("Listening on http://localhost:8080 for LinkedIn oauth2")
-	return http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", nil)
+
+	args.Secrets.MastodonAccessToken = oauthAccessToken
+	args.Secrets.LinkedInPersonID = oauthPersonId
+
+	return args.Secrets, err
 }

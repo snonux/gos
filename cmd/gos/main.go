@@ -20,25 +20,26 @@ func main() {
 	dry := flag.Bool("dry", false, "Dry run")
 	version := flag.Bool("version", false, "Display version")
 	gosDir := flag.String("gosDir", "./gosdir", "Gos' directory")
-	secretsConfig := filepath.Join(os.Getenv("HOME"), ".config/gos/gosec.json")
-	secretsConfig = *flag.String("secretsConfig", secretsConfig, "Gos' secret config")
+	secretsConfigPath := filepath.Join(os.Getenv("HOME"), ".config/gos/gosec.json")
+	secretsConfigPath = *flag.String("secretsConfig", secretsConfigPath, "Gos' secret config")
 	platforms := flag.String("platforms", "Mastodon,LinkedIn", "Platforms enabled")
 	target := flag.Int("target", 2, "How many posts per week are the target?")
 	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
 	flag.Parse()
 
-	secrets, err := config.NewSecrets(secretsConfig)
+	secrets, err := config.NewSecrets(secretsConfigPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	args := config.Args{
-		DryRun:    *dry,
-		GosDir:    *gosDir,
-		Platforms: strings.Split(*platforms, ","),
-		Target:    *target,
-		Lookback:  time.Duration(*lookback) * time.Hour * 24,
-		Secrets:   secrets,
+		DryRun:            *dry,
+		GosDir:            *gosDir,
+		Platforms:         strings.Split(*platforms, ","),
+		Target:            *target,
+		Lookback:          time.Duration(*lookback) * time.Hour * 24,
+		SecretsConfigPath: secretsConfigPath,
+		Secrets:           secrets,
 	}
 
 	if err := args.Validate(); err != nil {
