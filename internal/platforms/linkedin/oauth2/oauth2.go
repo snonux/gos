@@ -3,6 +3,7 @@ package oauth2
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -15,11 +16,12 @@ import (
 
 var (
 	oauthConfig      *oauth2.Config
-	oauthPersonId    string
 	oauthAccessToken string
+	oauthPersonID    string
+	errCh            chan error
 )
 
-func getLinkedInID(token *oauth2.Token) (string, error) {
+func getOauthPersonID(token *oauth2.Token) (string, error) {
 	const url = "https://api.linkedin.com/v2/userinfo"
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -59,54 +61,61 @@ func oauthIndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
+	defer close(errCh)
 	code := r.URL.Query().Get("code")
 
 	token, err := oauthConfig.Exchange(context.Background(), code)
 	if err != nil {
-		http.Error(w, "Failed to exchange token", http.StatusInternalServerError)
-		return
-	}
-
-	linkedInID, err := getLinkedInID(token)
-	if err != nil {
-		fmt.Println(err)
 		_, _ = w.Write([]byte(err.Error()))
+		errCh <- err
 		return
 	}
-	_, _ = w.Write([]byte("Successfully fetched the LinkedInID\n"))
+	oauthAccessToken = token.AccessToken
+	_, _ = w.Write([]byte("Successfully fetched LinkedIn access token\n"))
 
-	if err := postMessage(token, linkedInID, "test"); err != nil {
-		fmt.Println(err)
+	if oauthPersonID, err = getOauthPersonID(token); err != nil {
 		_, _ = w.Write([]byte(err.Error()))
+		errCh <- err
 		return
 	}
-	_, _ = w.Write([]byte("Successfully posted a message to LinkedIn!\n"))
+	_, _ = w.Write([]byte("Successfully fetched LinkedIn person ID\n"))
 }
 
-// TODO: Fetch the access token and user ID and store it i na file in .config/gos/...
-// TODO: Separate posting of the message and fetching of the userID and access token
-func AccessToken(args config.Args) (config.Secrets, error) {
-	if args.Secrets.LinkedInAccessToken != "" && args.Secrets.LinkedInPersonID != "" {
+func LinkedInOauth2Creds(args config.Args) (string, string, error) {
+	secrets := args.Secrets
+	if secrets.LinkedInAccessToken != "" && secrets.LinkedInPersonID != "" {
 		// TODO: Check, whether the access token is still valid. If not, get a new one.
-		return args.Secrets, nil
+		return secrets.LinkedInPersonID, secrets.MastodonAccessToken, nil
 	}
 
 	oauthConfig = &oauth2.Config{
-		ClientID:     args.Secrets.LinkedInClientID,
-		ClientSecret: args.Secrets.LinkedInSecret,
-		RedirectURL:  args.Secrets.LinkedInRedirectURL,
+		ClientID:     secrets.LinkedInClientID,
+		ClientSecret: secrets.LinkedInSecret,
+		RedirectURL:  secrets.LinkedInRedirectURL,
 		Scopes:       []string{"openid", "profile", "w_member_social"},
 		Endpoint:     linkedin.Endpoint,
 	}
+	errCh := make(chan error)
 
 	http.HandleFunc("/", oauthIndexHandler)
 	http.HandleFunc("/callback", oauthCallbackHandler)
 
-	log.Println("Listening on http://localhost:8080 for LinkedIn oauth2")
-	err := http.ListenAndServe(":8080", nil)
+	go func() {
+		log.Println("Listening on http://localhost:8080 for LinkedIn oauth2")
+		if err := http.ListenAndServe(":8080", nil); err != nil {
+			errCh <- err
+		}
+	}()
 
-	args.Secrets.MastodonAccessToken = oauthAccessToken
-	args.Secrets.LinkedInPersonID = oauthPersonId
+	var errs error
+	for err := range errCh {
+		errs = errors.Join(errs, err)
+	}
+	if errs != nil {
+		return "", "", errs
+	}
 
-	return args.Secrets, err
+	secrets.MastodonAccessToken = oauthAccessToken
+	secrets.LinkedInPersonID = oauthPersonID
+	return oauthPersonID, oauthAccessToken, secrets.WriteToDisk(args.SecretsConfigPath)
 }

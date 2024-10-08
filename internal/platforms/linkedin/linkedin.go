@@ -6,31 +6,34 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 
-	"codeberg.org/snonux/gos/gosdir/db/platforms/linkedin/oauth2"
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
+	"codeberg.org/snonux/gos/internal/platforms/linkedin/oauth2"
 )
 
 // TODO: Also implemebt a Text Platform output, which then laster can be
 // processed by Gemtexter as a page
 func Post(ctx context.Context, args config.Args, ent entry.Entry) error {
-	secrets, err := oauth2.AccessToken(args)
+	content, err := ent.Content()
+	if err != nil {
+		return nil
+	}
+
+	personID, accessToken, err := oauth2.LinkedInOauth2Creds(args)
 	if err != err {
 		return err
 	}
-	// TODO: Don't log this anymore
-	log.Println("DEBUG", "Got access token", secrets)
-	return nil
+
+	return post(personID, accessToken, content)
 }
 
-func postMessage(secrets config.Secrets, message string) error {
+func post(personID, accessToken, message string) error {
 	const url = "https://api.linkedin.com/v2/posts"
 
 	post := map[string]interface{}{
-		"author":     fmt.Sprintf("urn:li:person:%s", secrets.LinkedInPesonID),
+		"author":     fmt.Sprintf("urn:li:person:%s", personID),
 		"commentary": message,
 		"visibility": "PUBLIC",
 		"distribution": map[string]interface{}{
@@ -52,7 +55,7 @@ func postMessage(secrets config.Secrets, message string) error {
 		return fmt.Errorf("Error creating request: %w", err)
 	}
 
-	req.Header.Add("Authorization", "Bearer "+secrets.LinkedInAccessToken)
+	req.Header.Add("Authorization", "Bearer "+accessToken)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("X-RestLi-Protocol-Version", "2.0.0")
 
