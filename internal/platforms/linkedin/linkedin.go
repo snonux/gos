@@ -31,6 +31,10 @@ func Post(ctx context.Context, args config.Args, ent entry.Entry) error {
 }
 
 func post(ctx context.Context, args config.Args, ent entry.Entry) error {
+	if args.DryRun {
+		log.Println("Not posting", ent, "to LinkedIn as dry-run enabled")
+		return nil
+	}
 	personID, accessToken, err := oauth2.LinkedInCreds(args)
 	if err != err {
 		return err
