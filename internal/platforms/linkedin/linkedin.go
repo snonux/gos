@@ -21,7 +21,7 @@ func Post(ctx context.Context, args config.Args, ent entry.Entry) error {
 		return nil
 	}
 
-	personID, accessToken, err := oauth2.LinkedInOAuth2Creds(args)
+	personID, accessToken, err := oauth2.LinkedInCreds(args)
 	if err != err {
 		return err
 	}

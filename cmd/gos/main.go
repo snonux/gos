@@ -20,6 +20,7 @@ func main() {
 	dry := flag.Bool("dry", false, "Dry run")
 	version := flag.Bool("version", false, "Display version")
 	gosDir := flag.String("gosDir", "./gosdir", "Gos' directory")
+	browser := flag.String("browser", "firefox", "OAuth2 browser")
 	secretsConfigPath := filepath.Join(os.Getenv("HOME"), ".config/gos/gosec.json")
 	secretsConfigPath = *flag.String("secretsConfig", secretsConfigPath, "Gos' secret config")
 	platforms := flag.String("platforms", "Mastodon,LinkedIn", "Platforms enabled")
@@ -40,6 +41,7 @@ func main() {
 		Lookback:          time.Duration(*lookback) * time.Hour * 24,
 		SecretsConfigPath: secretsConfigPath,
 		Secrets:           secrets,
+		OAuth2Browser:     *browser,
 	}
 
 	if err := args.Validate(); err != nil {

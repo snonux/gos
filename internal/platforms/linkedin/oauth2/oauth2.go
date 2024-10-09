@@ -8,6 +8,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os/exec"
+	"runtime"
+	"time"
 
 	"codeberg.org/snonux/gos/internal/config"
 	"golang.org/x/oauth2"
@@ -55,6 +58,10 @@ func getOauthPersonID(token *oauth2.Token) (string, error) {
 	return user.Sub, nil
 }
 
+func upHandler(w http.ResponseWriter, r *http.Request) {
+	_, _ = w.Write([]byte("I am up!\n"))
+}
+
 func oauthIndexHandler(w http.ResponseWriter, r *http.Request) {
 	url := oauthConfig.AuthCodeURL("state", oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
@@ -64,6 +71,8 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	defer close(errCh)
 	code := r.URL.Query().Get("code")
 
+	log.Println("Exchanging OAuth2 token")
+	// TODO: Insert the propper context
 	token, err := oauthConfig.Exchange(context.Background(), code)
 	if err != nil {
 		_, _ = w.Write([]byte(err.Error()))
@@ -81,11 +90,11 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("Successfully fetched LinkedIn person ID\n"))
 }
 
-func LinkedInOAuth2Creds(args config.Args) (string, string, error) {
+func LinkedInCreds(args config.Args) (string, string, error) {
 	secrets := args.Secrets
 	if secrets.LinkedInAccessToken != "" && secrets.LinkedInPersonID != "" {
 		// TODO: Check, whether the access token is still valid. If not, get a new one.
-		return secrets.LinkedInPersonID, secrets.MastodonAccessToken, nil
+		return secrets.LinkedInPersonID, secrets.LinkedInAccessToken, nil
 	}
 
 	oauthConfig = &oauth2.Config{
@@ -95,17 +104,26 @@ func LinkedInOAuth2Creds(args config.Args) (string, string, error) {
 		Scopes:       []string{"openid", "profile", "w_member_social"},
 		Endpoint:     linkedin.Endpoint,
 	}
-	errCh = make(chan error)
+	errCh = make(chan error, 10)
 
 	http.HandleFunc("/", oauthIndexHandler)
 	http.HandleFunc("/callback", oauthCallbackHandler)
+	http.HandleFunc("/up", upHandler)
 
-	log.Println("Listening on http://localhost:8080 for LinkedIn oauth2")
+	log.Println("Listening on http://localhost:8080 for LinkedIn OAuth2")
 	go func() {
 		if err := http.ListenAndServe(":8080", nil); err != nil {
 			errCh <- err
 		}
 	}()
+
+	if err := waitUntilURLIsReachable("http://localhost:8080/up"); err != nil {
+		return "", "", err
+	}
+
+	if err := openURLInFirefox(args.OAuth2Browser, "http://localhost:8080"); err != nil {
+		return "", "", err
+	}
 
 	var errs error
 	for err := range errCh {
@@ -115,7 +133,41 @@ func LinkedInOAuth2Creds(args config.Args) (string, string, error) {
 		return "", "", errs
 	}
 
-	secrets.MastodonAccessToken = oauthAccessToken
+	secrets.LinkedInAccessToken = oauthAccessToken
 	secrets.LinkedInPersonID = oauthPersonID
 	return oauthPersonID, oauthAccessToken, secrets.WriteToDisk(args.SecretsConfigPath)
+}
+
+func openURLInFirefox(browser, url string) error {
+	log.Println("Opening", url, "in", browser)
+	switch runtime.GOOS {
+	case "windows":
+		cmd := exec.Command("cmd", "/C", "start", browser, url)
+		return cmd.Start()
+	case "darwin":
+		cmd := exec.Command("open", "-a", browser, url)
+		return cmd.Start()
+	default:
+		// Linux and other Unix like (e.g. *BSDs)
+		cmd := exec.Command(browser, url)
+		return cmd.Start()
+	}
+}
+
+func waitUntilURLIsReachable(url string) error {
+	var counter int
+	for counter < 10 {
+		counter++
+		time.Sleep(1 * time.Second)
+		resp, err := http.Get(url)
+
+		if err != nil {
+			log.Printf("URL is not reachable: %v\n", err)
+		} else {
+			log.Printf("URL is reachable: %s - Status Code: %d\n", url, resp.StatusCode)
+			resp.Body.Close()
+			return nil
+		}
+	}
+	return fmt.Errorf("%s not reachable after %d tries", url, counter)
 }

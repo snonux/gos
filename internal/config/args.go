@@ -17,6 +17,7 @@ type Args struct {
 	Lookback          time.Duration
 	SecretsConfigPath string
 	Secrets           Secrets
+	OAuth2Browser     string
 }
 
 func (a Args) Validate() error {

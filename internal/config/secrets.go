@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"os"
 )
 
@@ -15,9 +16,9 @@ type Secrets struct {
 	LinkedInSecret      string
 	LinkedInRedirectURL string
 	// Will be updated by gos automatically, after successful oauth2
-	LinkedInAccessToken string `json:"LinedInAccessToken,omitempty"`
+	LinkedInAccessToken string `json:"LinkedInAccessToken,omitempty"`
 	// Will be updated by gos automatically, after successful oauth2
-	LinkedInPersonID string `json:"LinedInPersonID,omitempty"`
+	LinkedInPersonID string `json:"LinkedInPersonID,omitempty"`
 }
 
 func NewSecrets(configPath string) (Secrets, error) {
@@ -41,6 +42,8 @@ func NewSecrets(configPath string) (Secrets, error) {
 }
 
 func (s Secrets) WriteToDisk(configPath string) error {
+	log.Println("Writing", configPath)
+
 	bytes, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal JSON: %w", err)
