@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"codeberg.org/snonux/gos/internal/config"
@@ -13,23 +15,33 @@ import (
 	"codeberg.org/snonux/gos/internal/platforms/linkedin/oauth2"
 )
 
+var errUnauthorized = errors.New("unauthorized access, refresh or create token?")
+
 // TODO: Also implemebt a Text Platform output, which then laster can be
 // processed by Gemtexter as a page
 func Post(ctx context.Context, args config.Args, ent entry.Entry) error {
-	content, err := ent.Content()
-	if err != nil {
-		return nil
+	err := post(ctx, args, ent)
+	if errors.Is(err, errUnauthorized) {
+		log.Println(err, "=> trying to refresh LinkedIn access token")
+		args.Secrets.LinkedInAccessToken = "" // Reset the token
+		return post(ctx, args, ent)
 	}
+	return err
+}
 
+func post(ctx context.Context, args config.Args, ent entry.Entry) error {
 	personID, accessToken, err := oauth2.LinkedInCreds(args)
 	if err != err {
 		return err
 	}
-
-	return post(personID, accessToken, content)
+	content, err := ent.Content()
+	if err != nil {
+		return nil
+	}
+	return callLinkedInAPI(personID, accessToken, content)
 }
 
-func post(personID, accessToken, message string) error {
+func callLinkedInAPI(personID, accessToken, message string) error {
 	const url = "https://api.linkedin.com/v2/posts"
 
 	post := map[string]interface{}{
@@ -68,7 +80,10 @@ func post(personID, accessToken, message string) error {
 
 	if resp.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("Failed to post to LinkedIn. Status: %s\n%s\n\n", resp.Status, body)
+		err = fmt.Errorf("failed to post to LinkedIn. Status: %s\n%s\n", resp.Status, body)
+		if resp.StatusCode == http.StatusUnauthorized {
+			err = errors.Join(err, errUnauthorized)
+		}
 	}
-	return nil
+	return err
 }

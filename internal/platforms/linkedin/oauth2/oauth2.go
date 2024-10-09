@@ -93,7 +93,6 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 func LinkedInCreds(args config.Args) (string, string, error) {
 	secrets := args.Secrets
 	if secrets.LinkedInAccessToken != "" && secrets.LinkedInPersonID != "" {
-		// TODO: Check, whether the access token is still valid. If not, get a new one.
 		return secrets.LinkedInPersonID, secrets.LinkedInAccessToken, nil
 	}
 
@@ -104,7 +103,7 @@ func LinkedInCreds(args config.Args) (string, string, error) {
 		Scopes:       []string{"openid", "profile", "w_member_social"},
 		Endpoint:     linkedin.Endpoint,
 	}
-	errCh = make(chan error, 10)
+	errCh = make(chan error)
 
 	http.HandleFunc("/", oauthIndexHandler)
 	http.HandleFunc("/callback", oauthCallbackHandler)
