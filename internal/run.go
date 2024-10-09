@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"codeberg.org/snonux/gos/internal/config"
+	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/platforms/linkedin"
 	"codeberg.org/snonux/gos/internal/platforms/mastodon"
 	"codeberg.org/snonux/gos/internal/prompt"
@@ -31,45 +32,33 @@ func Run(ctx context.Context, args config.Args) error {
 		case err != nil:
 			return err
 		}
+		if args.DryRun {
+			log.Println("Not posting", ent, "to", platform, "as dry-run enabled")
+			return nil
+		}
 
 		log.Println("Scheduling", ent)
+		var postCB func(context.Context, config.Args, entry.Entry) error
 		switch strings.ToLower(platform) {
 		case "mastodon":
-			if args.DryRun {
-				log.Println("Not posting", ent, "to", platform, "as dry-run enabled")
-				continue
-			}
-			if err := mastodon.Post(ctx, args, ent); err != nil {
-				if errors.Is(err, prompt.ErrAborted) {
-					log.Println("Aborted posting to", platform)
-					continue
-				}
-				return err
-			}
-			if err := ent.MarkPosted(); err != nil {
-				return err
-			}
-			log.Println("Posted", ent, "to", platform)
+			postCB = mastodon.Post
 		case "linkedin":
-			if args.DryRun {
-				log.Println("Not posting", ent, "to", platform, "as dry-run enabled")
+			postCB = linkedin.Post
+		default:
+			log.Fatal("Platform", platform, "(not yet) implemented")
+		}
+
+		if err := postCB(ctx, args, ent); err != nil {
+			if errors.Is(err, prompt.ErrAborted) {
+				log.Println("Aborted posting to", platform)
 				continue
 			}
-			if err := linkedin.Post(ctx, args, ent); err != nil {
-				if errors.Is(err, prompt.ErrAborted) {
-					log.Println("Aborted posting to", platform)
-					continue
-				}
-				return err
-			}
-			if err := ent.MarkPosted(); err != nil {
-				return err
-			}
-			log.Println("Posted", ent, "to", platform)
-		default:
-			// TODO: Once we have LinkedIn implemented, make the above code
-			// more generic so that it can be used with LinkedIn as well.
-			log.Fatal("Platform", platform, "(not yet) implemented")
+			return err
+		}
+
+		log.Println("Posted", ent, "to", platform)
+		if err := ent.MarkPosted(); err != nil {
+			return err
 		}
 	}
 

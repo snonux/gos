@@ -47,7 +47,7 @@ func callLinkedInAPI(personID, accessToken, message string) error {
 
 	post := map[string]interface{}{
 		"author":     fmt.Sprintf("urn:li:person:%s", personID),
-		"commentary": message,
+		"commentary": message, // TODO: Can't post (...) paretenthesis? escape them?
 		"visibility": "PUBLIC",
 		"distribution": map[string]interface{}{
 			"feedDistribution":               "MAIN_FEED",
