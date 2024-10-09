@@ -13,6 +13,7 @@ import (
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/platforms/linkedin/oauth2"
+	"codeberg.org/snonux/gos/internal/prompt"
 )
 
 var errUnauthorized = errors.New("unauthorized access, refresh or create token?")
@@ -60,6 +61,9 @@ func callLinkedInAPI(personID, accessToken, message string) error {
 	payload, err := json.Marshal(post)
 	if err != nil {
 		return fmt.Errorf("Error encoding JSON:%w", err)
+	}
+	if !prompt.Yes(fmt.Sprintf("%s\nDo you want to post this message to LinkedIn?", string(payload))) {
+		return prompt.ErrAborted
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))

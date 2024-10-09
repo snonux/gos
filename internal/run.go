@@ -9,6 +9,7 @@ import (
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/platforms/linkedin"
 	"codeberg.org/snonux/gos/internal/platforms/mastodon"
+	"codeberg.org/snonux/gos/internal/prompt"
 	"codeberg.org/snonux/gos/internal/queue"
 	"codeberg.org/snonux/gos/internal/schedule"
 )
@@ -39,6 +40,10 @@ func Run(ctx context.Context, args config.Args) error {
 				continue
 			}
 			if err := mastodon.Post(ctx, args, ent); err != nil {
+				if errors.Is(err, prompt.ErrAborted) {
+					log.Println("Aborted posting to", platform)
+					continue
+				}
 				return err
 			}
 			if err := ent.MarkPosted(); err != nil {
@@ -51,6 +56,10 @@ func Run(ctx context.Context, args config.Args) error {
 				continue
 			}
 			if err := linkedin.Post(ctx, args, ent); err != nil {
+				if errors.Is(err, prompt.ErrAborted) {
+					log.Println("Aborted posting to", platform)
+					continue
+				}
 				return err
 			}
 			if err := ent.MarkPosted(); err != nil {

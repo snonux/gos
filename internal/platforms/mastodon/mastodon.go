@@ -9,6 +9,7 @@ import (
 
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
+	"codeberg.org/snonux/gos/internal/prompt"
 )
 
 func Post(ctx context.Context, args config.Args, ent entry.Entry) error {
@@ -20,6 +21,9 @@ func Post(ctx context.Context, args config.Args, ent entry.Entry) error {
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("failed to marshal payload: %w", err)
+	}
+	if !prompt.Yes(fmt.Sprintf("%s\nDo you want to post this message to Mastodon?", string(payloadBytes))) {
+		return prompt.ErrAborted
 	}
 
 	req, err := http.NewRequest("POST", args.Secrets.MastodonURL, bytes.NewBuffer(payloadBytes))
