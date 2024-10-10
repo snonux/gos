@@ -3,9 +3,8 @@ package entry
 import (
 	"fmt"
 	"testing"
-	"time"
 
-	"codeberg.org/snonux/gos/internal/format"
+	"codeberg.org/snonux/gos/internal/timestamp"
 )
 
 func TestEntry(t *testing.T) {
@@ -27,7 +26,7 @@ func TestEntry(t *testing.T) {
 				t.Errorf("expected state %s but got %s", state, ent.State)
 			}
 
-			expectedTime, err := time.Parse(format.Time, stamp)
+			expectedTime, err := timestamp.Parse(stamp)
 			if err != nil {
 				t.Error(err)
 			}

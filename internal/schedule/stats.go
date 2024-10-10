@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"codeberg.org/snonux/gos/internal/entry"
-	"codeberg.org/snonux/gos/internal/format"
 	"codeberg.org/snonux/gos/internal/oi"
+	"codeberg.org/snonux/gos/internal/timestamp"
 )
 
 // Posting stats
@@ -45,7 +45,7 @@ func (s stats) targetHit() bool {
 
 func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 	var (
-		now    time.Time = nowTime()
+		now    time.Time = timestamp.NowTime()
 		oldest time.Time = now
 	)
 
@@ -95,15 +95,6 @@ func (s *stats) gatherQueuedStats(dir string) error {
 	return err
 }
 
-// Make a simpler "now" time which gets rid of any extra information like offsets etc.
-func nowTime() time.Time {
-	simplerNow, err := time.Parse(format.Time, time.Now().Format(format.Time))
-	if err != nil {
-		panic(err)
-	}
-	return simplerNow
-}
-
 func pastTime(duration time.Duration) time.Time {
-	return nowTime().Add(-duration)
+	return timestamp.NowTime().Add(-duration)
 }

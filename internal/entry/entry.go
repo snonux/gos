@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"codeberg.org/snonux/gos/internal/format"
+	"codeberg.org/snonux/gos/internal/timestamp"
 )
 
 type State int
@@ -31,9 +31,6 @@ func (s State) String() string {
 	}
 }
 
-// The time this code was written a:round, actually.
-const oldestValidTime = "20240912-102800"
-
 type Entry struct {
 	Path  string
 	Time  time.Time
@@ -42,7 +39,7 @@ type Entry struct {
 
 func (e Entry) String() string {
 	return fmt.Sprintf("Path:%s;Stamp:%s,State:%s",
-		e.Path, e.Time.Format(format.Time), e.State)
+		e.Path, e.Time.Format(timestamp.Format), e.State)
 }
 
 var Zero = Entry{}
@@ -67,16 +64,11 @@ func New(filePath string) (Entry, error) {
 	}
 
 	var err error
-	if e.Time, err = time.Parse(format.Time, parts[len(parts)-2]); err != nil {
+	if e.Time, err = timestamp.Parse(parts[len(parts)-2]); err != nil {
 		return e, err
 	}
 
-	oldestValid, err := time.Parse(format.Time, oldestValidTime)
-	if err != nil {
-		panic(err)
-	}
-
-	if e.Time.Before(oldestValid) {
+	if e.Time.Before(timestamp.OldestValidTime()) {
 		return e, fmt.Errorf("entry time does not seem legit, it is too old: %v", e.Time)
 	}
 
@@ -96,6 +88,7 @@ func (e *Entry) MarkPosted() error {
 		return errors.New("entry is already posted")
 	}
 	// TODO: Also update the timestamp to reflect the posting time in the file path.
+	// Write a timestamp.Update() function for this.
 	if err := os.Rename(e.Path, strings.TrimSuffix(e.Path, ".queued")+".posted"); err != nil {
 		return err
 	}

@@ -7,11 +7,10 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"time"
 
 	"codeberg.org/snonux/gos/internal/config"
-	"codeberg.org/snonux/gos/internal/format"
 	"codeberg.org/snonux/gos/internal/oi"
+	"codeberg.org/snonux/gos/internal/timestamp"
 )
 
 // Strictly, we only operate on .txt files, but we also accept .md as Obsidian creates only .md files.
@@ -38,10 +37,9 @@ func queueEntries(args config.Args) error {
 		return err
 	}
 
-	now := time.Now()
 	for filePath := range ch {
 		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir,
-			filepath.Base(filePath), now.Format(format.Time))
+			filepath.Base(filePath), timestamp.Now())
 		if args.DryRun {
 			log.Println("Not queueing entry", filePath, "to", destPath, "as dry-run mode enabled")
 			continue
