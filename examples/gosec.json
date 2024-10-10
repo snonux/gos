@@ -1,0 +1,9 @@
+{
+  "MastodonURL": "https://fosstodon.org/api/v1/statuses",
+  "MastodonAccessToken": "CENSORED",
+  "LinkedInClientID": "CENSORED",
+  "LinkedInSecret": "CENSORED",
+  "LinkedInRedirectURL": "http://localhost:8080/callback",
+  "LinkedInAccessToken": "CENSORED",
+  "LinkedInPersonID": "CENSORED"
+}
