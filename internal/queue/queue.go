@@ -16,6 +16,9 @@ import (
 // Strictly, we only operate on .txt files, but we also accept .md as Obsidian creates only .md files.
 var validExtensions = []string{".txt", ".md"}
 
+// TODO: add support of parsing the share tags
+// sdlfkjsdflksdjfsldfkj.share:linkedin:-mastodon:x.txt
+// etc
 func Run(args config.Args) error {
 	if err := queueEntries(args); err != nil {
 		return err
