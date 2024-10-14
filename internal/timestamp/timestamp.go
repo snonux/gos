@@ -36,6 +36,6 @@ func OldestValidTime() time.Time {
 
 func UpdateInFilename(filename string, rIndex int) string {
 	parts := strings.Split(filename, ".")
-	parts[len(parts)-rIndex] = Now()
-	return strings.Join(parts, "-")
+	parts[len(parts)+rIndex] = Now()
+	return strings.Join(parts, ".")
 }

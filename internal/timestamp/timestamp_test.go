@@ -3,13 +3,14 @@ package timestamp
 import (
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestUpdateInFilename(t *testing.T) {
+	t.Parallel()
+
 	var (
 		filePath        = "gosdir/db/platforms/mastodon/1728240487.txt.20241009-232530.queued"
-		nowTime         = time.Now()
+		nowTime         = NowTime()
 		updatedFilePath = UpdateInFilename(filePath, -2)
 		parts           = strings.Split(updatedFilePath, ".")
 	)
@@ -18,6 +19,7 @@ func TestUpdateInFilename(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
-	t.Log(filePath, updatedFilePath, nowTime.Sub(updatedTime))
+	if nowTime.Sub(updatedTime) != 0 {
+		t.Error("expected no time difference here")
+	}
 }
