@@ -16,9 +16,6 @@ import (
 // Strictly, we only operate on .txt files, but we also accept .md as Obsidian creates only .md files.
 var validExtensions = []string{".txt", ".md"}
 
-// TODO: add support of parsing the share tags
-// sdlfkjsdflksdjfsldfkj.share:linkedin:-mastodon:x.txt
-// etc
 func Run(args config.Args) error {
 	if err := queueEntries(args); err != nil {
 		return err
@@ -69,6 +66,10 @@ func queuePlatforms(args config.Args) error {
 
 	for filePath := range ch {
 		for _, platform := range args.Platforms {
+			if newShareTags(args, filePath).IsExcluded(platform) {
+				log.Println("Not queueing entry", filePath, "to platform", platform, "as it is excluded")
+				continue
+			}
 			if err := queuePlatform(filePath, args.GosDir, platform); err != nil {
 				return err
 			}

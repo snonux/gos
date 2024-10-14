@@ -7,16 +7,11 @@ import (
 	"codeberg.org/snonux/gos/internal/config"
 )
 
-type expectedResult struct {
-	includes []string
-	excludes []string
-}
-
 func TestShareTagsPositive(t *testing.T) {
 	t.Parallel()
 
 	args := config.Args{Platforms: []string{"mastodon", "linkedin"}}
-	testTable := map[string]expectedResult{
+	testTable := map[string]shareTags{
 		"./foo/bar.without.tags.txt": {
 			includes: args.Platforms, // No tags: default platforms
 		},
@@ -52,7 +47,7 @@ func TestShareTagsNegative(t *testing.T) {
 	t.Parallel()
 
 	args := config.Args{Platforms: []string{"mastodon", "linkedin"}}
-	testTable := map[string]expectedResult{
+	testTable := map[string]shareTags{
 		"./foo/bar.without.tags.txt": {
 			includes: []string{"linkedin"},
 		},
@@ -81,4 +76,63 @@ func TestShareTagsNegative(t *testing.T) {
 		})
 
 	}
+}
+
+func TestShareTagsIsIncluded(t *testing.T) {
+	t.Parallel()
+
+	assertIncluded := func(shareTags shareTags, platforms ...string) {
+		for _, platform := range platforms {
+			if !shareTags.IsIncluded(platform) {
+				t.Errorf("expected %s included in %v", platform, shareTags)
+			}
+			if shareTags.IsExcluded(platform) {
+				t.Errorf("expected %s not to be excluded in %v", platform, shareTags)
+			}
+		}
+	}
+	assertExcluded := func(shareTags shareTags, platforms ...string) {
+		for _, platform := range platforms {
+			if shareTags.IsIncluded(platform) {
+				t.Errorf("expected %s not to be included in %v", platform, shareTags)
+			}
+			if !shareTags.IsExcluded(platform) {
+				t.Errorf("expected %s to be excluded in %v", platform, shareTags)
+			}
+		}
+	}
+	args := config.Args{Platforms: []string{"mastodon", "linkedin"}}
+
+	filePath := "foo/bar/baz.txt"
+	t.Run(filePath, func(t *testing.T) {
+		assertIncluded(newShareTags(args, filePath), "mastodon", "linkedin")
+	})
+
+	filePath = "foo/bar/baz.share:mastodon.txt"
+	t.Run(filePath, func(t *testing.T) {
+		assertIncluded(newShareTags(args, filePath), "mastodon")
+		assertExcluded(newShareTags(args, filePath), "linkedin")
+	})
+
+	filePath = "foo/bar/baz.share:mastodon.txt"
+	t.Run(filePath, func(t *testing.T) {
+		assertIncluded(newShareTags(args, filePath), "mastodon")
+		assertExcluded(newShareTags(args, filePath), "linkedin")
+	})
+
+	filePath = "foo/bar/baz.share:linkedin:mastodon.txt"
+	t.Run(filePath, func(t *testing.T) {
+		assertIncluded(newShareTags(args, filePath), "mastodon", "linkedin")
+	})
+
+	filePath = "foo/bar/baz.share:-linkedin:-mastodon.txt"
+	t.Run(filePath, func(t *testing.T) {
+		assertExcluded(newShareTags(args, filePath), "mastodon", "linkedin")
+	})
+
+	filePath = "foo/bar/baz.share:-linkedin:mastodon.txt"
+	t.Run(filePath, func(t *testing.T) {
+		assertIncluded(newShareTags(args, filePath), "mastodon")
+		assertExcluded(newShareTags(args, filePath), "linkedin")
+	})
 }

@@ -1,16 +1,15 @@
 package queue
 
 import (
+	"slices"
 	"strings"
 
 	"codeberg.org/snonux/gos/internal/config"
 )
 
 type shareTags struct {
-	// The platforms to include
-	includes []string
-	// The platforms to exclude
-	excludes []string
+	includes []string // The platforms to include
+	excludes []string // The platforms to exclude
 }
 
 // Valid tags are: share:foo[,...]
@@ -37,4 +36,12 @@ func newShareTags(args config.Args, filePath string) shareTags {
 	}
 
 	return s
+}
+
+func (s shareTags) IsIncluded(platform string) bool {
+	return slices.Contains(s.includes, platform) && !slices.Contains(s.excludes, platform)
+}
+
+func (s shareTags) IsExcluded(platform string) bool {
+	return slices.Contains(s.excludes, platform) || !slices.Contains(s.includes, platform)
 }
