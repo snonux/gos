@@ -80,6 +80,18 @@ func (e Entry) Content() (string, error) {
 	return string(bytes), err
 }
 
+func (e Entry) ContentWithLimit(sizeLimit int) (string, error) {
+	content, err := e.Content()
+	if err != nil {
+		return "", err
+	}
+	if len(content) > sizeLimit {
+		return "", fmt.Errorf("entry content exceeds size limit: %d > %d: %v",
+			len(content), sizeLimit, e)
+	}
+	return content, nil
+}
+
 func (e *Entry) MarkPosted() error {
 	if e.State != Queued {
 		return errors.New("entry is not queued")

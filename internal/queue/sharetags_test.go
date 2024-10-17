@@ -10,10 +10,10 @@ import (
 func TestShareTagsPositive(t *testing.T) {
 	t.Parallel()
 
-	args := config.Args{Platforms: []string{"mastodon", "linkedin"}}
+	args := config.Args{Platforms: map[string]int{"mastodon": 100, "linkedin": 100}}
 	testTable := map[string]shareTags{
 		"./foo/bar.without.tags.txt": {
-			includes: args.Platforms, // No tags: default platforms
+			includes: []string{"mastodon", "linkedin"},
 		},
 		"./foo/bar.share:linkedin.txt": {
 			includes: []string{"linkedin"},
@@ -46,7 +46,7 @@ func TestShareTagsPositive(t *testing.T) {
 func TestShareTagsNegative(t *testing.T) {
 	t.Parallel()
 
-	args := config.Args{Platforms: []string{"mastodon", "linkedin"}}
+	args := config.Args{Platforms: map[string]int{"mastodon": 100, "linkedin": 100}}
 	testTable := map[string]shareTags{
 		"./foo/bar.without.tags.txt": {
 			includes: []string{"linkedin"},
@@ -101,7 +101,7 @@ func TestShareTagsIsIncluded(t *testing.T) {
 			}
 		}
 	}
-	args := config.Args{Platforms: []string{"mastodon", "linkedin"}}
+	args := config.Args{Platforms: map[string]int{"mastodon": 100, "linkedin": 100}}
 
 	filePath := "foo/bar/baz.txt"
 	t.Run(filePath, func(t *testing.T) {

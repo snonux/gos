@@ -13,8 +13,8 @@ import (
 	"codeberg.org/snonux/gos/internal/prompt"
 )
 
-func Post(ctx context.Context, args config.Args, ent entry.Entry) error {
-	content, err := ent.Content()
+func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
+	content, err := ent.ContentWithLimit(sizeLimit)
 	if err != nil {
 		return err
 	}

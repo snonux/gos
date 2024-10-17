@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -23,7 +24,7 @@ func main() {
 	browser := flag.String("browser", "firefox", "OAuth2 browser")
 	secretsConfigPath := filepath.Join(os.Getenv("HOME"), ".config/gos/gosec.json")
 	secretsConfigPath = *flag.String("secretsConfig", secretsConfigPath, "Gos' secret config")
-	platforms := flag.String("platforms", "Mastodon,LinkedIn", "Platforms enabled")
+	platforms := flag.String("platforms", "Mastodon:500,LinkedIn:1000", "Platforms enabled plus their post size limits")
 	target := flag.Int("target", 2, "How many posts per week are the target?")
 	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
 	flag.Parse()
@@ -36,12 +37,22 @@ func main() {
 	args := config.Args{
 		DryRun:            *dry,
 		GosDir:            *gosDir,
-		Platforms:         strings.Split(*platforms, ","),
+		Platforms:         make(map[string]int),
 		Target:            *target,
 		Lookback:          time.Duration(*lookback) * time.Hour * 24,
 		SecretsConfigPath: secretsConfigPath,
 		Secrets:           secrets,
 		OAuth2Browser:     *browser,
+	}
+	for _, platform := range strings.Split(*platforms, ",") {
+		// E.g. Mastodon:500
+		parts := strings.Split(platform, ":")
+		var err error
+		// E.g. args.Platform["mastodon"] = 500
+		args.Platforms[parts[0]], err = strconv.Atoi(parts[1])
+		if err != nil {
+			log.Fatalln(err)
+		}
 	}
 
 	if err := args.Validate(); err != nil {

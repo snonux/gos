@@ -32,7 +32,9 @@ func newShareTags(args config.Args, filePath string) shareTags {
 
 	if len(s.includes) == 0 && len(s.excludes) == 0 {
 		// If nothing found, include all of them
-		s.includes = args.Platforms
+		for platform := range args.Platforms {
+			s.includes = append(s.includes, platform)
+		}
 	}
 
 	return s

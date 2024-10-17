@@ -12,7 +12,7 @@ var validPlatforms = []string{"mastodon", "linkedin"}
 type Args struct {
 	GosDir            string
 	DryRun            bool
-	Platforms         []string
+	Platforms         map[string]int // Platform name and post size limits
 	Target            int
 	Lookback          time.Duration
 	SecretsConfigPath string
@@ -21,7 +21,7 @@ type Args struct {
 }
 
 func (a Args) Validate() error {
-	for _, platform := range a.Platforms {
+	for platform := range a.Platforms {
 		if !slices.Contains(validPlatforms, strings.ToLower(platform)) {
 			return fmt.Errorf("Platform %s not supported", platform)
 		}

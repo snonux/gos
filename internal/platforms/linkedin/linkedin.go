@@ -19,18 +19,18 @@ import (
 var errUnauthorized = errors.New("unauthorized access, refresh or create token?")
 
 // TODO: Also implemebt a Text Platform output, which then laster can be
-// processed by Gemtexter as a page
-func Post(ctx context.Context, args config.Args, ent entry.Entry) error {
-	err := post(ctx, args, ent)
+// processed by Gemtexter as a page. Or not?
+func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
+	err := post(ctx, args, sizeLimit, ent)
 	if errors.Is(err, errUnauthorized) {
 		log.Println(err, "=> trying to refresh LinkedIn access token")
 		args.Secrets.LinkedInAccessToken = "" // Reset the token
-		return post(ctx, args, ent)
+		return post(ctx, args, sizeLimit, ent)
 	}
 	return err
 }
 
-func post(ctx context.Context, args config.Args, ent entry.Entry) error {
+func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
 	if args.DryRun {
 		log.Println("Not posting", ent, "to LinkedIn as dry-run enabled")
 		return nil
@@ -39,9 +39,9 @@ func post(ctx context.Context, args config.Args, ent entry.Entry) error {
 	if err != err {
 		return err
 	}
-	content, err := ent.Content()
+	content, err := ent.ContentWithLimit(sizeLimit)
 	if err != nil {
-		return nil
+		return err
 	}
 	return callLinkedInAPI(personID, accessToken, content)
 }
