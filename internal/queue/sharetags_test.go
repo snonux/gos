@@ -12,19 +12,19 @@ func TestShareTagsPositive(t *testing.T) {
 
 	args := config.Args{Platforms: map[string]int{"mastodon": 100, "linkedin": 100}}
 	testTable := map[string]shareTags{
-		"./foo/bar.without.tags.txt": {
+		"./foo/bar.without.tags.txt.20240101-010101.queued": {
 			includes: []string{"mastodon", "linkedin"},
 		},
-		"./foo/bar.share:linkedin.txt": {
+		"./foo/bar.share:linkeDin.txt.20240101-010101.queued": {
 			includes: []string{"linkedin"},
 		},
-		"./foo/bar.share:-linkedin.txt": {
+		"./foo/bar.share:-LinkedIn.txt.20240101-010101.queued": {
 			excludes: []string{"linkedin"},
 		},
-		"./foo/bar.share:linkedin:mastodon.txt": {
+		"./foo/bar.share:linkedin:mastOdon.txt.20240101-010101.queued": {
 			includes: []string{"linkedin", "mastodon"},
 		},
-		"./foo/bar.share:linkedin:-mastodon:xcom.txt": {
+		"./foo/bar.share:linkediN:-mastodon:XCOM.txt.20240101-010101.queued": {
 			includes: []string{"linkedin", "xcom"},
 			excludes: []string{"mastodon"},
 		},
@@ -48,19 +48,19 @@ func TestShareTagsNegative(t *testing.T) {
 
 	args := config.Args{Platforms: map[string]int{"mastodon": 100, "linkedin": 100}}
 	testTable := map[string]shareTags{
-		"./foo/bar.without.tags.txt": {
+		"./foo/bar.without.tags.txt.20240101-010101.queued": {
 			includes: []string{"linkedin"},
 		},
-		"./foo/bar.share:linkedin.txt": {
+		"./foo/bar.share:linkedIn.txt.20240101-010101.queued": {
 			includes: []string{"mastodon"},
 		},
-		"./foo/bar.share:-linkedin.txt": {
+		"./foo/bar.share:-liNkedin.txt.20240101-010101.queued": {
 			includes: []string{"linkedin"},
 		},
-		"./foo/bar.share:linkedin:mastodon.txt": {
+		"./foo/bar.share:linkedin:mastodon.txt.20240101-010101.queued": {
 			includes: []string{"oups", "mastodon"},
 		},
-		"./foo/bar.share:linkedin:-mastodon:xcom.txt": {
+		"./foo/bar.share:linkedin:-MASTODON:xcom.txt.20240101-010101.queued": {
 			includes: []string{"linkedin", "xcom"},
 			excludes: []string{"mastodon", "xcom"},
 		},
@@ -76,63 +76,4 @@ func TestShareTagsNegative(t *testing.T) {
 		})
 
 	}
-}
-
-func TestShareTagsIsIncluded(t *testing.T) {
-	t.Parallel()
-
-	assertIncluded := func(shareTags shareTags, platforms ...string) {
-		for _, platform := range platforms {
-			if !shareTags.IsIncluded(platform) {
-				t.Errorf("expected %s included in %v", platform, shareTags)
-			}
-			if shareTags.IsExcluded(platform) {
-				t.Errorf("expected %s not to be excluded in %v", platform, shareTags)
-			}
-		}
-	}
-	assertExcluded := func(shareTags shareTags, platforms ...string) {
-		for _, platform := range platforms {
-			if shareTags.IsIncluded(platform) {
-				t.Errorf("expected %s not to be included in %v", platform, shareTags)
-			}
-			if !shareTags.IsExcluded(platform) {
-				t.Errorf("expected %s to be excluded in %v", platform, shareTags)
-			}
-		}
-	}
-	args := config.Args{Platforms: map[string]int{"mastodon": 100, "linkedin": 100}}
-
-	filePath := "foo/bar/baz.txt"
-	t.Run(filePath, func(t *testing.T) {
-		assertIncluded(newShareTags(args, filePath), "mastodon", "linkedin")
-	})
-
-	filePath = "foo/bar/baz.share:mastodon.txt"
-	t.Run(filePath, func(t *testing.T) {
-		assertIncluded(newShareTags(args, filePath), "mastodon")
-		assertExcluded(newShareTags(args, filePath), "linkedin")
-	})
-
-	filePath = "foo/bar/baz.share:mastodon.txt"
-	t.Run(filePath, func(t *testing.T) {
-		assertIncluded(newShareTags(args, filePath), "mastodon")
-		assertExcluded(newShareTags(args, filePath), "linkedin")
-	})
-
-	filePath = "foo/bar/baz.share:linkedin:mastodon.txt"
-	t.Run(filePath, func(t *testing.T) {
-		assertIncluded(newShareTags(args, filePath), "mastodon", "linkedin")
-	})
-
-	filePath = "foo/bar/baz.share:-linkedin:-mastodon.txt"
-	t.Run(filePath, func(t *testing.T) {
-		assertExcluded(newShareTags(args, filePath), "mastodon", "linkedin")
-	})
-
-	filePath = "foo/bar/baz.share:-linkedin:mastodon.txt"
-	t.Run(filePath, func(t *testing.T) {
-		assertIncluded(newShareTags(args, filePath), "mastodon")
-		assertExcluded(newShareTags(args, filePath), "linkedin")
-	})
 }

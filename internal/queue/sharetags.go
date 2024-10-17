@@ -1,11 +1,14 @@
 package queue
 
 import (
+	"log"
 	"slices"
 	"strings"
 
 	"codeberg.org/snonux/gos/internal/config"
 )
+
+// TODO: Refactor this file, maybe a simple function is enough not a newShareTags
 
 type shareTags struct {
 	includes []string // The platforms to include
@@ -19,13 +22,14 @@ func newShareTags(args config.Args, filePath string) shareTags {
 	var s shareTags
 
 	parts := strings.Split(filePath, ".")
-	tagStr := parts[len(parts)-2]
+	// TODO: Defensively test whether the parts is long enough
+	tagStr := parts[len(parts)-4]
 	if len(parts) > 2 && strings.HasPrefix(tagStr, "share:") {
 		for _, tag := range strings.Split(tagStr[6:], ":") {
 			if strings.HasPrefix(tag, "-") {
-				s.excludes = append(s.excludes, tag[1:])
+				s.excludes = append(s.excludes, strings.ToLower(tag[1:]))
 			} else {
-				s.includes = append(s.includes, tag)
+				s.includes = append(s.includes, strings.ToLower(tag))
 			}
 		}
 	}
@@ -33,17 +37,18 @@ func newShareTags(args config.Args, filePath string) shareTags {
 	if len(s.includes) == 0 && len(s.excludes) == 0 {
 		// If nothing found, include all of them
 		for platform := range args.Platforms {
-			s.includes = append(s.includes, platform)
+			s.includes = append(s.includes, strings.ToLower(platform))
 		}
 	}
 
 	return s
 }
 
-func (s shareTags) IsIncluded(platform string) bool {
-	return slices.Contains(s.includes, platform) && !slices.Contains(s.excludes, platform)
-}
-
+// TODO: Write unit test
 func (s shareTags) IsExcluded(platform string) bool {
-	return slices.Contains(s.excludes, platform) || !slices.Contains(s.includes, platform)
+	log.Println("DEBUG", platform, s)
+	log.Println("DEBUG is it in the excludes", slices.Contains(s.excludes, strings.ToLower(platform)))
+	log.Println("DEBUG is it not in the includes", !slices.Contains(s.includes, strings.ToLower(platform)))
+	return slices.Contains(s.excludes, strings.ToLower(platform)) ||
+		!slices.Contains(s.includes, strings.ToLower(platform))
 }
