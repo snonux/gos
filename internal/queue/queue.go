@@ -78,10 +78,10 @@ func queuePlatforms(args config.Args) error {
 		if args.DryRun {
 			continue
 		}
-		// log.Println("Removing", filePath)
-		// if err := os.Remove(filePath); err != nil {
-		// 	return err
-		// }
+		log.Println("Removing", filePath)
+		if err := os.Remove(filePath); err != nil {
+			return err
+		}
 	}
 
 	return nil

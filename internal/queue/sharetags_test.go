@@ -33,10 +33,10 @@ func TestShareTagsPositive(t *testing.T) {
 	for filePath, expectedResult := range testTable {
 		t.Run(filePath, func(t *testing.T) {
 			shareTags := newShareTags(args, filePath)
-			if !slices.Equal(shareTags.includes, expectedResult.includes) {
+			if !sameElements(shareTags.includes, expectedResult.includes) {
 				t.Errorf("Expected includes to be %v but got %v", expectedResult.includes, shareTags.includes)
 			}
-			if !slices.Equal(shareTags.excludes, expectedResult.excludes) {
+			if !sameElements(shareTags.excludes, expectedResult.excludes) {
 				t.Errorf("Expected excludes to be %v but got %v", expectedResult.excludes, shareTags.excludes)
 			}
 		})
@@ -69,11 +69,24 @@ func TestShareTagsNegative(t *testing.T) {
 	for filePath, unexpectedResult := range testTable {
 		t.Run(filePath, func(t *testing.T) {
 			shareTags := newShareTags(args, filePath)
-			if slices.Equal(shareTags.includes, unexpectedResult.includes) &&
-				slices.Equal(shareTags.excludes, unexpectedResult.excludes) {
+			if sameElements(shareTags.includes, unexpectedResult.includes) &&
+				sameElements(shareTags.excludes, unexpectedResult.excludes) {
 				t.Errorf("expected %v not to be the actual result", unexpectedResult)
 			}
 		})
 
 	}
+}
+
+// Can't use sameElements as order may be different
+func sameElements(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for _, elem := range a {
+		if !slices.Contains(b, elem) {
+			return false
+		}
+	}
+	return true
 }
