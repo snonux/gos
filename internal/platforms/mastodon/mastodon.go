@@ -27,7 +27,7 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		log.Println("Not posting", ent, "to Mastodon as dry-run enabled")
 		return nil
 	}
-	if !prompt.Yes(fmt.Sprintf("%s\nDo you want to post this message to Mastodon?", string(payloadBytes))) {
+	if !prompt.YesWithContent("Do you want to post this message to Mastodon?", content) {
 		return prompt.ErrAborted
 	}
 

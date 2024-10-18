@@ -64,7 +64,7 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, message string)
 	if err != nil {
 		return fmt.Errorf("Error encoding JSON:%w", err)
 	}
-	if !prompt.Yes(fmt.Sprintf("%s\nDo you want to post this message to LinkedIn?", string(payload))) {
+	if !prompt.YesWithContent("Do you want to post this message to LinkedIn?", message) {
 		return prompt.ErrAborted
 	}
 

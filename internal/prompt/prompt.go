@@ -6,15 +6,25 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 var ErrAborted = errors.New("aborted")
+var contentSprintf = color.New(color.FgCyan, color.BgBlue, color.Bold).SprintFunc()
+var dangerSprintf = color.New(color.FgWhite, color.BgRed, color.Bold).SprintFunc()
+
+func YesWithContent(question, content string) bool {
+	fmt.Print(contentSprintf(content))
+	fmt.Print("\n")
+	return Yes(question)
+}
 
 func Yes(question string) bool {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Print(question, " (y/n): ")
+		fmt.Printf("%s ", dangerSprintf(fmt.Sprintf("%s (y/n):", question)))
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading input:", err)
