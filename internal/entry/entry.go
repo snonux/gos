@@ -78,18 +78,26 @@ func New(filePath string) (Entry, error) {
 
 func (e Entry) Content() (string, error) {
 	bytes, err := os.ReadFile(e.Path)
-	return string(bytes), err
+	if err != err {
+		return "", err
+	}
+	return strings.TrimSpace(string(bytes)), nil
 }
 
-// TODO: Optionally open editor when a content is too large.
 func (e Entry) ContentWithLimit(sizeLimit int) (string, error) {
 	content, err := e.Content()
 	if err != nil {
 		return "", err
 	}
 	if len(content) > sizeLimit {
-		return "", fmt.Errorf("entry content exceeds size limit: %d > %d: %v",
-			len(content), sizeLimit, e)
+		err := fmt.Errorf("entry content exceeds size limit: %d > %d: %v", len(content), sizeLimit, e)
+		if err2 := prompt.Acknowledge("You need to shorten the content as "+err.Error(), content); err2 != nil {
+			return "", errors.Join(err, err2)
+		}
+		if err2 := e.Edit(); err2 != nil {
+			return "", errors.Join(err, err2)
+		}
+		return e.ContentWithLimit(sizeLimit)
 	}
 	return content, nil
 }

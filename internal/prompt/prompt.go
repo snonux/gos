@@ -12,24 +12,34 @@ import (
 )
 
 var (
-	ErrAborted = errors.New("aborted")
-	// TODO: Add edit functionality. 1. configure EDITOR, 2. fork EDITOR process on the given file.
+	ErrAborted     = errors.New("aborted")
 	ErrEditContent = errors.New("edit content")
-	contentColor   = color.New(color.FgCyan, color.BgBlue, color.Bold).SprintFunc()
-	dangerColor    = color.New(color.FgWhite, color.BgRed, color.Bold).SprintFunc()
+	blue           = color.New(color.FgCyan, color.BgBlue, color.Bold).PrintfFunc()
+	red            = color.New(color.FgWhite, color.BgRed, color.Bold).PrintfFunc()
 )
 
 func DoYouWantThis(question, content string) error {
-	fmt.Print(contentColor(content))
+	blue(content)
 	fmt.Print("\n")
 	return whatNow(question)
+}
+
+func Acknowledge(message, content string) error {
+	blue(content)
+	fmt.Print("\n")
+	red(message + " (press enter)")
+	reader := bufio.NewReader(os.Stdin)
+	if _, err := reader.ReadString('\n'); err != nil {
+		return err
+	}
+	return nil
 }
 
 func whatNow(question string) error {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Printf("%s ", dangerColor(fmt.Sprintf("%s (y=yes/n=no/e=edit):", question)))
+		red("%s (y=yes/n=no/e=edit):", question)
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading input:", err)
