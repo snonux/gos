@@ -1,6 +1,7 @@
 package timestamp
 
 import (
+	"fmt"
 	"strings"
 	"time"
 )
@@ -28,15 +29,18 @@ func OldestValidTime() time.Time {
 	// The time this code was written a:round, actually.
 	oldestValidTime, err := Parse("20240912-102800")
 	if err != nil {
-		// Never expected
-		panic(err)
+		panic(err) // Never expected
 	}
 	return oldestValidTime
 }
 
-// TODO: Maybe make this safer?
-func UpdateInFilename(filename string, rIndex int) string {
+func UpdateInFilename(filename string, rIndex int) (string, error) {
 	parts := strings.Split(filename, ".")
-	parts[len(parts)+rIndex] = Now()
-	return strings.Join(parts, ".")
+	ind := len(parts) + rIndex
+	if ind < 0 || ind >= len(parts) {
+		return "", fmt.Errorf("unable to update timestamp in %s, invalid index %d: %v",
+			filename, ind, parts)
+	}
+	parts[ind] = Now()
+	return strings.Join(parts, "."), nil
 }

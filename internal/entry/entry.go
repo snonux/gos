@@ -101,7 +101,10 @@ func (e *Entry) MarkPosted() error {
 	if e.State == Posted {
 		return errors.New("entry is already posted")
 	}
-	newPath := timestamp.UpdateInFilename(strings.TrimSuffix(e.Path, ".queued")+".posted", -2)
+	newPath, err := timestamp.UpdateInFilename(strings.TrimSuffix(e.Path, ".queued")+".posted", -2)
+	if err != nil {
+		return err
+	}
 	if err := os.Rename(e.Path, newPath); err != nil {
 		return err
 	}
