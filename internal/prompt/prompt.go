@@ -11,27 +11,20 @@ import (
 )
 
 var (
-	ErrAborted   = errors.New("aborted")
-	contentColor = color.New(color.FgCyan, color.BgBlue, color.Bold).SprintFunc()
-	dangerColor  = color.New(color.FgWhite, color.BgRed, color.Bold).SprintFunc()
+	ErrAborted = errors.New("aborted")
+	// TODO: Add edit functionality. 1. configure EDITOR, 2. fork EDITOR process on the given file.
+	ErrEditContent = errors.New("edit content")
+	contentColor   = color.New(color.FgCyan, color.BgBlue, color.Bold).SprintFunc()
+	dangerColor    = color.New(color.FgWhite, color.BgRed, color.Bold).SprintFunc()
 )
 
-type PromptSelection int
-
-const (
-	Unknown PromptSelection = iota
-	Yes
-	No
-	Edit
-)
-
-func DoYouWantThis(question, content string) PromptSelection {
+func DoYouWantThis(question, content string) error {
 	fmt.Print(contentColor(content))
 	fmt.Print("\n")
 	return whatNow(question)
 }
 
-func whatNow(question string) PromptSelection {
+func whatNow(question string) error {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
@@ -45,13 +38,17 @@ func whatNow(question string) PromptSelection {
 		input = strings.TrimSpace(input)
 		switch strings.ToLower(input) {
 		case "y", "yes":
-			return Yes
+			return nil
 		case "n", "no":
-			return No
+			return ErrAborted
 		case "e", "edit":
-			return Edit
+			return ErrEditContent
 		default:
 			fmt.Println("Please enter 'y' or 'n' or 'e'.")
 		}
 	}
+}
+
+func EditFile(filePath string) error {
+	return nil
 }

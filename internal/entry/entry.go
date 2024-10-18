@@ -80,6 +80,7 @@ func (e Entry) Content() (string, error) {
 	return string(bytes), err
 }
 
+// TODO: Optionally open editor when a content is too large.
 func (e Entry) ContentWithLimit(sizeLimit int) (string, error) {
 	content, err := e.Content()
 	if err != nil {

@@ -41,15 +41,29 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 	if err != nil {
 		return err
 	}
+	if err := prompt.DoYouWantThis("Do you want to post this message to Linkedin?", content); err != nil {
+		// TODO: Do the same for Mastodon. Gan this be more generalized?
+		if err == prompt.ErrEditContent {
+			if err := prompt.EditFile(ent.Path); err != nil {
+				return err
+			}
+			ent, err = entry.New(ent.Path)
+			if err != err {
+				return err
+			}
+			return post(ctx, args, sizeLimit, ent)
+		}
+		return err
+	}
 	return callLinkedInAPI(ctx, personID, accessToken, content)
 }
 
-func callLinkedInAPI(ctx context.Context, personID, accessToken, message string) error {
+func callLinkedInAPI(ctx context.Context, personID, accessToken, content string) error {
 	const url = "https://api.linkedin.com/v2/posts"
 
 	post := map[string]interface{}{
 		"author":     fmt.Sprintf("urn:li:person:%s", personID),
-		"commentary": message, // TODO: Can't post (...) paretenthesis? escape them?
+		"commentary": content, // TODO: Can't post (...) paretenthesis? escape them?
 		"visibility": "PUBLIC",
 		"distribution": map[string]interface{}{
 			"feedDistribution":               "MAIN_FEED",
@@ -64,17 +78,6 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, message string)
 	if err != nil {
 		return fmt.Errorf("Error encoding JSON:%w", err)
 	}
-
-	switch prompt.DoYouWantThis("Do you want to post this message to Linkedin?", message) {
-	case prompt.No:
-		return prompt.ErrAborted
-	case prompt.Yes:
-	case prompt.Edit:
-		panic("edit not yet implemented") // TODO
-	default:
-		panic("should never happen")
-	}
-
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(payload))
 	if err != nil {
 		return fmt.Errorf("Error creating request: %w", err)
