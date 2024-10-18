@@ -26,6 +26,7 @@ func main() {
 	secretsConfigPath = *flag.String("secretsConfig", secretsConfigPath, "Gos' secret config")
 	platforms := flag.String("platforms", "Mastodon:500,LinkedIn:1000", "Platforms enabled plus their post size limits")
 	target := flag.Int("target", 2, "How many posts per week are the target?")
+	pauseDays := flag.Int("pauseDays", 3, "How many days until next post can be posted?")
 	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
 	flag.Parse()
 
@@ -39,6 +40,7 @@ func main() {
 		GosDir:            *gosDir,
 		Platforms:         make(map[string]int),
 		Target:            *target,
+		PauseDays:         *pauseDays,
 		Lookback:          time.Duration(*lookback) * time.Hour * 24,
 		SecretsConfigPath: secretsConfigPath,
 		Secrets:           secrets,

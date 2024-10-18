@@ -2,6 +2,7 @@ package schedule
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -18,11 +19,12 @@ type stats struct {
 	sinceDays         float64
 	postsPerDay       float64
 	postsPerDayTarget float64
+	lastPostDaysAgo   float64
 }
 
 func (s stats) String() string {
-	return fmt.Sprintf("posted:%d,queued:%d,sinceDays:%v,postsPerDay:%v >? postsPerDayTarget:%v",
-		s.posted, s.queued, s.sinceDays, s.postsPerDay, s.postsPerDayTarget,
+	return fmt.Sprintf("posted:%d,queued:%d,sinceDays:%v,postsPerDayTarget:%v>?%v,lastPostDaysAgo:%v",
+		s.posted, s.queued, s.sinceDays, s.postsPerDay, s.postsPerDayTarget, s.lastPostDaysAgo,
 	)
 }
 
@@ -39,14 +41,24 @@ func newStats(dir string, lookback time.Duration, target int) (stats, error) {
 	return stats, nil
 }
 
-func (s stats) targetHit() bool {
-	return s.postsPerDay >= s.postsPerDayTarget
+func (s stats) targetHit(pauseDays int) bool {
+	if s.postsPerDay >= s.postsPerDayTarget {
+		log.Println("Posts per day target hit")
+		return true
+	}
+	if s.lastPostDaysAgo <= float64(pauseDays) {
+		log.Println("Need to wait a bit longer as last post isn't", pauseDays, "ago yet")
+		return true
+
+	}
+	return false
 }
 
 func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 	var (
 		now    time.Time = timestamp.NowTime()
 		oldest time.Time = now
+		newest time.Time = timestamp.OldestValidTime()
 	)
 
 	err := oi.TraverseDir(dir, func(file os.DirEntry) error {
@@ -61,6 +73,9 @@ func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 		if ent.Time.Before(oldest) {
 			oldest = ent.Time
 		}
+		if ent.Time.After(newest) {
+			newest = ent.Time
+		}
 		s.posted++
 		return nil
 	})
@@ -71,6 +86,8 @@ func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 	since := now.Sub(oldest)
 	s.sinceDays = since.Abs().Hours() / 24
 	s.postsPerDay = float64(s.posted) / float64(s.sinceDays)
+	s.lastPostDaysAgo = now.Sub(newest).Hours() / 24.0
+
 	return nil
 }
 

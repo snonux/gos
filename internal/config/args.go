@@ -14,6 +14,7 @@ type Args struct {
 	DryRun            bool
 	Platforms         map[string]int // Platform name and post size limits
 	Target            int
+	PauseDays         int
 	Lookback          time.Duration
 	SecretsConfigPath string
 	Secrets           Secrets

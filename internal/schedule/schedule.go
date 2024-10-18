@@ -18,8 +18,6 @@ var (
 	ErrNothingQueued     = errors.New("nothing queued")
 )
 
-// TODO: Make it so that I don't post 2 days in a row, make it configurable how
-// many days between each post for each platform there should be.
 func Run(args config.Args, platform string) (entry.Entry, error) {
 	dir := fmt.Sprintf("%s/db/platforms/%s", args.GosDir, strings.ToLower(platform))
 	stats, err := newStats(dir, args.Lookback, args.Target)
@@ -29,7 +27,6 @@ func Run(args config.Args, platform string) (entry.Entry, error) {
 
 	log.Println("For", platform, "stats:", stats)
 	if stats.targetHit() {
-		log.Println("Target hit, not posting at", platform)
 		return entry.Zero, ErrNothingToSchedule
 	}
 
