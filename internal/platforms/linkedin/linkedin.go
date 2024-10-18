@@ -41,10 +41,10 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 	if err != nil {
 		return err
 	}
-	return callLinkedInAPI(personID, accessToken, content)
+	return callLinkedInAPI(ctx, personID, accessToken, content)
 }
 
-func callLinkedInAPI(personID, accessToken, message string) error {
+func callLinkedInAPI(ctx context.Context, personID, accessToken, message string) error {
 	const url = "https://api.linkedin.com/v2/posts"
 
 	post := map[string]interface{}{
@@ -68,7 +68,7 @@ func callLinkedInAPI(personID, accessToken, message string) error {
 		return prompt.ErrAborted
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(payload))
 	if err != nil {
 		return fmt.Errorf("Error creating request: %w", err)
 	}
@@ -78,7 +78,6 @@ func callLinkedInAPI(personID, accessToken, message string) error {
 	req.Header.Add("X-RestLi-Protocol-Version", "2.0.0")
 
 	client := &http.Client{}
-	// TODO: Use ctx?
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("Error sending request: %w", err)

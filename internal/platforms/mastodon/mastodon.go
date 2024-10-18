@@ -31,7 +31,7 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		return prompt.ErrAborted
 	}
 
-	req, err := http.NewRequest("POST", args.Secrets.MastodonURL, bytes.NewBuffer(payloadBytes))
+	req, err := http.NewRequestWithContext(ctx, "POST", args.Secrets.MastodonURL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
