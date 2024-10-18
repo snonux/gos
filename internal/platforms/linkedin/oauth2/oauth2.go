@@ -22,6 +22,7 @@ var (
 	oauthAccessToken string
 	oauthPersonID    string
 	errCh            chan error
+	globalCtx        context.Context
 )
 
 func getOauthPersonID(token *oauth2.Token) (string, error) {
@@ -72,8 +73,7 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 
 	log.Println("Exchanging OAuth2 token")
-	// TODO: Insert the propper context
-	token, err := oauthConfig.Exchange(context.Background(), code)
+	token, err := oauthConfig.Exchange(globalCtx, code)
 	if err != nil {
 		_, _ = w.Write([]byte(err.Error()))
 		errCh <- err
@@ -90,7 +90,7 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("Successfully fetched LinkedIn person ID\n"))
 }
 
-func LinkedInCreds(args config.Args) (string, string, error) {
+func LinkedInCreds(ctx context.Context, args config.Args) (string, string, error) {
 	secrets := args.Secrets
 	if secrets.LinkedInAccessToken != "" && secrets.LinkedInPersonID != "" {
 		return secrets.LinkedInPersonID, secrets.LinkedInAccessToken, nil
@@ -104,6 +104,7 @@ func LinkedInCreds(args config.Args) (string, string, error) {
 		Endpoint:     linkedin.Endpoint,
 	}
 	errCh = make(chan error)
+	globalCtx = ctx
 
 	http.HandleFunc("/", oauthIndexHandler)
 	http.HandleFunc("/callback", oauthCallbackHandler)

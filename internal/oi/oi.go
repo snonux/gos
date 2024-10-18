@@ -48,7 +48,6 @@ func ReadDirCh[T any](dir string, cb func(file os.DirEntry) (T, bool)) (chan T, 
 	return ch, nil
 }
 
-// TODO: Refactor to use ReadDirCh internally
 func TraverseDir(dir string, cb func(file os.DirEntry) error) error {
 	if err := EnsureDir(dir); err != nil {
 		return err

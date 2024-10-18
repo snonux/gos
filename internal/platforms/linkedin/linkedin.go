@@ -33,7 +33,7 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		log.Println("Not posting", ent, "to LinkedIn as dry-run enabled")
 		return nil
 	}
-	personID, accessToken, err := oauth2.LinkedInCreds(args)
+	personID, accessToken, err := oauth2.LinkedInCreds(ctx, args)
 	if err != err {
 		return err
 	}
@@ -78,6 +78,7 @@ func callLinkedInAPI(personID, accessToken, message string) error {
 	req.Header.Add("X-RestLi-Protocol-Version", "2.0.0")
 
 	client := &http.Client{}
+	// TODO: Use ctx?
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("Error sending request: %w", err)
