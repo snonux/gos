@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/oi"
@@ -64,6 +65,7 @@ func queuePlatforms(args config.Args) error {
 		return err
 	}
 
+	trashDir := filepath.Join(args.GosDir, "db", "trashbin")
 	for filePath := range ch {
 		for platform := range args.Platforms {
 			excluded, err := excludedByTags(args, filePath, platform)
@@ -83,8 +85,8 @@ func queuePlatforms(args config.Args) error {
 		}
 
 		// Keep queued items in trash for a while.
-		// TODO: clean up files older than 3 months from there
-		trashPath := filepath.Join(args.GosDir, "db", "trashbin", filepath.Base(filePath))
+		trashPath := filepath.Join(trashDir,
+			strings.TrimSuffix(filepath.Base(filePath), ".queued")+".trash")
 		log.Printf("Trashing %s -> %s", filePath, trashPath)
 		if err := oi.EnsureParentDir(trashPath); err != nil {
 			return err
@@ -94,7 +96,8 @@ func queuePlatforms(args config.Args) error {
 		}
 	}
 
-	return nil
+	sixMonthsAgo := time.Now().AddDate(0, -6, 0)
+	return deleteFiles(trashDir, ".trash", sixMonthsAgo)
 }
 
 // Queue ./db/queued/*.txt.STAMP.queued to ./db/platforms/PLATFORM/*.txt.STAMP.queued
@@ -110,5 +113,31 @@ func queuePlatform(entryPath, gosDir, platform string) error {
 	}
 
 	log.Println("Queuing", entryPath, "->", destPath)
+
 	return oi.CopyFile(entryPath, destPath)
+}
+
+func deleteFiles(path, suffix string, olderThan time.Time) error {
+	ch, err := oi.ReadDirCh(path, func(file os.DirEntry) (string, bool) {
+		filePath := filepath.Join(path, file.Name())
+		return filePath, strings.HasSuffix(filePath, suffix) && file.Type().IsRegular()
+	})
+	if err != err {
+		return err
+	}
+
+	for filePath := range ch {
+		fileInfo, err := os.Stat(filePath)
+		if err != nil {
+			return err
+		}
+		if fileInfo.ModTime().Before(olderThan) {
+			log.Println("Cleaning up", filePath)
+			err := os.Remove(filePath)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
