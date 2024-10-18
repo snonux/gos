@@ -10,21 +10,32 @@ import (
 	"github.com/fatih/color"
 )
 
-var ErrAborted = errors.New("aborted")
-var contentSprintf = color.New(color.FgCyan, color.BgBlue, color.Bold).SprintFunc()
-var dangerSprintf = color.New(color.FgWhite, color.BgRed, color.Bold).SprintFunc()
+var (
+	ErrAborted   = errors.New("aborted")
+	contentColor = color.New(color.FgCyan, color.BgBlue, color.Bold).SprintFunc()
+	dangerColor  = color.New(color.FgWhite, color.BgRed, color.Bold).SprintFunc()
+)
 
-func YesWithContent(question, content string) bool {
-	fmt.Print(contentSprintf(content))
+type PromptSelection int
+
+const (
+	Unknown PromptSelection = iota
+	Yes
+	No
+	Edit
+)
+
+func DoYouWantThis(question, content string) PromptSelection {
+	fmt.Print(contentColor(content))
 	fmt.Print("\n")
-	return Yes(question)
+	return whatNow(question)
 }
 
-func Yes(question string) bool {
+func whatNow(question string) PromptSelection {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Printf("%s ", dangerSprintf(fmt.Sprintf("%s (y/n):", question)))
+		fmt.Printf("%s ", dangerColor(fmt.Sprintf("%s (y=yes/n=no/e=edit):", question)))
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading input:", err)
@@ -34,11 +45,13 @@ func Yes(question string) bool {
 		input = strings.TrimSpace(input)
 		switch strings.ToLower(input) {
 		case "y", "yes":
-			return true
+			return Yes
 		case "n", "no":
-			return false
+			return No
+		case "e", "edit":
+			return Edit
 		default:
-			fmt.Println("Please enter 'y' or 'n'.")
+			fmt.Println("Please enter 'y' or 'n' or 'e'.")
 		}
 	}
 }

@@ -27,8 +27,14 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		log.Println("Not posting", ent, "to Mastodon as dry-run enabled")
 		return nil
 	}
-	if !prompt.YesWithContent("Do you want to post this message to Mastodon?", content) {
+	switch prompt.DoYouWantThis("Do you want to post this message to Mastodon?", content) {
+	case prompt.No:
 		return prompt.ErrAborted
+	case prompt.Yes:
+	case prompt.Edit:
+		panic("edit not yet implemented") // TODO
+	default:
+		panic("should never happen")
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "POST", args.Secrets.MastodonURL, bytes.NewBuffer(payloadBytes))
