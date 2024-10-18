@@ -34,9 +34,11 @@ func newShareTags(args config.Args, filePath string) shareTags {
 		}
 	}
 
-	if len(s.includes) == 0 && len(s.excludes) == 0 {
-		// If nothing found, include all of them
+	if len(s.includes) == 0 {
 		for platform := range args.Platforms {
+			if slices.Contains(s.excludes, strings.ToLower(platform)) {
+				continue
+			}
 			s.includes = append(s.includes, strings.ToLower(platform))
 		}
 	}

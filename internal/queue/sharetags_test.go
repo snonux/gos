@@ -19,6 +19,7 @@ func TestShareTagsPositive(t *testing.T) {
 			includes: []string{"linkedin"},
 		},
 		"./foo/bar.share:-LinkedIn.txt.20240101-010101.queued": {
+			includes: []string{"mastodon"},
 			excludes: []string{"linkedin"},
 		},
 		"./foo/bar.share:linkedin:mastOdon.txt.20240101-010101.queued": {
@@ -28,16 +29,22 @@ func TestShareTagsPositive(t *testing.T) {
 			includes: []string{"linkedin", "xcom"},
 			excludes: []string{"mastodon"},
 		},
+		"./foo/bar/ql-e7657e8a1ab573f84ad0dbc55199e937.share:-mastodon.txt.20241018-105524.queued": {
+			includes: []string{"linkedin"},
+			excludes: []string{"mastodon"},
+		},
 	}
 
 	for filePath, expectedResult := range testTable {
 		t.Run(filePath, func(t *testing.T) {
 			shareTags := newShareTags(args, filePath)
 			if !sameElements(shareTags.includes, expectedResult.includes) {
-				t.Errorf("Expected includes to be %v but got %v", expectedResult.includes, shareTags.includes)
+				t.Errorf("Expected includes to be %v but got %v with %s",
+					expectedResult.includes, shareTags.includes, filePath)
 			}
 			if !sameElements(shareTags.excludes, expectedResult.excludes) {
-				t.Errorf("Expected excludes to be %v but got %v", expectedResult.excludes, shareTags.excludes)
+				t.Errorf("Expected excludes to be %v but got %v with %s",
+					expectedResult.excludes, shareTags.excludes, filePath)
 			}
 		})
 
@@ -71,14 +78,15 @@ func TestShareTagsNegative(t *testing.T) {
 			shareTags := newShareTags(args, filePath)
 			if sameElements(shareTags.includes, unexpectedResult.includes) &&
 				sameElements(shareTags.excludes, unexpectedResult.excludes) {
-				t.Errorf("expected %v not to be the actual result", unexpectedResult)
+				t.Errorf("expected %v not to be the actual result with %s",
+					unexpectedResult, filePath)
 			}
 		})
 
 	}
 }
 
-// Can't use sameElements as order may be different
+// Can't use slices.Equal as order of elements may be different.
 func sameElements(a, b []string) bool {
 	if len(a) != len(b) {
 		return false
