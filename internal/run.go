@@ -46,7 +46,7 @@ func runPlatform(ctx context.Context, args config.Args, platform string, sizeLim
 		return err
 	}
 
-	log.Println("Scheduling", ent)
+	log.Println("Posting", ent)
 	var postCB func(context.Context, config.Args, int, entry.Entry) error
 	switch strings.ToLower(platform) {
 	case "mastodon":

@@ -81,12 +81,15 @@ func queuePlatforms(args config.Args) error {
 		if args.DryRun {
 			continue
 		}
-		archivePath := filepath.Join(args.GosDir, "db", "archive", filepath.Base(filePath))
-		log.Printf("Archiving %s -> %s", filePath, archivePath)
-		if err := oi.EnsureParentDir(archivePath); err != nil {
+
+		// Keep queued items in trash for a while.
+		// TODO: clean up files older than 3 months from there
+		trashPath := filepath.Join(args.GosDir, "db", "trashbin", filepath.Base(filePath))
+		log.Printf("Trashing %s -> %s", filePath, trashPath)
+		if err := oi.EnsureParentDir(trashPath); err != nil {
 			return err
 		}
-		if err := os.Rename(filePath, archivePath); err != nil {
+		if err := os.Rename(filePath, trashPath); err != nil {
 			return err
 		}
 	}
