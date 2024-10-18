@@ -42,13 +42,8 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		return err
 	}
 	if err := prompt.DoYouWantThis("Do you want to post this message to Linkedin?", content); err != nil {
-		// TODO: Do the same for Mastodon. Gan this be more generalized?
-		if err == prompt.ErrEditContent {
-			if err := prompt.EditFile(ent.Path); err != nil {
-				return err
-			}
-			ent, err = entry.New(ent.Path)
-			if err != err {
+		if errors.Is(err, prompt.ErrEditContent) {
+			if err := ent.Edit(); err != nil {
 				return err
 			}
 			return post(ctx, args, sizeLimit, ent)

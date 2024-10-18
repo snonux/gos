@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -28,6 +29,12 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		return nil
 	}
 	if err := prompt.DoYouWantThis("Do you want to post this message to Mastodon?", content); err != nil {
+		if errors.Is(err, prompt.ErrEditContent) {
+			if err := ent.Edit(); err != nil {
+				return err
+			}
+			return Post(ctx, args, sizeLimit, ent)
+		}
 		return err
 	}
 	req, err := http.NewRequestWithContext(ctx, "POST", args.Secrets.MastodonURL, bytes.NewBuffer(payloadBytes))

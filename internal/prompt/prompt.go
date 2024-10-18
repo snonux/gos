@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/fatih/color"
@@ -50,5 +51,15 @@ func whatNow(question string) error {
 }
 
 func EditFile(filePath string) error {
-	return nil
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		return errors.New("EDITOR environment variable is not set")
+	}
+
+	cmd := exec.Command(editor, filePath)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+
+	return cmd.Run()
 }

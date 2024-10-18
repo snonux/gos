@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"codeberg.org/snonux/gos/internal/prompt"
 	"codeberg.org/snonux/gos/internal/timestamp"
 )
 
@@ -105,5 +106,12 @@ func (e *Entry) MarkPosted() error {
 		return err
 	}
 	e.State = Posted
+	return nil
+}
+
+func (e Entry) Edit() error {
+	if err := prompt.EditFile(e.Path); err != nil {
+		return err
+	}
 	return nil
 }
