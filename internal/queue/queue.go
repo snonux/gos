@@ -66,7 +66,11 @@ func queuePlatforms(args config.Args) error {
 
 	for filePath := range ch {
 		for platform := range args.Platforms {
-			if newShareTags(args, filePath).IsExcluded(platform) {
+			excluded, err := excludedByTags(args, filePath, platform)
+			if err != nil {
+				return err
+			}
+			if excluded {
 				log.Println("Not queueing entry", filePath, "to platform", platform, "as it is excluded")
 				continue
 			}

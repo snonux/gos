@@ -37,7 +37,10 @@ func TestShareTagsPositive(t *testing.T) {
 
 	for filePath, expectedResult := range testTable {
 		t.Run(filePath, func(t *testing.T) {
-			shareTags := newShareTags(args, filePath)
+			shareTags, err := newShareTags(args, filePath)
+			if err != nil {
+				t.Error(err)
+			}
 			if !sameElements(shareTags.includes, expectedResult.includes) {
 				t.Errorf("Expected includes to be %v but got %v with %s",
 					expectedResult.includes, shareTags.includes, filePath)
@@ -75,7 +78,10 @@ func TestShareTagsNegative(t *testing.T) {
 
 	for filePath, unexpectedResult := range testTable {
 		t.Run(filePath, func(t *testing.T) {
-			shareTags := newShareTags(args, filePath)
+			shareTags, err := newShareTags(args, filePath)
+			if err != nil {
+				t.Error(err)
+			}
 			if sameElements(shareTags.includes, unexpectedResult.includes) &&
 				sameElements(shareTags.excludes, unexpectedResult.excludes) {
 				t.Errorf("expected %v not to be the actual result with %s",
