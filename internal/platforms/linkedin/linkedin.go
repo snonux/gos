@@ -18,8 +18,6 @@ import (
 
 var errUnauthorized = errors.New("unauthorized access, refresh or create token?")
 
-// TODO: Also implemebt a Text Platform output, which then laster can be
-// processed by Gemtexter as a page. Or not?
 func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
 	err := post(ctx, args, sizeLimit, ent)
 	if errors.Is(err, errUnauthorized) {
