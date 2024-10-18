@@ -27,7 +27,6 @@ func Run(args config.Args) error {
 }
 
 // Queue all *.txt into ./db/*.txt.STAMP.queued
-// TODO: This doesn't work correctly yet, neet to test it more!
 func queueEntries(args config.Args) error {
 	ch, err := oi.ReadDirCh(args.GosDir, func(file os.DirEntry) (string, bool) {
 		filePath := filepath.Join(args.GosDir, file.Name())
@@ -78,8 +77,12 @@ func queuePlatforms(args config.Args) error {
 		if args.DryRun {
 			continue
 		}
-		log.Println("Removing", filePath)
-		if err := os.Remove(filePath); err != nil {
+		archivePath := filepath.Join(args.GosDir, "db", "archive", filepath.Base(filePath))
+		log.Printf("Archiving %s -> %s", filePath, archivePath)
+		if err := oi.EnsureParentDir(archivePath); err != nil {
+			return err
+		}
+		if err := os.Rename(filePath, archivePath); err != nil {
 			return err
 		}
 	}
