@@ -99,9 +99,8 @@ func (e *Entry) MarkPosted() error {
 	if e.State == Posted {
 		return errors.New("entry is already posted")
 	}
-	// TODO: Also update the timestamp to reflect the posting time in the file path.
-	// Write a timestamp.Update() function for this.
-	if err := os.Rename(e.Path, strings.TrimSuffix(e.Path, ".queued")+".posted"); err != nil {
+	newPath := timestamp.UpdateInFilename(strings.TrimSuffix(e.Path, ".queued")+".posted", -2)
+	if err := os.Rename(e.Path, newPath); err != nil {
 		return err
 	}
 	e.State = Posted

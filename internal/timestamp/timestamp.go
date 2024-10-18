@@ -34,6 +34,7 @@ func OldestValidTime() time.Time {
 	return oldestValidTime
 }
 
+// TODO: Maybe make this safer?
 func UpdateInFilename(filename string, rIndex int) string {
 	parts := strings.Split(filename, ".")
 	parts[len(parts)+rIndex] = Now()
