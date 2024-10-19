@@ -15,7 +15,7 @@ import (
 	"codeberg.org/snonux/gos/internal/config"
 )
 
-const versionStr = "v0.0.0"
+const versionStr = "v0.0.1"
 
 func main() {
 	dry := flag.Bool("dry", false, "Dry run")
