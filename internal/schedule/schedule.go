@@ -26,7 +26,7 @@ func Run(args config.Args, platform string) (entry.Entry, error) {
 	}
 
 	log.Println("For", platform, "stats:", stats)
-	if stats.targetHit() {
+	if stats.targetHit(args.PauseDays) {
 		return entry.Zero, ErrNothingToSchedule
 	}
 

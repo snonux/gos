@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/prompt"
+	"github.com/fatih/color"
 )
 
 func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
@@ -51,6 +53,11 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		return fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	color.Cyan(string(body))
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)

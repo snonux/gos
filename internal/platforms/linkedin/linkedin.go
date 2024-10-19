@@ -14,6 +14,7 @@ import (
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/platforms/linkedin/oauth2"
 	"codeberg.org/snonux/gos/internal/prompt"
+	"github.com/fatih/color"
 )
 
 var errUnauthorized = errors.New("unauthorized access, refresh or create token?")
@@ -58,7 +59,7 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, content string)
 
 	post := map[string]interface{}{
 		"author":     fmt.Sprintf("urn:li:person:%s", personID),
-		"commentary": content, // TODO: Can't post (...) paretenthesis? escape them? TEST AGAIN!
+		"commentary": escapeLinkedInText(content),
 		"visibility": "PUBLIC",
 		"distribution": map[string]interface{}{
 			"feedDistribution":               "MAIN_FEED",
@@ -88,15 +89,17 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, content string)
 		return fmt.Errorf("Error sending request: %w", err)
 	}
 	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	color.Cyan(string(body))
 
 	if resp.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(resp.Body)
-		err = fmt.Errorf("failed to post to LinkedIn. Status: %s\n%s\n", resp.Status, body)
+		err = fmt.Errorf("failed to post to LinkedIn. Status: %s\n", resp.Status)
 		if resp.StatusCode == http.StatusUnauthorized {
 			err = errors.Join(err, errUnauthorized)
 		}
 	}
 	return err
 }
-
-// TODO: Implement Gemini output?
