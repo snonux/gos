@@ -3,6 +3,10 @@ version: '3'
 tasks:
   default:
     deps: ["build"]
+  install:
+    deps: ["build"]
+    cmds:
+      - cp -v ./gos ~/go/bin/
   run:
     deps: ["dev"]
     cmds:
