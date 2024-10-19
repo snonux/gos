@@ -58,7 +58,7 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, content string)
 
 	post := map[string]interface{}{
 		"author":     fmt.Sprintf("urn:li:person:%s", personID),
-		"commentary": content, // TODO: Can't post (...) paretenthesis? escape them?
+		"commentary": content, // TODO: Can't post (...) paretenthesis? escape them? TEST AGAIN!
 		"visibility": "PUBLIC",
 		"distribution": map[string]interface{}{
 			"feedDistribution":               "MAIN_FEED",
@@ -98,3 +98,5 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, content string)
 	}
 	return err
 }
+
+// TODO: Implement Gemini output?

@@ -46,8 +46,7 @@ func whatNow(question string) error {
 			continue
 		}
 
-		input = strings.TrimSpace(input)
-		switch strings.ToLower(input) {
+		switch strings.ToLower(strings.TrimSpace(input)) {
 		case "y", "yes":
 			return nil
 		case "n", "no":
@@ -61,8 +60,8 @@ func whatNow(question string) error {
 }
 
 func EditFile(filePath string) error {
-	editor := os.Getenv("EDITOR")
-	if editor == "" {
+	editor, ok := os.LookupEnv("EDITOR")
+	if !ok {
 		return errors.New("EDITOR environment variable is not set")
 	}
 
