@@ -14,20 +14,20 @@ import (
 var (
 	ErrAborted     = errors.New("aborted")
 	ErrEditContent = errors.New("edit content")
-	blue           = color.New(color.FgCyan, color.BgBlue, color.Bold).PrintfFunc()
-	red            = color.New(color.FgWhite, color.BgRed, color.Bold).PrintfFunc()
+	info           = color.New(color.FgCyan, color.BgBlue, color.Bold).PrintfFunc()
+	ack            = color.New(color.FgHiBlack, color.BgHiGreen, color.Bold).PrintfFunc()
 )
 
 func DoYouWantThis(question, content string) error {
-	blue(content)
+	info(content)
 	fmt.Print("\n")
 	return whatNow(question)
 }
 
 func Acknowledge(message, content string) error {
-	blue(content)
+	info(content)
 	fmt.Print("\n")
-	red(message + " (press enter)")
+	ack(message + " (press enter)")
 	reader := bufio.NewReader(os.Stdin)
 	if _, err := reader.ReadString('\n'); err != nil {
 		return err
@@ -39,7 +39,7 @@ func whatNow(question string) error {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		red("%s (y=yes/n=no/e=edit):", question)
+		ack("%s (y=yes/n=no/e=edit):", question)
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading input:", err)
