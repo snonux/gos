@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"codeberg.org/snonux/gos/internal/config"
@@ -30,8 +31,27 @@ func Run(args config.Args, platform string) (entry.Entry, error) {
 		return entry.Zero, ErrNothingToSchedule
 	}
 
-	// Schedule random qeued entry for platform
-	ent, err := oi.ReadDirRandom(dir, func(file os.DirEntry) (entry.Entry, bool) {
+	// Schedule random qeued entry for platform. First, try to find one with
+	// a priority tag.
+	ent, err := selectRandomEntry(dir, "prio")
+	if errors.Is(err, oi.ErrNotFound) {
+		// No entry with priority tag found, select another one.
+		ent, err = selectRandomEntry(dir, "")
+	}
+	if err != nil {
+		return entry.Zero, fmt.Errorf("%w: %w", ErrNothingQueued, err)
+	}
+	return ent, nil
+}
+
+// Select a random queed entry with a given tag. If the tag is the empty string,
+// then select any random qeued entry.
+func selectRandomEntry(dir, tag string) (entry.Entry, error) {
+	return oi.ReadDirRandom(dir, func(file os.DirEntry) (entry.Entry, bool) {
+		// Is there a ".TAG." in the file name?
+		if tag != "" && !slices.Contains(strings.Split(file.Name(), "."), tag) {
+			return entry.Zero, false
+		}
 		ent, err := entry.New(filepath.Join(dir, file.Name()))
 		if err != nil {
 			log.Println(err)
@@ -39,9 +59,4 @@ func Run(args config.Args, platform string) (entry.Entry, error) {
 		}
 		return ent, ent.State == entry.Queued
 	})
-
-	if err != nil {
-		return entry.Zero, fmt.Errorf("%w: %w", ErrNothingQueued, err)
-	}
-	return ent, nil
 }
