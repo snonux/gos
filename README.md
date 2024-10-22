@@ -43,9 +43,7 @@ go-task install
 
 Gos requires a configuration file to store API secrets and OAuth2 credentials for each supported social media platform. The configuration is managed using a Secrets structure, which is stored as a JSON file in `~/.config/gos/gosec.json`.
 
-Example Configuration File (`gosec.json`):
-
-Below is an example of how your file should be structured
+Example Configuration File (`~/.config/gos/gosec.json`):
 
 ```json
 {
