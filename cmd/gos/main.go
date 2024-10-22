@@ -20,7 +20,7 @@ const versionStr = "v0.0.1"
 func main() {
 	dry := flag.Bool("dry", false, "Dry run")
 	version := flag.Bool("version", false, "Display version")
-	gosDir := flag.String("gosDir", "./gosdir", "Gos' directory")
+	gosDir := flag.String("gosDir", filepath.Join(os.Getenv("HOME"), ".gosdir"), "Gos' queue and DB directory")
 	browser := flag.String("browser", "firefox", "OAuth2 browser")
 	secretsConfigPath := filepath.Join(os.Getenv("HOME"), ".config/gos/gosec.json")
 	secretsConfigPath = *flag.String("secretsConfig", secretsConfigPath, "Gos' secret config")
