@@ -57,11 +57,12 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 	if err != nil {
 		return err
 	}
-	color.Cyan(string(body))
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return fmt.Errorf("unexpected status code: %d\n%s\n",
+			resp.StatusCode, string(body))
 	}
+	color.New(color.FgWhite, color.BgGreen).Println("Successfully posted message to Mastodon")
 
 	return nil
 }

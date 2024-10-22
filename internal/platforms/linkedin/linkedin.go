@@ -93,13 +93,16 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, content string)
 	if err != nil {
 		return err
 	}
-	color.Cyan(string(body))
 
 	if resp.StatusCode != http.StatusCreated {
-		err = fmt.Errorf("failed to post to LinkedIn. Status: %s\n", resp.Status)
+		err = fmt.Errorf("failed to post to LinkedIn. Status: %s\n%s\n",
+			resp.Status, string(body))
 		if resp.StatusCode == http.StatusUnauthorized {
 			err = errors.Join(err, errUnauthorized)
 		}
+	}
+	if err == nil {
+		color.New(color.FgWhite, color.BgGreen).Println("Successfully posted message to LinkedIn")
 	}
 	return err
 }
