@@ -126,7 +126,7 @@ The message is just arbitrary text, and Gos does not parse any of the content ot
 
 You can control which platforms the post is shared to and manage other behaviors using tags embedded in the filename.
 
-To target specific platforms, you can add tags in the format share:platform1.-platform2 within the filename. This tells Gos to share the message only to platform1 (e.g., Mastodon) and explicitly exclude platform2 (e.g., LinkedIn). 
+To target specific platforms, you can add tags in the format `share:platform1.-platform2` within the filename. This tells Gos to share the message only to platform1 (e.g., Mastodon) and explicitly exclude platform2 (e.g., LinkedIn). 
 
 You can include multiple platforms by listing them after share:, separated by a .. Use the - symbol to exclude a platform.
 
@@ -168,14 +168,14 @@ When you place a message file in the gosDir, Gos processes it by moving the mess
 *Example: If a message is queued for LinkedIn, the filename might look like this:*
 
 ```
-./db/platforms/linkedin/foo.share:-mastodon.txt.20241022-102343.queued
+~/.gosdir/db/platforms/linkedin/foo.share:-mastodon.txt.20241022-102343.queued
 ```
 
 3. Posting the Message: Once a message is placed in the queue, Gos takes care of posting it to the specified social media platforms. 
 
-4. Renaming to `.posted`: After a message is successfully posted to a platform, the corresponding .queued file is renamed to have a .posted extension and the timestamp in the filename is updated as well. This signals that the post has been processed and published.
+4. Renaming to `.posted`: After a message is successfully posted to a platform, the corresponding `.queued` file is renamed to have a `.posted` extension and the timestamp in the filename is updated as well. This signals that the post has been processed and published.
 
-*Example: After a successful post to LinkedIn, the message file might look like this:*
+*Example - After a successful post to LinkedIn, the message file might look like this:*
 
 ```
 ./db/platforms/linkedin/foo.share:-mastodon.txt.20241112-121323.posted
@@ -187,7 +187,7 @@ Gos uses a combination of priority, platform-specific tags, and timing rules to 
 
 The key factors in message selection are:
 
-* Message Priority: Messages with no priority value are processed after those with priority. If two messages have the same priority, one is selected randomly.
-* Pause Between Posts: The `-pauseDays` flag allows you to specify a minimum number of days to wait between posts for the same platform. This prevents oversaturation of content and ensures that posts are spread out over time.
 * Target Number of Posts Per Week: The `-target` flag defines how many posts per week should be made to a specific platform. This target helps Gos manage the rate of posting, ensuring that the right number of posts are made without exceeding the desired frequency. 
 * Post History Lookback: The `-lookback` flag tells Gos how many days back to look in the post history to calculate whether the weekly post target has already been met. It ensures that previously posted content is considered before deciding to queue up another message.
+* Message Priority: Messages with no priority value are processed after those with priority. If two messages have the same priority, one is selected randomly.
+* Pause Between Posts: The `-pauseDays` flag allows you to specify a minimum number of days to wait between posts for the same platform. This prevents oversaturation of content and ensures that posts are spread out over time.
