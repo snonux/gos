@@ -13,6 +13,7 @@ import (
 	"codeberg.org/snonux/gos/internal/prompt"
 	"codeberg.org/snonux/gos/internal/queue"
 	"codeberg.org/snonux/gos/internal/schedule"
+	"github.com/fatih/color"
 )
 
 func Run(ctx context.Context, args config.Args) error {
@@ -60,7 +61,10 @@ func runPlatform(ctx context.Context, args config.Args, platform string, sizeLim
 	if err := postCB(ctx, args, sizeLimit, ent); err != nil {
 		return err
 	}
+	if err := ent.MarkPosted(); err != nil {
+		return err
+	}
 
-	log.Println("Posted", ent, "to", platform)
-	return ent.MarkPosted()
+	color.New(color.FgWhite, color.BgGreen).Println("Successfully posted message to ", platform)
+	return nil
 }

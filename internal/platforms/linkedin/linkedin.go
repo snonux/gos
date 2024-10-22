@@ -14,7 +14,6 @@ import (
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/platforms/linkedin/oauth2"
 	"codeberg.org/snonux/gos/internal/prompt"
-	"github.com/fatih/color"
 )
 
 var errUnauthorized = errors.New("unauthorized access, refresh or create token?")
@@ -100,9 +99,6 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, content string)
 		if resp.StatusCode == http.StatusUnauthorized {
 			err = errors.Join(err, errUnauthorized)
 		}
-	}
-	if err == nil {
-		color.New(color.FgWhite, color.BgGreen).Println("Successfully posted message to LinkedIn")
 	}
 	return err
 }

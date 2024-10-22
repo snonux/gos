@@ -13,7 +13,6 @@ import (
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/prompt"
-	"github.com/fatih/color"
 )
 
 func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
@@ -62,7 +61,5 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		return fmt.Errorf("unexpected status code: %d\n%s\n",
 			resp.StatusCode, string(body))
 	}
-	color.New(color.FgWhite, color.BgGreen).Println("Successfully posted message to Mastodon")
-
 	return nil
 }
