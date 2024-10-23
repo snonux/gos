@@ -18,6 +18,7 @@ import (
 
 var errUnauthorized = errors.New("unauthorized access, refresh or create token?")
 
+// TODO: Why are no previews of links shown then posted?
 func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
 	err := post(ctx, args, sizeLimit, ent)
 	if errors.Is(err, errUnauthorized) {
