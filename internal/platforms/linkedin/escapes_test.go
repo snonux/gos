@@ -3,6 +3,7 @@ package linkedin
 import (
 	"fmt"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -33,7 +34,6 @@ func TestLinkedInTwoURLsExtract(t *testing.T) {
 	}
 }
 
-// TODO: Use Fuzzing here!
 func TestLinkedInURLExtract(t *testing.T) {
 	urls := []string{
 		"http://foo.zone",
@@ -55,4 +55,36 @@ func TestLinkedInURLExtract(t *testing.T) {
 			t.Errorf("expected URL '%s', but got '%s' for text '%s'", url, found[0], text)
 		}
 	}
+}
+
+func FuzzLinkedInURLExtract(f *testing.F) {
+	f.Add("/path?myjfa=lwsr4imj&dgqeg=m3uwwsak")
+	f.Add("/?amfbm=bwzqu46m&xheuh=nv588d98")
+	f.Add("?tuupm=reng2p1y&cbjot=0g5qvpty")
+	f.Add("/path?qmcok=f%20w4tfp7g&awsnq=sjizuore&owdix=8s2dmqsv")
+	f.Add("?zwilf=868o24x1&fiwmp=1d5aqbvo&irhhr=xar7qbq7&eetpy=scmi9s8i")
+	f.Add("/path?mwhbm=psinstn6&nsjic=pfu0wnk9&lbmrz=5bixkhdt")
+	f.Add("/path?owbwo=67mkjiz2")
+	f.Add("/path?ohvxi=esy5qvml&zlvzt=2yi4q4ef&cnich=sgc8sahs")
+	f.Add("/path?codsl=fpwfto6j")
+	f.Add("tvdus=fhlhlh1y")
+	f.Add("/foo.txt")
+
+	f.Fuzz(func(t *testing.T, urlPath string) {
+		urlPath = strings.TrimSpace(urlPath)
+		baseURLs := []string{"https://foo.zone", "http://foo.zone", "ftp://foo.zone"}
+		for _, baseURL := range baseURLs {
+			fullURL := fmt.Sprintf("%s%s", baseURL, urlPath)
+			text := fmt.Sprintf("Hello world %s Hello World", fullURL)
+			found := extractURLs(text)
+			if len(found) != 1 {
+				t.Errorf("expected 1 URL '%s', but got %d for text '%s'",
+					fullURL, len(found), text)
+			}
+			if found[0] != fullURL {
+				t.Errorf("expected URL '%s', but got '%s' for text '%s'",
+					fullURL, found[0], text)
+			}
+		}
+	})
 }

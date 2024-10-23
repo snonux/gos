@@ -11,19 +11,21 @@ tasks:
     deps: ["dev"]
     cmds:
       - go run cmd/gos/main.go
-    env:
-      GOS_EDITOR: hx
   build:
     cmds:
       - go build -o gos cmd/gos/main.go
   dev:
-    deps: ["test", "vet", "lint"]
+    deps: ["test", "fuzz", "vet", "lint"]
     cmds:
       - go build -race -o gos cmd/gos/main.go
   test:
     cmds:
       - go clean -testcache
       - go test -v ./... 
+  fuzz:
+    cmds:
+      - go clean -testcache
+      - go test ./internal/platforms/linkedin/ -fuzz=FuzzLinkedInURLExtract -fuzztime=10s
   vet:
     cmds:
       - go vet ./...
