@@ -72,7 +72,7 @@ func ReadDir[T any](dir string, cb func(file os.DirEntry) (T, bool)) ([]T, error
 	var results []T
 
 	ch, err := ReadDirCh(dir, cb)
-	if err != err {
+	if err != nil {
 		return results, err
 	}
 

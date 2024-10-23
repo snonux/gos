@@ -78,7 +78,7 @@ func New(filePath string) (Entry, error) {
 
 func (e Entry) Content() (string, error) {
 	bytes, err := os.ReadFile(e.Path)
-	if err != err {
+	if err != nil {
 		return "", err
 	}
 	return strings.TrimSpace(string(bytes)), nil

@@ -17,6 +17,7 @@ import (
 // Strictly, we only operate on .txt files, but we also accept .md as Obsidian creates only .md files.
 var validExtensions = []string{".txt", ".md"}
 
+// TODO: Red alert when there are no messages to schedule, or less than N
 func Run(args config.Args) error {
 	if err := queueEntries(args); err != nil {
 		return err
@@ -34,7 +35,7 @@ func queueEntries(args config.Args) error {
 		return filePath, slices.Contains(validExtensions, filepath.Ext(file.Name())) &&
 			file.Type().IsRegular()
 	})
-	if err != err {
+	if err != nil {
 		return err
 	}
 
@@ -61,7 +62,7 @@ func queuePlatforms(args config.Args) error {
 		filePath := filepath.Join(dbDir, file.Name())
 		return filePath, strings.HasSuffix(file.Name(), ".queued")
 	})
-	if err != err {
+	if err != nil {
 		return err
 	}
 
@@ -122,7 +123,7 @@ func deleteFiles(path, suffix string, olderThan time.Time) error {
 		filePath := filepath.Join(path, file.Name())
 		return filePath, strings.HasSuffix(filePath, suffix) && file.Type().IsRegular()
 	})
-	if err != err {
+	if err != nil {
 		return err
 	}
 

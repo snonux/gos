@@ -35,7 +35,7 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		return nil
 	}
 	personID, accessToken, err := oauth2.LinkedInCreds(ctx, args)
-	if err != err {
+	if err != nil {
 		return err
 	}
 	content, err := ent.ContentWithLimit(sizeLimit)
