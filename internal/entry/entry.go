@@ -77,30 +77,31 @@ func New(filePath string) (Entry, error) {
 	return e, nil
 }
 
-func (e Entry) Content() (string, error) {
+func (e *Entry) Content() (string, []string, error) {
 	bytes, err := os.ReadFile(e.Path)
 	if err != nil {
-		return "", err
+		return "", []string{}, err
 	}
-	return strings.TrimSpace(string(bytes)), nil
+	content := strings.TrimSpace(string(bytes))
+	return content, extractURLs(content), nil
 }
 
-func (e Entry) ContentWithLimit(sizeLimit int) (string, error) {
-	content, err := e.Content()
+func (e Entry) ContentWithLimit(sizeLimit int) (string, []string, error) {
+	content, urls, err := e.Content()
 	if err != nil {
-		return "", err
+		return "", urls, err
 	}
 	if len(content) > sizeLimit {
 		err := fmt.Errorf("entry content exceeds size limit: %d > %d: %v", len(content), sizeLimit, e)
 		if err2 := prompt.Acknowledge("You need to shorten the content as "+err.Error(), content); err2 != nil {
-			return "", errors.Join(err, err2)
+			return "", urls, errors.Join(err, err2)
 		}
 		if err2 := e.Edit(); err2 != nil {
-			return "", errors.Join(err, err2)
+			return "", urls, errors.Join(err, err2)
 		}
 		return e.ContentWithLimit(sizeLimit)
 	}
-	return content, nil
+	return content, urls, nil
 }
 
 func (e *Entry) MarkPosted() error {
@@ -126,12 +127,6 @@ func (e Entry) Edit() error {
 		return err
 	}
 	return nil
-}
-
-// extractURLs finds all occurrences of URLs starting with "http://" or "https://" in a given string.
-func (e Entry) ExtractURLs() []string {
-	content, _ := e.Content()
-	return extractURLs(content)
 }
 
 func extractURLs(input string) []string {

@@ -38,11 +38,13 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 	if err != nil {
 		return err
 	}
-	content, err := ent.ContentWithLimit(sizeLimit)
+	content, urls, err := ent.ContentWithLimit(sizeLimit)
 	if err != nil {
 		return err
 	}
-	if err := prompt.DoYouWantThis("Do you want to post this message to Linkedin?", content); err != nil {
+
+	question := fmt.Sprintf("Do you want to post this message to Linkedin (URLs: %v)?", urls)
+	if err := prompt.DoYouWantThis(question, content); err != nil {
 		if errors.Is(err, prompt.ErrEditContent) {
 			if err := ent.Edit(); err != nil {
 				return err
@@ -51,10 +53,10 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		}
 		return err
 	}
-	return callLinkedInAPI(ctx, personID, accessToken, content)
+	return callLinkedInAPI(ctx, personID, accessToken, content, urls)
 }
 
-func callLinkedInAPI(ctx context.Context, personID, accessToken, content string) error {
+func callLinkedInAPI(ctx context.Context, personID, accessToken, content string, urls []string) error {
 	const url = "https://api.linkedin.com/v2/posts"
 
 	post := map[string]interface{}{

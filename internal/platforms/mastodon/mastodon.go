@@ -16,7 +16,7 @@ import (
 )
 
 func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
-	content, err := ent.ContentWithLimit(sizeLimit)
+	content, _, err := ent.ContentWithLimit(sizeLimit)
 	if err != nil {
 		return err
 	}
