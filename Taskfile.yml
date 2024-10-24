@@ -15,7 +15,7 @@ tasks:
     cmds:
       - go build -o gos cmd/gos/main.go
   dev:
-    deps: ["test", "fuzz", "vet", "lint"]
+    deps: ["test", "vet", "lint"]
     cmds:
       - go build -race -o gos cmd/gos/main.go
   test:

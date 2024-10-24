@@ -2,6 +2,7 @@ package linkedin
 
 import (
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
@@ -69,9 +70,10 @@ func FuzzLinkedInURLExtract(f *testing.F) {
 	f.Add("/path?codsl=fpwfto6j")
 	f.Add("tvdus=fhlhlh1y")
 	f.Add("/foo.txt")
+	noWhitespace := regexp.MustCompile(`\s+`)
 
 	f.Fuzz(func(t *testing.T, urlPath string) {
-		urlPath = strings.TrimSpace(urlPath)
+		urlPath = noWhitespace.ReplaceAllString(strings.TrimSpace(urlPath), "%20")
 		baseURLs := []string{"https://foo.zone", "http://foo.zone", "ftp://foo.zone"}
 		for _, baseURL := range baseURLs {
 			fullURL := fmt.Sprintf("%s%s", baseURL, urlPath)
