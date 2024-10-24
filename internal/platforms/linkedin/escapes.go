@@ -1,7 +1,6 @@
 package linkedin
 
 import (
-	"regexp"
 	"strings"
 )
 
@@ -37,18 +36,4 @@ func escapeLinkedInText(input string) string {
 	}
 
 	return builder.String()
-}
-
-// extractURLs finds all occurrences of URLs starting with "http://" or "https://" in a given string.
-func extractURLs(input string) []string {
-	// Regular expression pattern to match URLs starting with http:// or https://
-	urlPattern := `(http://|https://|ftp://)[^\s]+`
-
-	// Compile the regular expression
-	re := regexp.MustCompile(urlPattern)
-
-	// Find all matches in the input string
-	urls := re.FindAllString(input, -1)
-
-	return urls
 }

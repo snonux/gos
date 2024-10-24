@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -125,4 +126,16 @@ func (e Entry) Edit() error {
 		return err
 	}
 	return nil
+}
+
+// extractURLs finds all occurrences of URLs starting with "http://" or "https://" in a given string.
+func (e Entry) ExtractURLs() []string {
+	content, _ := e.Content()
+	return extractURLs(content)
+}
+
+func extractURLs(input string) []string {
+	urlPattern := `(http://|https://|ftp://)[^\s]+`
+	re := regexp.MustCompile(urlPattern)
+	return re.FindAllString(input, -1)
 }

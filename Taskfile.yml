@@ -25,7 +25,7 @@ tasks:
   fuzz:
     cmds:
       - go clean -testcache
-      - go test ./internal/platforms/linkedin/ -fuzz=FuzzLinkedInURLExtract -fuzztime=10s
+      - go test ./internal/entry/ -fuzz=FuzzExtractURLs -fuzztime=10s
   vet:
     cmds:
       - go vet ./...
