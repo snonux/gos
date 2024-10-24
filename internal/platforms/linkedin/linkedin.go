@@ -72,6 +72,10 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, content string,
 		"isReshareDisabledByAuthor": false,
 	}
 
+	if len(urls) > 0 {
+		// TODO: Add media links to post structure
+	}
+
 	payload, err := json.Marshal(post)
 	if err != nil {
 		return fmt.Errorf("Error encoding JSON:%w", err)
