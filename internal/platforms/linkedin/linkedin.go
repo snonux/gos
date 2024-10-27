@@ -57,7 +57,7 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 }
 
 func callLinkedInAPI(ctx context.Context, personID, accessToken, content string, urls []string) error {
-	const url = "https://api.linkedin.com/v2/posts"
+	const url = "https://api.linkedin.com/rest/posts"
 
 	post := map[string]interface{}{
 		"author":     fmt.Sprintf("urn:li:person:%s", personID),
@@ -73,10 +73,20 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, content string,
 	}
 
 	if len(urls) > 0 {
-		// TODO: Add media links to post structure
+		title, err := fetchTitle(urls[0])
+		if err != nil {
+			return err
+		}
+		post["content"] = map[string]interface{}{
+			"article": map[string]interface{}{
+				"title":  title,
+				"source": urls[0],
+			},
+		}
 	}
 
 	payload, err := json.Marshal(post)
+	fmt.Println(string(payload))
 	if err != nil {
 		return fmt.Errorf("Error encoding JSON:%w", err)
 	}
@@ -88,6 +98,7 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, content string,
 	req.Header.Add("Authorization", "Bearer "+accessToken)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("X-RestLi-Protocol-Version", "2.0.0")
+	req.Header.Add("LinkedIn-Version", "202409")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
