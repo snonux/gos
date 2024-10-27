@@ -48,7 +48,14 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		return err
 	}
 
-	question := fmt.Sprintf("Do you want to post this message to Linkedin (URLs: %v)?", urls)
+	newCtx, cancel = context.WithTimeout(ctx, linkedInTimeout)
+	defer cancel()
+	prev, err := NewPreview(newCtx, urls)
+	if err != nil {
+		return err
+	}
+
+	question := fmt.Sprintf("Do you want to post this message to Linkedin (%v)?", prev)
 	if err := prompt.DoYouWantThis(question, content); err != nil {
 		if errors.Is(err, prompt.ErrEditContent) {
 			if err := ent.Edit(); err != nil {
@@ -61,10 +68,10 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 
 	newCtx, cancel = context.WithTimeout(ctx, linkedInTimeout)
 	defer cancel()
-	return callLinkedInAPI(newCtx, personID, accessToken, content, urls)
+	return callLinkedInAPI(newCtx, personID, accessToken, content, prev)
 }
 
-func callLinkedInAPI(ctx context.Context, personID, accessToken, content string, urls []string) error {
+func callLinkedInAPI(ctx context.Context, personID, accessToken, content string, prev preview) error {
 	const url = "https://api.linkedin.com/rest/posts"
 
 	post := map[string]interface{}{
@@ -80,15 +87,11 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, content string,
 		"isReshareDisabledByAuthor": false,
 	}
 
-	if len(urls) > 0 {
-		title, err := fetchTitle(urls[0])
-		if err != nil {
-			return err
-		}
+	if !prev.Empty() {
 		post["content"] = map[string]interface{}{
 			"article": map[string]interface{}{
-				"title":  title,
-				"source": urls[0],
+				"title":  prev.title,
+				"source": prev.url,
 			},
 		}
 	}
