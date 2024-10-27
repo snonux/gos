@@ -94,6 +94,9 @@ func TestHasTag(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
+		if len(expectedTags) != len(ent.tags) {
+			t.Errorf("expected '%d' tags but got '%d'", len(expectedTags), len(ent.tags))
+		}
 		for _, tag := range expectedTags {
 			if !ent.HasTag(tag) {
 				t.Errorf("expected tag '%s' but got '%s'", tag, ent.tags)

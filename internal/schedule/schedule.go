@@ -28,7 +28,6 @@ func Run(args config.Args, platform string) (entry.Entry, error) {
 
 	log.Println("For", platform, "stats:", stats)
 	// Schedule random queued entry with "now" tag, ignoring the target hit stats.
-	// TODO: Document .now. tag
 	ent, err := selectRandomEntry(dir, "now")
 	if err != nil && !errors.Is(err, oi.ErrNotFound) {
 		// Unknown error

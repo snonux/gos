@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"codeberg.org/snonux/gos/internal/config"
+	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/oi"
 	"codeberg.org/snonux/gos/internal/prompt"
 	"codeberg.org/snonux/gos/internal/timestamp"
@@ -42,19 +43,22 @@ func queueEntries(args config.Args) error {
 	}
 
 	for filePath := range ch {
-		// TODO: Document .ask. in README.md
-		if strings.Contains(filepath.Base(filePath), ".ask.") {
-			bytes, err := os.ReadFile(filePath)
+		ent, err := entry.New(filePath)
+		if err != nil {
+			return err
+		}
+		if ent.HasTag("ask") {
+			content, _, err := ent.Content()
 			if err != nil {
 				return err
 			}
 			// TODO Refactor
-			err = prompt.DoYouWantThis("Do you want to queue this content", strings.TrimSpace(string(bytes)))
+			err = prompt.DoYouWantThis("Do you want to queue this content", content)
 			switch {
 			case errors.Is(err, prompt.ErrEditContent):
-				err = prompt.EditFile(filePath)
+				err = ent.Edit()
 			case errors.Is(err, prompt.ErrDeleteFile):
-				if err = os.Remove(filePath); err == nil {
+				if err = ent.Remove(); err == nil {
 					continue
 				}
 			}

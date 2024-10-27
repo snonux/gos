@@ -23,7 +23,7 @@ const (
 )
 
 var (
-	validTags            = []string{"ask", "prio", "now"}
+	validTags            = []string{"ask", "prio", "now"} // TODO: Document all tags
 	ErrSizeLimitExceeded = errors.New("message size limit exceeded")
 )
 
@@ -160,6 +160,10 @@ func (e Entry) Edit() error {
 		return err
 	}
 	return nil
+}
+
+func (e Entry) Remove() error {
+	return os.Remove(e.Path)
 }
 
 func extractURLs(input string) []string {
