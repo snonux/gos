@@ -20,6 +20,8 @@ const (
 	Posted
 )
 
+var ErrSizeLimitExceeded = errors.New("message size limit exceeded")
+
 func (s State) String() string {
 	switch s {
 	case Unknown:
@@ -40,8 +42,7 @@ type Entry struct {
 }
 
 func (e Entry) String() string {
-	return fmt.Sprintf("Path:%s;Stamp:%s,State:%s",
-		e.Path, e.Time.Format(timestamp.Format), e.State)
+	return fmt.Sprintf("Path:%s;Stamp:%s,State:%s", e.Path, e.Time.Format(timestamp.Format), e.State)
 }
 
 var Zero = Entry{}
@@ -92,7 +93,7 @@ func (e Entry) ContentWithLimit(sizeLimit int) (string, []string, error) {
 		return "", urls, err
 	}
 	if len(content) > sizeLimit {
-		err := fmt.Errorf("entry content exceeds size limit: %d > %d: %v", len(content), sizeLimit, e)
+		err := fmt.Errorf("%w (%d > %d): %v", ErrSizeLimitExceeded, len(content), sizeLimit, e)
 		if err2 := prompt.Acknowledge("You need to shorten the content as "+err.Error(), content); err2 != nil {
 			return "", urls, errors.Join(err, err2)
 		}

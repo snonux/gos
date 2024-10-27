@@ -9,11 +9,14 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/prompt"
 )
+
+const mastodonTimeout = 10 * time.Second
 
 func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
 	content, _, err := ent.ContentWithLimit(sizeLimit)
@@ -38,7 +41,10 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		}
 		return err
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", args.Secrets.MastodonURL, bytes.NewBuffer(payloadBytes))
+
+	newCtx, cancel := context.WithTimeout(ctx, mastodonTimeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(newCtx, "POST", args.Secrets.MastodonURL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}

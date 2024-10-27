@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
@@ -18,7 +19,8 @@ import (
 
 var errUnauthorized = errors.New("unauthorized access, refresh or create token?")
 
-// TODO: Why are no previews of links shown then posted?
+const linkedInTimeout = 10 * time.Second
+
 func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
 	err := post(ctx, args, sizeLimit, ent)
 	if errors.Is(err, errUnauthorized) {
@@ -34,7 +36,10 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		log.Println("Not posting", ent, "to LinkedIn as dry-run enabled")
 		return nil
 	}
-	personID, accessToken, err := oauth2.LinkedInCreds(ctx, args)
+
+	newCtx, cancel := context.WithTimeout(ctx, linkedInTimeout)
+	defer cancel()
+	personID, accessToken, err := oauth2.LinkedInCreds(newCtx, args)
 	if err != nil {
 		return err
 	}
@@ -53,7 +58,10 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		}
 		return err
 	}
-	return callLinkedInAPI(ctx, personID, accessToken, content, urls)
+
+	newCtx, cancel = context.WithTimeout(ctx, linkedInTimeout)
+	defer cancel()
+	return callLinkedInAPI(newCtx, personID, accessToken, content, urls)
 }
 
 func callLinkedInAPI(ctx context.Context, personID, accessToken, content string, urls []string) error {

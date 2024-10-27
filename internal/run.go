@@ -35,7 +35,6 @@ func Run(ctx context.Context, args config.Args) error {
 }
 
 func runPlatform(ctx context.Context, args config.Args, platform string, sizeLimit int) error {
-	// TODO: ctx should be extended, when editing a file due to its size being too large
 	ent, err := schedule.Run(args, platform)
 	switch {
 	case errors.Is(err, schedule.ErrNothingToSchedule):

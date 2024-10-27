@@ -74,7 +74,7 @@ func main() {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(1*time.Minute))
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	if err := internal.Run(ctx, args); err != nil {
