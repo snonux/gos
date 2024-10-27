@@ -45,10 +45,10 @@ func (s State) String() string {
 var Zero = Entry{}
 
 type Entry struct {
-	Path  string
-	Time  time.Time
-	State State
-	tags  []string
+	Path       string
+	Time       time.Time
+	State      State
+	simpleTags []string
 }
 
 func (e Entry) String() string {
@@ -73,7 +73,7 @@ func New(filePath string) (Entry, error) {
 
 	for _, part := range parts {
 		if slices.Contains(validTags, part) {
-			e.tags = append(e.tags, part)
+			e.simpleTags = append(e.simpleTags, part)
 		}
 	}
 
@@ -152,7 +152,7 @@ func (e *Entry) MarkPosted() error {
 }
 
 func (e Entry) HasTag(tag string) bool {
-	return slices.Contains(e.tags, tag)
+	return slices.Contains(e.simpleTags, tag)
 }
 
 func (e Entry) Edit() error {

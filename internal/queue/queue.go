@@ -34,6 +34,7 @@ func Run(args config.Args) error {
 // Queue all *.txt into ./db/*.txt.STAMP.queued
 func queueEntries(args config.Args) error {
 	ch, err := oi.ReadDirCh(args.GosDir, func(file os.DirEntry) (string, bool) {
+		// TODO: Make all of those loops return an entry.Entry
 		filePath := filepath.Join(args.GosDir, file.Name())
 		return filePath, slices.Contains(validExtensions, filepath.Ext(file.Name())) &&
 			file.Type().IsRegular()
@@ -83,17 +84,19 @@ func queueEntries(args config.Args) error {
 // for each PLATFORM
 func queuePlatforms(args config.Args) error {
 	dbDir := filepath.Join(args.GosDir, "db")
-	ch, err := oi.ReadDirCh(dbDir, func(file os.DirEntry) (string, bool) {
-		filePath := filepath.Join(dbDir, file.Name())
-		return filePath, strings.HasSuffix(file.Name(), ".queued")
-	})
+	ch, err := oi.ReadDirCh(dbDir, find(dbDir, ".queued"))
 	if err != nil {
 		return err
 	}
 
 	trashDir := filepath.Join(args.GosDir, "db", "trashbin")
 	for filePath := range ch {
+		_, err := entry.New(filePath)
+		if err != nil {
+			return err
+		}
 		for platform := range args.Platforms {
+			// TODO: Move excludedByTags to entry.Entry.IsSared(args, platform)
 			excluded, err := excludedByTags(args, filePath, platform)
 			if err != nil {
 				return err
@@ -138,19 +141,14 @@ func queuePlatform(entryPath, gosDir, platform string) error {
 	}
 
 	log.Println("Queuing", entryPath, "->", destPath)
-
 	return oi.CopyFile(entryPath, destPath)
 }
 
 func deleteFiles(path, suffix string, olderThan time.Time) error {
-	ch, err := oi.ReadDirCh(path, func(file os.DirEntry) (string, bool) {
-		filePath := filepath.Join(path, file.Name())
-		return filePath, strings.HasSuffix(filePath, suffix) && file.Type().IsRegular()
-	})
+	ch, err := oi.ReadDirCh(path, find(path, suffix))
 	if err != nil {
 		return err
 	}
-
 	for filePath := range ch {
 		fileInfo, err := os.Stat(filePath)
 		if err != nil {
@@ -165,4 +163,11 @@ func deleteFiles(path, suffix string, olderThan time.Time) error {
 		}
 	}
 	return nil
+}
+
+func find(path, suffix string) func(os.DirEntry) (string, bool) {
+	return func(file os.DirEntry) (string, bool) {
+		filePath := filepath.Join(path, file.Name())
+		return filePath, strings.HasSuffix(file.Name(), suffix)
+	}
 }
