@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/oi"
+	"codeberg.org/snonux/gos/internal/prompt"
 	"codeberg.org/snonux/gos/internal/timestamp"
 )
 
@@ -40,6 +42,25 @@ func queueEntries(args config.Args) error {
 	}
 
 	for filePath := range ch {
+		if strings.Contains(filepath.Base(filePath), ".ask.") {
+			bytes, err := os.ReadFile(filePath)
+			if err != nil {
+				return err
+			}
+			// TODO Refactor
+			err = prompt.DoYouWantThis("Do you want to queue this content", strings.TrimSpace(string(bytes)))
+			switch {
+			case errors.Is(err, prompt.ErrEditContent):
+				err = prompt.EditFile(filePath)
+			case errors.Is(err, prompt.ErrDeleteFile):
+				if err = os.Remove(filePath); err == nil {
+					continue
+				}
+			}
+			if err != nil {
+				return err
+			}
+		}
 		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir,
 			filepath.Base(filePath), timestamp.Now())
 		if args.DryRun {

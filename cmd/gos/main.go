@@ -15,9 +15,8 @@ import (
 	"codeberg.org/snonux/gos/internal/config"
 )
 
-const versionStr = "v0.0.1"
+const versionStr = "v0.0.2"
 
-// TODO: edit tag, to edit post before it is queued.
 // TODO: now tag, to post a post immediately, ignoring the stats.
 func main() {
 	dry := flag.Bool("dry", false, "Dry run")

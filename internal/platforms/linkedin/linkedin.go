@@ -19,7 +19,10 @@ import (
 
 var errUnauthorized = errors.New("unauthorized access, refresh or create token?")
 
-const linkedInTimeout = 10 * time.Second
+const (
+	linkedInPostsURL = "https://api.linkedin.com/rest/posts"
+	linkedInTimeout  = 10 * time.Second
+)
 
 func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
 	err := post(ctx, args, sizeLimit, ent)
@@ -72,8 +75,6 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 }
 
 func callLinkedInAPI(ctx context.Context, personID, accessToken, content string, prev preview) error {
-	const url = "https://api.linkedin.com/rest/posts"
-
 	post := map[string]interface{}{
 		"author":     fmt.Sprintf("urn:li:person:%s", personID),
 		"commentary": escapeLinkedInText(content),
@@ -101,7 +102,7 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, content string,
 	if err != nil {
 		return fmt.Errorf("Error encoding JSON:%w", err)
 	}
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(payload))
+	req, err := http.NewRequestWithContext(ctx, "POST", linkedInPostsURL, bytes.NewBuffer(payload))
 	if err != nil {
 		return fmt.Errorf("Error creating request: %w", err)
 	}
