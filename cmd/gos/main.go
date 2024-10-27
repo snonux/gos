@@ -17,7 +17,6 @@ import (
 
 const versionStr = "v0.0.2"
 
-// TODO: now tag, to post a post immediately, ignoring the stats.
 func main() {
 	dry := flag.Bool("dry", false, "Dry run")
 	version := flag.Bool("version", false, "Display version")

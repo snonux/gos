@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -16,16 +17,22 @@ type State int
 
 const (
 	Unknown State = iota
+	Inboxed       // TODO: Implement
 	Queued
 	Posted
 )
 
-var ErrSizeLimitExceeded = errors.New("message size limit exceeded")
+var (
+	validTags            = []string{"ask", "prio", "now"}
+	ErrSizeLimitExceeded = errors.New("message size limit exceeded")
+)
 
 func (s State) String() string {
 	switch s {
 	case Unknown:
 		return "unknown"
+	case Inboxed:
+		return "inboxed"
 	case Queued:
 		return "queued"
 	case Posted:
@@ -35,26 +42,39 @@ func (s State) String() string {
 	}
 }
 
+var Zero = Entry{}
+
 type Entry struct {
 	Path  string
 	Time  time.Time
 	State State
+	tags  []string
 }
 
 func (e Entry) String() string {
+	if e.State == Inboxed {
+		return fmt.Sprintf("Path:%s;State:%s", e.Path, e.State)
+	}
 	return fmt.Sprintf("Path:%s;Stamp:%s,State:%s", e.Path, e.Time.Format(timestamp.Format), e.State)
 }
 
-var Zero = Entry{}
-
 // filePath format: /foo/foobarbaz.something.here.txt.STAMP.{posted,queued}
+// or for inboxed: /foo.txt
+// or inboxed with tags: /foo.prio.ask.txt
 func New(filePath string) (Entry, error) {
 	e := Entry{Path: filePath}
 
 	// We want to get the STAMP!
 	parts := strings.Split(filePath, ".")
-	if len(parts) < 4 {
+	if len(parts) < 2 {
+		// Could be 2 if inboxed
 		return e, fmt.Errorf("not a valid entry path: %s", filePath)
+	}
+
+	for _, part := range parts {
+		if slices.Contains(validTags, part) {
+			e.tags = append(e.tags, part)
+		}
 	}
 
 	switch parts[len(parts)-1] {
@@ -63,9 +83,14 @@ func New(filePath string) (Entry, error) {
 	case "posted":
 		e.State = Posted
 	default:
-		return e, fmt.Errorf("can't parse state from path: %s", filePath)
+		e.State = Inboxed
+		return e, nil
 	}
 
+	if len(parts) < 4 {
+		// If not inboxed, must be longer.
+		return e, fmt.Errorf("not a valid entry path: %s", filePath)
+	}
 	var err error
 	if e.Time, err = timestamp.Parse(parts[len(parts)-2]); err != nil {
 		return e, err
@@ -106,6 +131,9 @@ func (e Entry) ContentWithLimit(sizeLimit int) (string, []string, error) {
 }
 
 func (e *Entry) MarkPosted() error {
+	if e.State == Inboxed {
+		return errors.New("entry still inboxed, can not mark as posted")
+	}
 	if e.State != Queued {
 		return errors.New("entry is not queued")
 	}
@@ -121,6 +149,10 @@ func (e *Entry) MarkPosted() error {
 	}
 	e.State = Posted
 	return nil
+}
+
+func (e Entry) HasTag(tag string) bool {
+	return slices.Contains(e.tags, tag)
 }
 
 func (e Entry) Edit() error {

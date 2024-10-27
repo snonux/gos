@@ -80,6 +80,28 @@ func TestExtractURLs(t *testing.T) {
 	}
 }
 
+func TestHasTag(t *testing.T) {
+	// TODO: Remove t.Parallel() everywhere
+	table := map[string][]string{
+		"foo.txt":          []string{},
+		"foo.prio.txt":     []string{"prio"},
+		"foo.ask.prio.txt": []string{"prio", "ask"},
+		"prio.foo.ask.txt": []string{"prio", "ask"},
+	}
+
+	for fileName, expectedTags := range table {
+		ent, err := New(fileName)
+		if err != nil {
+			t.Error(err)
+		}
+		for _, tag := range expectedTags {
+			if !ent.HasTag(tag) {
+				t.Errorf("expected tag '%s' but got '%s'", tag, ent.tags)
+			}
+		}
+	}
+}
+
 func FuzzExtractURLs(f *testing.F) {
 	f.Add("/path?myjfa=lwsr4imj&dgqeg=m3uwwsak")
 	f.Add("/?amfbm=bwzqu46m&xheuh=nv588d98")
