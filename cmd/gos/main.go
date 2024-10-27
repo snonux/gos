@@ -17,6 +17,8 @@ import (
 
 const versionStr = "v0.0.1"
 
+// TODO: edit tag, to edit post before it is queued.
+// TODO: now tag, to post a post immediately, ignoring the stats.
 func main() {
 	dry := flag.Bool("dry", false, "Dry run")
 	version := flag.Bool("version", false, "Display version")
@@ -51,9 +53,14 @@ func main() {
 		parts := strings.Split(platform, ":")
 		var err error
 		// E.g. args.Platform["mastodon"] = 500
-		args.Platforms[parts[0]], err = strconv.Atoi(parts[1])
-		if err != nil {
-			log.Fatalln(err)
+		if len(parts) > 1 {
+			args.Platforms[parts[0]], err = strconv.Atoi(parts[1])
+			if err != nil {
+				log.Fatalln(err)
+			}
+		} else {
+			log.Println("No message length specified for", platform, "so assuming 500")
+			args.Platforms[parts[0]] = 500
 		}
 	}
 
