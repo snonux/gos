@@ -42,6 +42,7 @@ func queueEntries(args config.Args) error {
 	}
 
 	for filePath := range ch {
+		// TODO: Document .ask. in README.md
 		if strings.Contains(filepath.Base(filePath), ".ask.") {
 			bytes, err := os.ReadFile(filePath)
 			if err != nil {
@@ -61,8 +62,7 @@ func queueEntries(args config.Args) error {
 				return err
 			}
 		}
-		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir,
-			filepath.Base(filePath), timestamp.Now())
+		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir, filepath.Base(filePath), timestamp.Now())
 		if args.DryRun {
 			log.Println("Not queueing entry", filePath, "to", destPath, "as dry-run mode enabled")
 			continue
@@ -107,8 +107,7 @@ func queuePlatforms(args config.Args) error {
 		}
 
 		// Keep queued items in trash for a while.
-		trashPath := filepath.Join(trashDir,
-			strings.TrimSuffix(filepath.Base(filePath), ".queued")+".trash")
+		trashPath := filepath.Join(trashDir, strings.TrimSuffix(filepath.Base(filePath), ".queued")+".trash")
 		log.Printf("Trashing %s -> %s", filePath, trashPath)
 		if err := oi.EnsureParentDir(trashPath); err != nil {
 			return err

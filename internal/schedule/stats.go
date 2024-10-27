@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"codeberg.org/snonux/gos/internal/entry"
@@ -76,7 +77,10 @@ func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 		if ent.Time.After(newest) {
 			newest = ent.Time
 		}
-		s.posted++
+		// Ignore .now.
+		if !strings.Contains(file.Name(), ".now.") {
+			s.posted++
+		}
 		return nil
 	})
 	if err != nil {

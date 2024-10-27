@@ -27,13 +27,23 @@ func Run(args config.Args, platform string) (entry.Entry, error) {
 	}
 
 	log.Println("For", platform, "stats:", stats)
+	// Schedule random queued entry with "now" tag, ignoring the target hit stats.
+	// TODO: Document .now. tag
+	ent, err := selectRandomEntry(dir, "now")
+	if err != nil && !errors.Is(err, oi.ErrNotFound) {
+		// Unknown error
+		return ent, nil
+	}
+	if err == nil {
+		return ent, nil
+	}
+
 	if stats.targetHit(args.PauseDays) {
 		return entry.Zero, ErrNothingToSchedule
 	}
 
-	// Schedule random qeued entry for platform. First, try to find one with
-	// a priority tag.
-	ent, err := selectRandomEntry(dir, "prio")
+	// Schedule random qeued entry for platform. Find one with prio tag.
+	ent, err = selectRandomEntry(dir, "prio")
 	if errors.Is(err, oi.ErrNotFound) {
 		// No entry with priority tag found, select another one.
 		ent, err = selectRandomEntry(dir, "")
