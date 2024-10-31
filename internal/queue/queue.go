@@ -33,8 +33,8 @@ func Run(args config.Args) error {
 
 // Queue all *.txt into ./db/*.txt.STAMP.queued
 func queueEntries(args config.Args) error {
+	// TODO: Use find(...), but refactor with variadic args
 	ch, err := oi.ReadDirCh(args.GosDir, func(file os.DirEntry) (string, bool) {
-		// TODO: Make all of those loops return an entry.Entry
 		filePath := filepath.Join(args.GosDir, file.Name())
 		return filePath, slices.Contains(validExtensions, filepath.Ext(file.Name())) &&
 			file.Type().IsRegular()
@@ -53,7 +53,7 @@ func queueEntries(args config.Args) error {
 			if err != nil {
 				return err
 			}
-			// TODO Refactor
+			// TODO Refactor this prompting mechanism plus possible choices for DRY
 			err = prompt.DoYouWantThis("Do you want to queue this content", content)
 			switch {
 			case errors.Is(err, prompt.ErrEditContent):

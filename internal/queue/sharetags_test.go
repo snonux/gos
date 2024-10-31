@@ -8,8 +8,6 @@ import (
 )
 
 func TestShareTagsPositive(t *testing.T) {
-	t.Parallel()
-
 	args := config.Args{Platforms: map[string]int{"mastodon": 100, "linkedin": 100}}
 	testTable := map[string]shareTags{
 		"./foo/bar.without.tags.txt.20240101-010101.queued": {
@@ -54,8 +52,6 @@ func TestShareTagsPositive(t *testing.T) {
 	}
 }
 func TestShareTagsNegative(t *testing.T) {
-	t.Parallel()
-
 	args := config.Args{Platforms: map[string]int{"mastodon": 100, "linkedin": 100}}
 	testTable := map[string]shareTags{
 		"./foo/bar.without.tags.txt.20240101-010101.queued": {
