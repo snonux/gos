@@ -24,7 +24,7 @@ const (
 )
 
 var (
-	validTags            = []string{"ask", "prio", "now"} // TODO: Document all tags
+	validTags            = []string{"ask", "prio", "now"}
 	ErrSizeLimitExceeded = errors.New("message size limit exceeded")
 )
 

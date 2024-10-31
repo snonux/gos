@@ -17,7 +17,7 @@ Gos is a Go-based replacement for Buffer.com, providing the ability to schedule 
 * Go (version 1.23 or later)
 * Supported browsers like Firefox, Chrome, etc for oauth2.
 
-### Build and Instal
+### Build and Install
 
 Clone the repository:
 
@@ -147,6 +147,22 @@ Normally, Gos randomly picks any queued message without any specific order or pr
 * To not share on LinkedIn: `~/.gosdir/foopost.prio.share:-linkedin.txt`
 * To explicitly share on both: `~/.gosdir/foopost.prio.share:linkedin:mastodon.txt`
 * To explicitly share on only linkedin: `~/.gosdir/foopost.prio.share:linkedin:-mastodon.txt`
+
+### More tags
+
+* A `.ask.` in the filename will prompt you to choose whether to queue, edit, or delete a file before queuing it.
+* A `.now.` in the filename will schedule a post immediately, regardless of the target status.
+
+So you could also have filenames like those: 
+
+* `~/.gosdir/foopost.ask.txt`
+* `~/.gosdir/foopost.now.txt`
+* `~/.gosdir/foopost.ask.share:mastodon.txt`
+* `~/.gosdir/foopost.ask.prio.share:mastodon.txt`
+* `~/.gosdir/foopost.ask.now.share:-mastodon.txt`
+* `~/.gosdir/foopost.now.share:-linkedin.txt`
+
+etc...
 
 ### Summary of Filename Structure
 
