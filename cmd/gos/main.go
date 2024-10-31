@@ -49,6 +49,7 @@ func main() {
 		OAuth2Browser:     *browser,
 	}
 	for _, platform := range strings.Split(*platforms, ",") {
+		// TODO: Move parsing to config package.
 		// E.g. Mastodon:500
 		parts := strings.Split(platform, ":")
 		var err error

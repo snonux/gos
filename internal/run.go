@@ -38,7 +38,7 @@ func Run(ctx context.Context, args config.Args) error {
 }
 
 func runPlatform(ctx context.Context, args config.Args, platform string, sizeLimit int) error {
-	ent, err := schedule.Run(args, platform)
+	en, err := schedule.Run(args, platform)
 	switch {
 	case errors.Is(err, schedule.ErrNothingToSchedule):
 		log.Println("Nothing to be scheduled for", platform)
@@ -50,7 +50,7 @@ func runPlatform(ctx context.Context, args config.Args, platform string, sizeLim
 		return err
 	}
 
-	log.Println("Posting", ent)
+	log.Println("Posting", en)
 	var postCB func(context.Context, config.Args, int, entry.Entry) error
 	switch strings.ToLower(platform) {
 	case "mastodon":
@@ -61,10 +61,10 @@ func runPlatform(ctx context.Context, args config.Args, platform string, sizeLim
 		log.Fatal("Platform", platform, "(not yet) implemented")
 	}
 
-	if err := postCB(ctx, args, sizeLimit, ent); err != nil {
+	if err := postCB(ctx, args, sizeLimit, en); err != nil {
 		return err
 	}
-	if err := ent.MarkPosted(); err != nil {
+	if err := en.MarkPosted(); err != nil {
 		return err
 	}
 

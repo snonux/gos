@@ -33,8 +33,7 @@ func queueEntries(args config.Args) error {
 	// TODO: Use find(...), but refactor with variadic args
 	ch, err := oi.ReadDirCh(args.GosDir, func(file os.DirEntry) (string, bool) {
 		filePath := filepath.Join(args.GosDir, file.Name())
-		return filePath, slices.Contains(validExtensions, filepath.Ext(file.Name())) &&
-			file.Type().IsRegular()
+		return filePath, slices.Contains(validExtensions, filepath.Ext(file.Name())) && file.Type().IsRegular()
 	})
 	if err != nil {
 		return err
@@ -74,20 +73,20 @@ func queuePlatforms(args config.Args) error {
 
 	trashDir := filepath.Join(args.GosDir, "db", "trashbin")
 	for filePath := range ch {
-		ent, err := entry.New(filePath)
+		en, err := entry.New(filePath)
 		if err != nil {
 			return err
 		}
 		for platform := range args.Platforms {
-			excluded, err := ent.ExcludedByTags(args, platform)
+			excluded, err := en.PlatformExcluded(args, platform)
 			if err != nil {
 				return err
 			}
 			if excluded {
-				log.Println("Not queueing entry", ent, "to platform", platform, "as it is excluded")
+				log.Println("Not queueing entry", en, "to platform", platform, "as it is excluded")
 				continue
 			}
-			if err := queuePlatform(ent, args.GosDir, platform); err != nil {
+			if err := queuePlatform(en, args.GosDir, platform); err != nil {
 				return err
 			}
 		}
@@ -96,12 +95,12 @@ func queuePlatforms(args config.Args) error {
 		}
 
 		// Keep queued items in trash for a while.
-		trashPath := filepath.Join(trashDir, strings.TrimSuffix(filepath.Base(ent.Path), ".queued")+".trash")
-		log.Printf("Trashing %s -> %s", ent.Path, trashPath)
+		trashPath := filepath.Join(trashDir, strings.TrimSuffix(filepath.Base(en.Path), ".queued")+".trash")
+		log.Printf("Trashing %s -> %s", en.Path, trashPath)
 		if err := oi.EnsureParentDir(trashPath); err != nil {
 			return err
 		}
-		if err := os.Rename(ent.Path, trashPath); err != nil {
+		if err := os.Rename(en.Path, trashPath); err != nil {
 			return err
 		}
 	}
