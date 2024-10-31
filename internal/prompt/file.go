@@ -17,14 +17,14 @@ var (
 )
 
 func FileAction(question, content, filePath string) error {
-	info2(filePath + ":")
+	Info2(filePath + ":")
 	fmt.Print("\n")
-	info1(content)
+	Info1(content)
 	fmt.Print("\n")
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		ack("%s (y=yes/n=no/e=edit/d=delete):", question)
+		Ack("%s (y=yes/n=no/e=edit/d=delete):", question)
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading input:", err)

@@ -84,20 +84,20 @@ func ReadDir[T any](dir string, cb func(file os.DirEntry) (T, bool)) ([]T, error
 	return results, nil
 }
 
-func ReadDirRandom[T any](dir string, cb func(file os.DirEntry) (T, bool)) (T, error) {
+func ReadDirRandom[T any](dir string, cb func(file os.DirEntry) (T, bool)) (T, int, error) {
 	results, err := ReadDir(dir, cb)
 
 	if err != nil {
 		var zero T
-		return zero, err
+		return zero, 0, err
 	}
 	if len(results) == 0 {
 		var zero T
-		return zero, ErrNotFound
+		return zero, 0, ErrNotFound
 	}
 
 	rand.Seed(uint64(time.Now().UnixNano()))
-	return results[rand.Intn(len(results))], nil
+	return results[rand.Intn(len(results))], len(results), nil
 }
 
 func IsRegular(path string) bool {

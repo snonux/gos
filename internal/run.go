@@ -68,6 +68,7 @@ func runPlatform(ctx context.Context, args config.Args, platform string, sizeLim
 		return err
 	}
 
+	// TODO: Put all color definitions into ints own package
 	color.New(color.FgWhite, color.BgGreen).Println("Successfully posted message to ", platform)
 	return nil
 }

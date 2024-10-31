@@ -26,6 +26,7 @@ func main() {
 	secretsConfigPath = *flag.String("secretsConfig", secretsConfigPath, "Gos' secret config")
 	platforms := flag.String("platforms", "Mastodon:500,LinkedIn:1000", "Platforms enabled plus their post size limits")
 	target := flag.Int("target", 2, "How many posts per week are the target?")
+	minQueued := flag.Int("minQueued", 4, "Minimum of queued items until printing a warn message!")
 	pauseDays := flag.Int("pauseDays", 3, "How many days until next post can be posted?")
 	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
 	flag.Parse()
@@ -40,6 +41,7 @@ func main() {
 		GosDir:            *gosDir,
 		Platforms:         make(map[string]int),
 		Target:            *target,
+		MinQueued:         *minQueued, // TODO: Document
 		PauseDays:         *pauseDays,
 		Lookback:          time.Duration(*lookback) * time.Hour * 24,
 		SecretsConfigPath: secretsConfigPath,

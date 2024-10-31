@@ -18,7 +18,6 @@ import (
 // Strictly, we only operate on .txt files, but we also accept .md as Obsidian creates only .md files.
 var validExtensions = []string{".txt", ".md"}
 
-// TODO: Red alert when there are no messages to schedule, or less than N
 func Run(args config.Args) error {
 	if err := queueEntries(args); err != nil {
 		return err
