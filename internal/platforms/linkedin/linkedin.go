@@ -24,19 +24,19 @@ const (
 	linkedInTimeout  = 10 * time.Second
 )
 
-func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
-	err := post(ctx, args, sizeLimit, ent)
+func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) error {
+	err := post(ctx, args, sizeLimit, en)
 	if errors.Is(err, errUnauthorized) {
 		log.Println(err, "=> trying to refresh LinkedIn access token")
 		args.Secrets.LinkedInAccessToken = "" // Reset the token
-		return post(ctx, args, sizeLimit, ent)
+		return post(ctx, args, sizeLimit, en)
 	}
 	return err
 }
 
-func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
+func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) error {
 	if args.DryRun {
-		log.Println("Not posting", ent, "to LinkedIn as dry-run enabled")
+		log.Println("Not posting", en, "to LinkedIn as dry-run enabled")
 		return nil
 	}
 
@@ -46,7 +46,7 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 	if err != nil {
 		return err
 	}
-	content, urls, err := ent.ContentWithLimit(sizeLimit)
+	content, urls, err := en.ContentWithLimit(sizeLimit)
 	if err != nil {
 		return err
 	}
@@ -59,7 +59,7 @@ func post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 	}
 
 	question := fmt.Sprintf("Do you want to post this message to Linkedin (%v)?", prev)
-	if err := prompt.FileAction(question, content, ent.Path); err != nil {
+	if err := prompt.FileAction(question, content, en.Path); err != nil {
 		return err
 	}
 

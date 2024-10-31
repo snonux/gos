@@ -53,132 +53,132 @@ type Entry struct {
 	simpleTags []string
 }
 
-func (e Entry) String() string {
-	if e.State == Inboxed {
-		return fmt.Sprintf("Path:%s;State:%s", e.Path, e.State)
+func (en Entry) String() string {
+	if en.State == Inboxed {
+		return fmt.Sprintf("Path:%s;State:%s", en.Path, en.State)
 	}
-	return fmt.Sprintf("Path:%s;Stamp:%s,State:%s", e.Path, e.Time.Format(timestamp.Format), e.State)
+	return fmt.Sprintf("Path:%s;Stamp:%s,State:%s", en.Path, en.Time.Format(timestamp.Format), en.State)
 }
 
 // filePath format: /foo/foobarbaz.something.here.txt.STAMP.{posted,queued}
 // or for inboxed: /foo.txt
 // or inboxed with tags: /foo.prio.ask.txt
 func New(filePath string) (Entry, error) {
-	e := Entry{Path: filePath}
+	en := Entry{Path: filePath}
 
 	// We want to get the STAMP!
 	parts := strings.Split(filePath, ".")
 	if len(parts) < 2 {
 		// Could be 2 if inboxed
-		return e, fmt.Errorf("not a valid entry path: %s", filePath)
+		return en, fmt.Errorf("not a valid entry path: %s", filePath)
 	}
 
 	for _, part := range parts {
 		if slices.Contains(validTags, part) {
-			e.simpleTags = append(e.simpleTags, part)
+			en.simpleTags = append(en.simpleTags, part)
 		}
 	}
 
 	switch parts[len(parts)-1] {
 	case "queued":
-		e.State = Queued
+		en.State = Queued
 	case "posted":
-		e.State = Posted
+		en.State = Posted
 	default:
-		e.State = Inboxed
-		return e, nil
+		en.State = Inboxed
+		return en, nil
 	}
 
 	if len(parts) < 4 {
 		// If not inboxed, must be longer.
-		return e, fmt.Errorf("not a valid entry path: %s", filePath)
+		return en, fmt.Errorf("not a valid entry path: %s", filePath)
 	}
 	var err error
-	if e.Time, err = timestamp.Parse(parts[len(parts)-2]); err != nil {
-		return e, err
+	if en.Time, err = timestamp.Parse(parts[len(parts)-2]); err != nil {
+		return en, err
 	}
 
-	if e.Time.Before(timestamp.OldestValidTime()) {
-		return e, fmt.Errorf("entry time does not seem legit, it is too old: %v", e.Time)
+	if en.Time.Before(timestamp.OldestValidTime()) {
+		return en, fmt.Errorf("entry time does not seem legit, it is too old: %v", en.Time)
 	}
 
-	return e, nil
+	return en, nil
 }
 
-func (e *Entry) Content() (string, []string, error) {
-	content, err := oi.SlurpAndTrim(e.Path)
+func (en *Entry) Content() (string, []string, error) {
+	content, err := oi.SlurpAndTrim(en.Path)
 	return content, extractURLs(content), err
 }
 
-func (e Entry) ContentWithLimit(sizeLimit int) (string, []string, error) {
-	content, urls, err := e.Content()
+func (en Entry) ContentWithLimit(sizeLimit int) (string, []string, error) {
+	content, urls, err := en.Content()
 	if err != nil {
 		return "", urls, err
 	}
 	if len(content) > sizeLimit {
-		err := fmt.Errorf("%w (%d > %d): %v", ErrSizeLimitExceeded, len(content), sizeLimit, e)
+		err := fmt.Errorf("%w (%d > %d): %v", ErrSizeLimitExceeded, len(content), sizeLimit, en)
 		if err2 := prompt.Acknowledge("You need to shorten the content as "+err.Error(), content); err2 != nil {
 			return "", urls, errors.Join(err, err2)
 		}
-		if err2 := e.Edit(); err2 != nil {
+		if err2 := en.Edit(); err2 != nil {
 			return "", urls, errors.Join(err, err2)
 		}
-		return e.ContentWithLimit(sizeLimit)
+		return en.ContentWithLimit(sizeLimit)
 	}
 	return content, urls, nil
 }
 
-func (e *Entry) MarkPosted() error {
-	if e.State == Inboxed {
+func (en *Entry) MarkPosted() error {
+	if en.State == Inboxed {
 		return errors.New("entry still inboxed, can not mark as posted")
 	}
-	if e.State != Queued {
+	if en.State != Queued {
 		return errors.New("entry is not queued")
 	}
-	if e.State == Posted {
+	if en.State == Posted {
 		return errors.New("entry is already posted")
 	}
-	newPath, err := timestamp.UpdateInFilename(strings.TrimSuffix(e.Path, ".queued")+".posted", -2)
+	newPath, err := timestamp.UpdateInFilename(strings.TrimSuffix(en.Path, ".queued")+".posted", -2)
 	if err != nil {
 		return err
 	}
-	if err := os.Rename(e.Path, newPath); err != nil {
+	if err := os.Rename(en.Path, newPath); err != nil {
 		return err
 	}
-	e.State = Posted
+	en.State = Posted
 	return nil
 }
 
-func (e Entry) HasTag(tag string) bool {
-	return slices.Contains(e.simpleTags, tag)
+func (en Entry) HasTag(tag string) bool {
+	return slices.Contains(en.simpleTags, tag)
 }
 
 // Valid tags are: share:foo[,...]
 // whereas foo can be a supported plutform such as linkedin, mastodon, etc.
 // foo can also be prefixed with - to exclude it. See unit tests for examples.
-func (e Entry) ExcludedByTags(args config.Args, platform string) (bool, error) {
-	s, err := newShareTags(args, e.Path)
+func (en Entry) ExcludedByTags(args config.Args, platform string) (bool, error) {
+	s, err := newShareTags(args, en.Path)
 	return slices.Contains(s.excludes, strings.ToLower(platform)) ||
 		!slices.Contains(s.includes, strings.ToLower(platform)), err
 }
 
-func (e Entry) Edit() error {
-	if err := prompt.EditFile(e.Path); err != nil {
+func (en Entry) Edit() error {
+	if err := prompt.EditFile(en.Path); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (e Entry) Remove() error {
-	return os.Remove(e.Path)
+func (en Entry) Remove() error {
+	return os.Remove(en.Path)
 }
 
-func (e Entry) FileAction(question string) error {
-	content, _, err := e.Content()
+func (en Entry) FileAction(question string) error {
+	content, _, err := en.Content()
 	if err != nil {
 		return err
 	}
-	return prompt.FileAction(question, content, e.Path)
+	return prompt.FileAction(question, content, en.Path)
 }
 
 func extractURLs(input string) []string {

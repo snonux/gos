@@ -17,8 +17,8 @@ import (
 
 const mastodonTimeout = 10 * time.Second
 
-func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry) error {
-	content, _, err := ent.ContentWithLimit(sizeLimit)
+func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) error {
+	content, _, err := en.ContentWithLimit(sizeLimit)
 	if err != nil {
 		return err
 	}
@@ -28,10 +28,10 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		return fmt.Errorf("failed to marshal payload: %w", err)
 	}
 	if args.DryRun {
-		log.Println("Not posting", ent, "to Mastodon as dry-run enabled")
+		log.Println("Not posting", en, "to Mastodon as dry-run enabled")
 		return nil
 	}
-	if err := prompt.FileAction("Do you want to post this message to Mastodon?", content, ent.Path); err != nil {
+	if err := prompt.FileAction("Do you want to post this message to Mastodon?", content, en.Path); err != nil {
 		return err
 	}
 

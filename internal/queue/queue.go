@@ -112,10 +112,9 @@ func queuePlatforms(args config.Args) error {
 }
 
 // Queue ./db/queued/*.txt.STAMP.queued to ./db/platforms/PLATFORM/*.txt.STAMP.queued
-// TODO: Rename all ent to en
-func queuePlatform(ent entry.Entry, gosDir, platform string) error {
+func queuePlatform(en entry.Entry, gosDir, platform string) error {
 	destDir := filepath.Join(gosDir, "db/platforms", strings.ToLower(platform))
-	destPath := filepath.Join(destDir, filepath.Base(ent.Path))
+	destPath := filepath.Join(destDir, filepath.Base(en.Path))
 	postedFile := fmt.Sprintf("%s.posted", strings.TrimSuffix(destPath, ".queued"))
 
 	// Entry already posted platform?
@@ -124,8 +123,8 @@ func queuePlatform(ent entry.Entry, gosDir, platform string) error {
 		return nil
 	}
 
-	log.Println("Queuing", ent.Path, "->", destPath)
-	return oi.CopyFile(ent.Path, destPath)
+	log.Println("Queuing", en.Path, "->", destPath)
+	return oi.CopyFile(en.Path, destPath)
 }
 
 func deleteFiles(path, suffix string, olderThan time.Time) error {
