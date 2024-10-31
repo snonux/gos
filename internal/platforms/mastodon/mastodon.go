@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -32,13 +31,7 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, ent entry.Entry)
 		log.Println("Not posting", ent, "to Mastodon as dry-run enabled")
 		return nil
 	}
-	if err := prompt.DoYouWantThis("Do you want to post this message to Mastodon?", content); err != nil {
-		if errors.Is(err, prompt.ErrEditContent) {
-			if err := ent.Edit(); err != nil {
-				return err
-			}
-			return Post(ctx, args, sizeLimit, ent)
-		}
+	if err := prompt.FileAction("Do you want to post this message to Mastodon?", content, ent.Path); err != nil {
 		return err
 	}
 

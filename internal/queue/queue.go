@@ -1,7 +1,6 @@
 package queue
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -53,17 +52,7 @@ func queueEntries(args config.Args) error {
 			if err != nil {
 				return err
 			}
-			// TODO Refactor this prompting mechanism plus possible choices for DRY
-			err = prompt.DoYouWantThis("Do you want to queue this content", content)
-			switch {
-			case errors.Is(err, prompt.ErrEditContent):
-				err = ent.Edit()
-			case errors.Is(err, prompt.ErrDeleteFile):
-				if err = ent.Remove(); err == nil {
-					continue
-				}
-			}
-			if err != nil {
+			if err := prompt.FileAction("Do you want to queue this content", content, ent.Path); err != nil {
 				return err
 			}
 		}

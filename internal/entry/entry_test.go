@@ -81,7 +81,6 @@ func TestExtractURLs(t *testing.T) {
 }
 
 func TestHasTag(t *testing.T) {
-	// TODO: Remove t.Parallel() everywhere
 	table := map[string][]string{
 		"foo.txt":          []string{},
 		"foo.prio.txt":     []string{"prio"},
@@ -94,12 +93,12 @@ func TestHasTag(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		if len(expectedTags) != len(ent.tags) {
-			t.Errorf("expected '%d' tags but got '%d'", len(expectedTags), len(ent.tags))
+		if len(expectedTags) != len(ent.simpleTags) {
+			t.Errorf("expected '%d' tags but got '%d'", len(expectedTags), len(ent.simpleTags))
 		}
 		for _, tag := range expectedTags {
 			if !ent.HasTag(tag) {
-				t.Errorf("expected tag '%s' but got '%s'", tag, ent.tags)
+				t.Errorf("expected tag '%s' but got '%s'", tag, ent.simpleTags)
 			}
 		}
 	}

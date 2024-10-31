@@ -6,8 +6,6 @@ import (
 )
 
 func TestUpdateInFilename(t *testing.T) {
-	t.Parallel()
-
 	var (
 		filePath = "gosdir/db/platforms/mastodon/1728240487.txt.20241009-232530.queued"
 		nowTime  = NowTime()
