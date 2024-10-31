@@ -18,13 +18,16 @@ import (
 
 func Run(ctx context.Context, args config.Args) error {
 	if err := queue.Run(args); err != nil {
-		return err
+		if !softError(err) {
+			return err
+		}
+		log.Println(err)
 	}
 
 	for platform, sizeLimit := range args.Platforms {
 		if err := runPlatform(ctx, args, platform, sizeLimit); err != nil {
-			if errors.Is(err, prompt.ErrAborted) {
-				log.Println("Aborted posting to", platform)
+			if softError(err) {
+				log.Println(err)
 				continue
 			}
 			return err
@@ -67,4 +70,8 @@ func runPlatform(ctx context.Context, args config.Args, platform string, sizeLim
 
 	color.New(color.FgWhite, color.BgGreen).Println("Successfully posted message to ", platform)
 	return nil
+}
+
+func softError(err error) bool {
+	return errors.Is(err, prompt.ErrAborted) || errors.Is(err, prompt.ErrDeleted)
 }

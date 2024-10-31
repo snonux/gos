@@ -7,11 +7,18 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"codeberg.org/snonux/gos/internal/oi"
+)
+
+var (
+	ErrAborted = errors.New("aborted")
+	ErrDeleted = errors.New("deleted")
 )
 
 func FileAction(question, content, filePath string) error {
-	info2(filePath)
-	fmt.Print(":\n")
+	info2(filePath + ":")
+	fmt.Print("\n")
 	info1(content)
 	fmt.Print("\n")
 	reader := bufio.NewReader(os.Stdin)
@@ -28,11 +35,20 @@ func FileAction(question, content, filePath string) error {
 		case "y", "yes":
 			return nil
 		case "n", "no":
-			return ErrAborted
+			return fmt.Errorf("%w %s", ErrAborted, filePath)
 		case "e", "edit":
-			return EditFile(filePath)
+			if err := EditFile(filePath); err != nil {
+				return err
+			}
+			if content, err = oi.SlurpAndTrim(filePath); err != nil {
+				return err
+			}
+			return FileAction(question, content, filePath)
 		case "d", "delete":
-			return os.Remove(filePath)
+			if err := os.Remove(filePath); err != nil {
+				return err
+			}
+			return fmt.Errorf("%w %s", ErrDeleted, filePath)
 		default:
 			fmt.Println("Please enter 'y' or 'n' or 'e' or 'd'.")
 		}

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"codeberg.org/snonux/gos/internal/oi"
 	"codeberg.org/snonux/gos/internal/prompt"
 	"codeberg.org/snonux/gos/internal/timestamp"
 )
@@ -104,12 +105,8 @@ func New(filePath string) (Entry, error) {
 }
 
 func (e *Entry) Content() (string, []string, error) {
-	bytes, err := os.ReadFile(e.Path)
-	if err != nil {
-		return "", []string{}, err
-	}
-	content := strings.TrimSpace(string(bytes))
-	return content, extractURLs(content), nil
+	content, err := oi.SlurpAndTrim(e.Path)
+	return content, extractURLs(content), err
 }
 
 func (e Entry) ContentWithLimit(sizeLimit int) (string, []string, error) {

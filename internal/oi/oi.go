@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"golang.org/x/exp/rand"
@@ -137,4 +138,12 @@ func Rename(srcPath, dstPath string) error {
 		return err
 	}
 	return os.Rename(srcPath, dstPath)
+}
+
+func SlurpAndTrim(filePath string) (string, error) {
+	bytes, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(bytes)), nil
 }
