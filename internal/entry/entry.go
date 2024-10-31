@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/oi"
 	"codeberg.org/snonux/gos/internal/prompt"
 	"codeberg.org/snonux/gos/internal/timestamp"
@@ -18,7 +19,7 @@ type State int
 
 const (
 	Unknown State = iota
-	Inboxed       // TODO: Implement
+	Inboxed
 	Queued
 	Posted
 )
@@ -152,6 +153,15 @@ func (e Entry) HasTag(tag string) bool {
 	return slices.Contains(e.simpleTags, tag)
 }
 
+// Valid tags are: share:foo[,...]
+// whereas foo can be a supported plutform such as linkedin, mastodon, etc.
+// foo can also be prefixed with - to exclude it. See unit tests for examples.
+func (e Entry) ExcludedByTags(args config.Args, platform string) (bool, error) {
+	s, err := newShareTags(args, e.Path)
+	return slices.Contains(s.excludes, strings.ToLower(platform)) ||
+		!slices.Contains(s.includes, strings.ToLower(platform)), err
+}
+
 func (e Entry) Edit() error {
 	if err := prompt.EditFile(e.Path); err != nil {
 		return err
@@ -161,6 +171,14 @@ func (e Entry) Edit() error {
 
 func (e Entry) Remove() error {
 	return os.Remove(e.Path)
+}
+
+func (e Entry) FileAction(question string) error {
+	content, _, err := e.Content()
+	if err != nil {
+		return err
+	}
+	return prompt.FileAction(question, content, e.Path)
 }
 
 func extractURLs(input string) []string {

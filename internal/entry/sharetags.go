@@ -1,4 +1,4 @@
-package queue
+package entry
 
 import (
 	"fmt"
@@ -42,13 +42,4 @@ func newShareTags(args config.Args, filePath string) (shareTags, error) {
 	}
 
 	return s, nil
-}
-
-// Valid tags are: share:foo[,...]
-// whereas foo can be a supported plutform such as linkedin, mastodon, etc.
-// foo can also be prefixed with - to exclude it. See unit tests for examples.
-func excludedByTags(args config.Args, filePath, platform string) (bool, error) {
-	s, err := newShareTags(args, filePath)
-	return slices.Contains(s.excludes, strings.ToLower(platform)) ||
-		!slices.Contains(s.includes, strings.ToLower(platform)), err
 }

@@ -12,7 +12,6 @@ import (
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/oi"
-	"codeberg.org/snonux/gos/internal/prompt"
 	"codeberg.org/snonux/gos/internal/timestamp"
 )
 
@@ -48,20 +47,16 @@ func queueEntries(args config.Args) error {
 			return err
 		}
 		if ent.HasTag("ask") {
-			content, _, err := ent.Content()
-			if err != nil {
-				return err
-			}
-			if err := prompt.FileAction("Do you want to queue this content", content, ent.Path); err != nil {
+			if err := ent.FileAction("Do you want to queue this content"); err != nil {
 				return err
 			}
 		}
-		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir, filepath.Base(filePath), timestamp.Now())
+		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir, filepath.Base(ent.Path), timestamp.Now())
 		if args.DryRun {
-			log.Println("Not queueing entry", filePath, "to", destPath, "as dry-run mode enabled")
+			log.Println("Not queueing entry", ent.Path, "to", destPath, "as dry-run mode enabled")
 			continue
 		}
-		if err := oi.Rename(filePath, destPath); err != nil {
+		if err := oi.Rename(ent.Path, destPath); err != nil {
 			return err
 		}
 	}
@@ -80,21 +75,20 @@ func queuePlatforms(args config.Args) error {
 
 	trashDir := filepath.Join(args.GosDir, "db", "trashbin")
 	for filePath := range ch {
-		_, err := entry.New(filePath)
+		ent, err := entry.New(filePath)
 		if err != nil {
 			return err
 		}
 		for platform := range args.Platforms {
-			// TODO: Move excludedByTags to entry.Entry.IsSared(args, platform)
-			excluded, err := excludedByTags(args, filePath, platform)
+			excluded, err := ent.ExcludedByTags(args, platform)
 			if err != nil {
 				return err
 			}
 			if excluded {
-				log.Println("Not queueing entry", filePath, "to platform", platform, "as it is excluded")
+				log.Println("Not queueing entry", ent, "to platform", platform, "as it is excluded")
 				continue
 			}
-			if err := queuePlatform(filePath, args.GosDir, platform); err != nil {
+			if err := queuePlatform(ent, args.GosDir, platform); err != nil {
 				return err
 			}
 		}
@@ -103,12 +97,12 @@ func queuePlatforms(args config.Args) error {
 		}
 
 		// Keep queued items in trash for a while.
-		trashPath := filepath.Join(trashDir, strings.TrimSuffix(filepath.Base(filePath), ".queued")+".trash")
-		log.Printf("Trashing %s -> %s", filePath, trashPath)
+		trashPath := filepath.Join(trashDir, strings.TrimSuffix(filepath.Base(ent.Path), ".queued")+".trash")
+		log.Printf("Trashing %s -> %s", ent.Path, trashPath)
 		if err := oi.EnsureParentDir(trashPath); err != nil {
 			return err
 		}
-		if err := os.Rename(filePath, trashPath); err != nil {
+		if err := os.Rename(ent.Path, trashPath); err != nil {
 			return err
 		}
 	}
@@ -118,9 +112,10 @@ func queuePlatforms(args config.Args) error {
 }
 
 // Queue ./db/queued/*.txt.STAMP.queued to ./db/platforms/PLATFORM/*.txt.STAMP.queued
-func queuePlatform(entryPath, gosDir, platform string) error {
+// TODO: Rename all ent to en
+func queuePlatform(ent entry.Entry, gosDir, platform string) error {
 	destDir := filepath.Join(gosDir, "db/platforms", strings.ToLower(platform))
-	destPath := filepath.Join(destDir, filepath.Base(entryPath))
+	destPath := filepath.Join(destDir, filepath.Base(ent.Path))
 	postedFile := fmt.Sprintf("%s.posted", strings.TrimSuffix(destPath, ".queued"))
 
 	// Entry already posted platform?
@@ -129,8 +124,8 @@ func queuePlatform(entryPath, gosDir, platform string) error {
 		return nil
 	}
 
-	log.Println("Queuing", entryPath, "->", destPath)
-	return oi.CopyFile(entryPath, destPath)
+	log.Println("Queuing", ent.Path, "->", destPath)
+	return oi.CopyFile(ent.Path, destPath)
 }
 
 func deleteFiles(path, suffix string, olderThan time.Time) error {
