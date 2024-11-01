@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 
+	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/platforms/linkedin"
@@ -13,7 +14,6 @@ import (
 	"codeberg.org/snonux/gos/internal/prompt"
 	"codeberg.org/snonux/gos/internal/queue"
 	"codeberg.org/snonux/gos/internal/schedule"
-	"github.com/fatih/color"
 )
 
 func Run(ctx context.Context, args config.Args) error {
@@ -68,8 +68,7 @@ func runPlatform(ctx context.Context, args config.Args, platform string, sizeLim
 		return err
 	}
 
-	// TODO: Put all color definitions into ints own package
-	color.New(color.FgWhite, color.BgGreen).Println("Successfully posted message to ", platform)
+	colour.Successf("Successfully posted message to %s", platform)
 	return nil
 }
 

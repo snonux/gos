@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/oi"
 )
 
@@ -17,14 +18,14 @@ var (
 )
 
 func FileAction(question, content, filePath string) error {
-	Info2(filePath + ":")
+	colour.Info2f(filePath + ":")
 	fmt.Print("\n")
-	Info1(content)
+	colour.Info1f(content)
 	fmt.Print("\n")
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		Ack("%s (y=yes/n=no/e=edit/d=delete):", question)
+		colour.Ackf("%s (y=yes/n=no/e=edit/d=delete):", question)
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading input:", err)
