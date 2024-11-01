@@ -148,6 +148,8 @@ Normally, Gos randomly picks any queued message without any specific order or pr
 * To explicitly share on both: `~/.gosdir/foopost.prio.share:linkedin:mastodon.txt`
 * To explicitly share on only linkedin: `~/.gosdir/foopost.prio.share:linkedin:-mastodon.txt`
 
+There is more: you can also use the `soon` tag. It is almost the same as the `prio` tag, just with one lower priority.
+
 ### More tags
 
 * A `.ask.` in the filename will prompt you to choose whether to queue, edit, or delete a file before queuing it.

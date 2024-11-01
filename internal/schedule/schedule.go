@@ -26,42 +26,48 @@ func Run(args config.Args, platform string) (entry.Entry, error) {
 	if err != nil {
 		return entry.Zero, err
 	}
+	if stats.queued < args.MinQueued {
+		_ = prompt.Acknowledge(
+			fmt.Sprintf("There are only %d messages queued for %s - time to fill it up!",
+				stats.queued, platform),
+		)
+	}
 
 	log.Println("For", platform, "stats:", stats)
-	// Schedule random queued entry with "now" tag, ignoring the target hit stats.
-	en, numQueued, err := selectRandomEntry(dir, "now")
+	en, err := selectEntry(dir)
 	if err != nil && !errors.Is(err, oi.ErrNotFound) {
-		// Unknown error
-		return en, nil
+		return en, nil // Unknown error
 	}
-	if err == nil {
-		return en, nil
-	}
-
-	if stats.targetHit(args.PauseDays) {
+	if !en.HasTag("now") && stats.targetHit(args.PauseDays) {
 		return entry.Zero, ErrNothingToSchedule
-	}
-
-	// Schedule random qeued entry for platform. Find one with prio tag.
-	en, _, err = selectRandomEntry(dir, "prio")
-	if errors.Is(err, oi.ErrNotFound) {
-		// No entry with priority tag found, select another one.
-		en, numQueued, err = selectRandomEntry(dir, "")
-	}
-	if err != nil {
-		return entry.Zero, fmt.Errorf("%w: %w", ErrNothingQueued, err)
-	}
-	// TODO: Fix this, it warns only when there are no now and prio tags used.
-	if numQueued < args.MinQueued {
-		prompt.Warn("Only %d items queued for %s, want to have %d", numQueued, platform, args.MinQueued)
-		fmt.Print("\n")
 	}
 	return en, nil
 }
 
+/**
+ * Select a random entry, but in this order:
+ * 1. Any antry with the now tag
+ * 2. Any entry with the prio tag
+ * 3. Any entry with the soon tag
+ * 4. Any other entry
+ */
+func selectEntry(dir string) (en entry.Entry, err error) {
+	tagsToTry := []string{"now", "prio", "soon", ""}
+	for _, tag := range tagsToTry {
+		if en, err = selectRandomEntry(dir, tag); err == nil {
+			return
+		}
+		if !errors.Is(err, oi.ErrNotFound) {
+			return
+		}
+
+	}
+	return
+}
+
 // Select a random queed entry with a given tag. If the tag is the empty string,
 // then select any random qeued entry.
-func selectRandomEntry(dir, tag string) (entry.Entry, int, error) {
+func selectRandomEntry(dir, tag string) (entry.Entry, error) {
 	return oi.ReadDirRandom(dir, func(file os.DirEntry) (entry.Entry, bool) {
 		// Is there a ".TAG." in the file name?
 		if tag != "" && !slices.Contains(strings.Split(file.Name(), "."), tag) {
