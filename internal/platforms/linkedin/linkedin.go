@@ -68,6 +68,7 @@ func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 	return callLinkedInAPI(newCtx, personID, accessToken, content, prev)
 }
 
+// TODO: Also post preview images
 func callLinkedInAPI(ctx context.Context, personID, accessToken, content string, prev preview) error {
 	post := map[string]interface{}{
 		"author":     fmt.Sprintf("urn:li:person:%s", personID),
