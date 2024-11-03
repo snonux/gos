@@ -117,7 +117,7 @@ func LinkedInCreds(ctx context.Context, args config.Args) (string, string, error
 		}
 	}()
 
-	if err := waitUntilURLIsReachable("http://localhost:8080/up"); err != nil {
+	if err := WaitUntilURLIsReachable("http://localhost:8080/up"); err != nil {
 		return "", "", err
 	}
 
@@ -154,7 +154,7 @@ func openURLInFirefox(browser, url string) error {
 	}
 }
 
-func waitUntilURLIsReachable(url string) error {
+func WaitUntilURLIsReachable(url string) error {
 	var counter int
 	for counter < 10 {
 		counter++

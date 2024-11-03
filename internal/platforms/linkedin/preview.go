@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -24,7 +25,7 @@ func NewPreview(ctx context.Context, urls []string) (preview, error) {
 	if len(urls) == 0 {
 		return preview{}, nil
 	}
-	title, imageURL, err := fetchHTMLTitleAndFirstImage(ctx, urls[0])
+	title, imageURL, err := extractFromURL(ctx, urls[0])
 	if errors.Is(err, errNoTitleElementFound) || (err == nil && title == "") {
 		log.Println("Setting title to", urls[0])
 		title = urls[0]
@@ -98,7 +99,7 @@ func resolveURL(baseURL, rawURL string) (string, error) {
 	return base.ResolveReference(u).String(), nil
 }
 
-func fetchHTMLTitleAndFirstImage(ctx context.Context, url string) (string, string, error) {
+func extractFromURL(ctx context.Context, url string) (string, string, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to create request: %w", err)
@@ -112,7 +113,12 @@ func fetchHTMLTitleAndFirstImage(ctx context.Context, url string) (string, strin
 	if resp.StatusCode != http.StatusOK {
 		return "", "", fmt.Errorf("failed to get a successful response: %v", resp.StatusCode)
 	}
-	doc, err := html.Parse(resp.Body)
+
+	return extract(url, resp.Body)
+}
+
+func extract(url string, htmlBody io.Reader) (string, string, error) {
+	doc, err := html.Parse(htmlBody)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to parse HTML: %w", err)
 	}

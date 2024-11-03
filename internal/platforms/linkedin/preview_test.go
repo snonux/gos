@@ -1,19 +1,27 @@
 package linkedin
 
 import (
-	"context"
+	"strings"
 	"testing"
 )
 
-// TODO: Mock the http request, and serve a local HTML page!
-func TestFetchHTMLTitleAndFirstImage(t *testing.T) {
-	var (
-		url              = "https://foo.zone/about/"
-		expectedTitle    = "About"
-		expectedImageURL = "https://foo.zone/about/paul.jpg"
-	)
+func TestPreviewExtract(t *testing.T) {
 
-	title, imageURL, err := fetchHTMLTitleAndFirstImage(context.Background(), url)
+	expectedTitle := "Baz"
+	expectedImageURL := "https://free.beer:666/bar/foo.jpg"
+	mockHTML := strings.NewReader(`
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Baz</title>
+</head>
+<body>
+    <img src="./foo.jpg" alt="Foo">
+</body>
+</html>
+`)
+
+	title, imageURL, err := extract("https://free.beer:666/bar/", mockHTML)
 	if err != nil {
 		t.Error(err)
 	}
