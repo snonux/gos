@@ -71,16 +71,17 @@ func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 		if ent.State != entry.Posted || ent.Time.Before(lookbackTime) {
 			return nil
 		}
+		// Ignore .now.
+		if strings.Contains(file.Name(), ".now.") {
+			return nil
+		}
 		if ent.Time.Before(oldest) {
 			oldest = ent.Time
 		}
 		if ent.Time.After(newest) {
 			newest = ent.Time
 		}
-		// Ignore .now.
-		if !strings.Contains(file.Name(), ".now.") {
-			s.posted++
-		}
+		s.posted++
 		return nil
 	})
 	if err != nil {
