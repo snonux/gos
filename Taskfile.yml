@@ -32,6 +32,9 @@ tasks:
   lint:
     cmds:
       - golangci-lint run
-  lint-install:
+  dev-install:
     cmds:
+      - go install golang.org/x/tools/gopls@latest
       - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+      

@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"time"
 
@@ -30,11 +29,7 @@ func Run(args config.Args) error {
 
 // Queue all *.txt into ./db/*.txt.STAMP.queued
 func queueEntries(args config.Args) error {
-	// TODO: Use find(...), but refactor with variadic args
-	ch, err := oi.ReadDirCh(args.GosDir, func(file os.DirEntry) (string, bool) {
-		filePath := filepath.Join(args.GosDir, file.Name())
-		return filePath, slices.Contains(validExtensions, filepath.Ext(file.Name())) && file.Type().IsRegular()
-	})
+	ch, err := oi.ReadDirCh(args.GosDir, find(args.GosDir, validExtensions...))
 	if err != nil {
 		return err
 	}
@@ -146,9 +141,14 @@ func deleteFiles(path, suffix string, olderThan time.Time) error {
 	return nil
 }
 
-func find(path, suffix string) func(os.DirEntry) (string, bool) {
+func find(path string, suffixes ...string) func(os.DirEntry) (string, bool) {
 	return func(file os.DirEntry) (string, bool) {
 		filePath := filepath.Join(path, file.Name())
-		return filePath, strings.HasSuffix(file.Name(), suffix)
+		for _, suffix := range suffixes {
+			if strings.HasSuffix(file.Name(), suffix) {
+				return filePath, true
+			}
+		}
+		return filePath, false
 	}
 }
