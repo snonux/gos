@@ -7,8 +7,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 	"time"
 
 	"codeberg.org/snonux/gos/internal"
@@ -48,23 +46,10 @@ func main() {
 		Secrets:           secrets,
 		OAuth2Browser:     *browser,
 	}
-	for _, platform := range strings.Split(*platforms, ",") {
-		// TODO: Move parsing to config package.
-		// E.g. Mastodon:500
-		parts := strings.Split(platform, ":")
-		var err error
-		// E.g. args.Platform["mastodon"] = 500
-		if len(parts) > 1 {
-			args.Platforms[parts[0]], err = strconv.Atoi(parts[1])
-			if err != nil {
-				log.Fatalln(err)
-			}
-		} else {
-			log.Println("No message length specified for", platform, "so assuming 500")
-			args.Platforms[parts[0]] = 500
-		}
-	}
 
+	if err := args.ParsePlatforms(*platforms); err != nil {
+		log.Fatal(err)
+	}
 	if err := args.Validate(); err != nil {
 		log.Fatal(err)
 	}
