@@ -39,7 +39,7 @@ func main() {
 		GosDir:            *gosDir,
 		Platforms:         make(map[string]int),
 		Target:            *target,
-		MinQueued:         *minQueued, // TODO: Document
+		MinQueued:         *minQueued,
 		PauseDays:         *pauseDays,
 		Lookback:          time.Duration(*lookback) * time.Hour * 24,
 		SecretsConfigPath: secretsConfigPath,
