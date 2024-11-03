@@ -6,10 +6,10 @@ import (
 )
 
 func TestPreviewExtract(t *testing.T) {
-
-	expectedTitle := "Baz"
-	expectedImageURL := "https://free.beer:666/bar/foo.jpg"
-	mockHTML := strings.NewReader(`
+	var (
+		expectedTitle    = "Baz"
+		expectedImageURL = "https://free.beer:666/bar/foo.jpg"
+		mockHTML         = strings.NewReader(`
 <!DOCTYPE html>
 <html>
 <head>
@@ -20,6 +20,7 @@ func TestPreviewExtract(t *testing.T) {
 </body>
 </html>
 `)
+	)
 
 	title, imageURL, err := extract("https://free.beer:666/bar/", mockHTML)
 	if err != nil {

@@ -26,7 +26,7 @@ func NewPreview(ctx context.Context, urls []string) (preview, error) {
 		return preview{}, nil
 	}
 	title, imageURL, err := extractFromURL(ctx, urls[0])
-	if errors.Is(err, errNoTitleElementFound) || (err == nil && title == "") {
+	if errors.Is(err, errNoTitleElementFound) || title == "" {
 		log.Println("Setting title to", urls[0])
 		title = urls[0]
 	}
