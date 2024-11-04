@@ -34,33 +34,26 @@ func (s stats) String() string {
 func (s stats) Render(platform string) {
 	var sb strings.Builder
 
-	// data := [][]string{
-	// 	{"#Posted entries", strconv.Itoa(s.posted)},
-	// 	{"#Queued entries", strconv.Itoa(s.queued)},
-	// 	{"Last post (days ago)", fmt.Sprintf("%.02f", s.lastPostDaysAgo)},
-	// 	{"Since (days)", fmt.Sprintf("%.02f", s.sinceDays)},
-	// 	{"Posts per day", fmt.Sprintf("%.02f", s.postsPerDay)},
-	// 	{"Ppd target", fmt.Sprintf("%.02f", s.postsPerDayTarget)},
-	// }
-
-	sep := colour.SInfo3f("+%s+%s+", strings.Repeat("-", 22), strings.Repeat("-", 13))
+	sep := colour.Sstatsf("+%s+%s+", strings.Repeat("-", 22), strings.Repeat("-", 13))
 	sb.WriteString(sep)
 	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", platform, "Stat. value"))
+	sb.WriteString(colour.Sstatsf("| %-20s | %-11s |", platform, "Stat. value"))
 	sb.WriteString("\n")
 	sb.WriteString(sep)
 	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", "Stats since (days)", fmt.Sprintf("%.02f", s.sinceDays)))
+	sb.WriteString(colour.Sstatsf("| %-20s | %-11s |", "Stats since (days)", fmt.Sprintf("%.02f", s.sinceDays)))
 	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", "#Posted entries", strconv.Itoa(s.posted)))
+	sb.WriteString(colour.Sstatsf("| %-20s | %-11s |", "#Posted entries", strconv.Itoa(s.posted)))
 	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", "#Queued entries", strconv.Itoa(s.queued)))
+	sb.WriteString(colour.Sstatsf("| %-20s | %-11s |", "#Queued entries", strconv.Itoa(s.queued)))
 	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", "Last post (days ago)", fmt.Sprintf("%.02f", s.lastPostDaysAgo)))
+	sb.WriteString(colour.Sstatsf("| %-20s | %-11s |", "Enough for (days)", fmt.Sprintf("%.02f", float64(s.queued)/s.postsPerDayTarget)))
 	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", "Posts per day", fmt.Sprintf("%.02f", s.postsPerDay)))
+	sb.WriteString(colour.Sstatsf("| %-20s | %-11s |", "Last post (days ago)", fmt.Sprintf("%.02f", s.lastPostDaysAgo)))
 	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", "Posts per day target", fmt.Sprintf("%.02f", s.postsPerDayTarget)))
+	sb.WriteString(colour.Sstatsf("| %-20s | %-11s |", "Posts per day", fmt.Sprintf("%.02f", s.postsPerDay)))
+	sb.WriteString("\n")
+	sb.WriteString(colour.Sstatsf("| %-20s | %-11s |", "Posts per day target", fmt.Sprintf("%.02f", s.postsPerDayTarget)))
 	sb.WriteString("\n")
 	sb.WriteString(sep)
 	sb.WriteString("\n")
