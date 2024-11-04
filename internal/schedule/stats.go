@@ -19,10 +19,24 @@ import (
 type stats struct {
 	posted            int
 	queued            int
+	queuedForDays     float64
 	sinceDays         float64
 	postsPerDay       float64
 	postsPerDayTarget float64
 	lastPostDaysAgo   float64
+}
+
+func newStats(dir string, lookback time.Duration, target int) (stats, error) {
+	s := stats{postsPerDayTarget: float64(target) / 7}
+
+	if err := s.gatherPostedStats(dir, pastTime(lookback)); err != nil {
+		return s, err
+	}
+	if err := s.gatherQueuedStats(dir); err != nil {
+		return s, err
+	}
+
+	return s, nil
 }
 
 func (s stats) String() string {
@@ -47,7 +61,7 @@ func (s stats) Render(platform string) {
 	sb.WriteString("\n")
 	sb.WriteString(colour.Sstatsf("| %-20s | %-11s |", "#Queued entries", strconv.Itoa(s.queued)))
 	sb.WriteString("\n")
-	sb.WriteString(colour.Sstatsf("| %-20s | %-11s |", "Enough for (days)", fmt.Sprintf("%.02f", float64(s.queued)/s.postsPerDayTarget)))
+	sb.WriteString(colour.Sstatsf("| %-20s | %-11s |", "Enough for (days)", fmt.Sprintf("%.02f", s.queuedForDays)))
 	sb.WriteString("\n")
 	sb.WriteString(colour.Sstatsf("| %-20s | %-11s |", "Last post (days ago)", fmt.Sprintf("%.02f", s.lastPostDaysAgo)))
 	sb.WriteString("\n")
@@ -61,20 +75,11 @@ func (s stats) Render(platform string) {
 	fmt.Print(sb.String())
 }
 
-func newStats(dir string, lookback time.Duration, target int) (stats, error) {
-	stats := stats{postsPerDayTarget: float64(target) / 7}
-
-	if err := stats.gatherPostedStats(dir, pastTime(lookback)); err != nil {
-		return stats, err
+func (s stats) targetHit(pauseDays, maxQueuedDays int) bool {
+	if s.queuedForDays > float64(maxQueuedDays) {
+		s.postsPerDayTarget++
+		pauseDays--
 	}
-	if err := stats.gatherQueuedStats(dir); err != nil {
-		return stats, err
-	}
-
-	return stats, nil
-}
-
-func (s stats) targetHit(pauseDays int) bool {
 	if s.postsPerDay >= s.postsPerDayTarget {
 		log.Println("Posts per day target hit")
 		return true
@@ -145,6 +150,8 @@ func (s *stats) gatherQueuedStats(dir string) error {
 		}
 		return nil
 	})
+
+	s.queuedForDays = float64(s.queued) / s.postsPerDayTarget
 
 	return err
 }

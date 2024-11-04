@@ -17,6 +17,7 @@ type Args struct {
 	Platforms         map[string]int // Platform name and post size limits
 	Target            int
 	MinQueued         int
+	MaxDaysQueued     int
 	PauseDays         int
 	Lookback          time.Duration
 	SecretsConfigPath string

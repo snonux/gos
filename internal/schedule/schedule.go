@@ -20,7 +20,6 @@ var (
 	ErrNothingQueued     = errors.New("nothing queued")
 )
 
-// TODO: Schedule more than N entries per week when the backlog of queued items is large enough.
 func Run(args config.Args, platform string) (entry.Entry, error) {
 	dir := fmt.Sprintf("%s/db/platforms/%s", args.GosDir, strings.ToLower(platform))
 	stats, err := newStats(dir, args.Lookback, args.Target)
@@ -40,7 +39,7 @@ func Run(args config.Args, platform string) (entry.Entry, error) {
 	if err != nil && !errors.Is(err, oi.ErrNotFound) {
 		return en, nil // Unknown error
 	}
-	if !en.HasTag("now") && stats.targetHit(args.PauseDays) {
+	if !en.HasTag("now") && stats.targetHit(args.PauseDays, args.MaxDaysQueued) {
 		return entry.Zero, ErrNothingToSchedule
 	}
 	return en, nil
