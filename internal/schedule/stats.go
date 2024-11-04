@@ -85,7 +85,7 @@ func (s stats) targetHit(pauseDays, maxQueuedDays int) bool {
 		return true
 	}
 	if s.lastPostDaysAgo <= float64(pauseDays) {
-		log.Println("Need to wait a bit longer as last post isn't", pauseDays, "ago yet")
+		log.Println("Need to wait a bit longer as last post isn't", pauseDays, "days ago yet")
 		return true
 
 	}
