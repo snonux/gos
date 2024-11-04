@@ -5,9 +5,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
+	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/oi"
 	"codeberg.org/snonux/gos/internal/timestamp"
@@ -27,6 +29,43 @@ func (s stats) String() string {
 	return fmt.Sprintf("posted:%d,queued:%d,sinceDays:%v,postsPerDayTarget:%v>?%v,lastPostDaysAgo:%v",
 		s.posted, s.queued, s.sinceDays, s.postsPerDay, s.postsPerDayTarget, s.lastPostDaysAgo,
 	)
+}
+
+func (s stats) Render(platform string) {
+	var sb strings.Builder
+
+	// data := [][]string{
+	// 	{"#Posted entries", strconv.Itoa(s.posted)},
+	// 	{"#Queued entries", strconv.Itoa(s.queued)},
+	// 	{"Last post (days ago)", fmt.Sprintf("%.02f", s.lastPostDaysAgo)},
+	// 	{"Since (days)", fmt.Sprintf("%.02f", s.sinceDays)},
+	// 	{"Posts per day", fmt.Sprintf("%.02f", s.postsPerDay)},
+	// 	{"Ppd target", fmt.Sprintf("%.02f", s.postsPerDayTarget)},
+	// }
+
+	sep := colour.SInfo3f("+%s+%s+", strings.Repeat("-", 22), strings.Repeat("-", 13))
+	sb.WriteString(sep)
+	sb.WriteString("\n")
+	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", platform, "Stat. value"))
+	sb.WriteString("\n")
+	sb.WriteString(sep)
+	sb.WriteString("\n")
+	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", "Stats since (days)", fmt.Sprintf("%.02f", s.sinceDays)))
+	sb.WriteString("\n")
+	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", "#Posted entries", strconv.Itoa(s.posted)))
+	sb.WriteString("\n")
+	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", "#Queued entries", strconv.Itoa(s.queued)))
+	sb.WriteString("\n")
+	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", "Last post (days ago)", fmt.Sprintf("%.02f", s.lastPostDaysAgo)))
+	sb.WriteString("\n")
+	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", "Posts per day", fmt.Sprintf("%.02f", s.postsPerDay)))
+	sb.WriteString("\n")
+	sb.WriteString(colour.SInfo3f("| %-20s | %-11s |", "Posts per day target", fmt.Sprintf("%.02f", s.postsPerDayTarget)))
+	sb.WriteString("\n")
+	sb.WriteString(sep)
+	sb.WriteString("\n")
+
+	fmt.Print(sb.String())
 }
 
 func newStats(dir string, lookback time.Duration, target int) (stats, error) {

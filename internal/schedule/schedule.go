@@ -27,6 +27,8 @@ func Run(args config.Args, platform string) (entry.Entry, error) {
 	if err != nil {
 		return entry.Zero, err
 	}
+	stats.Render(platform)
+
 	if stats.queued < args.MinQueued {
 		_ = prompt.Acknowledge(
 			fmt.Sprintf("There are only %d messages queued for %s - time to fill it up!",
@@ -34,7 +36,6 @@ func Run(args config.Args, platform string) (entry.Entry, error) {
 		)
 	}
 
-	log.Println("For", platform, "stats:", stats)
 	en, err := selectEntry(dir)
 	if err != nil && !errors.Is(err, oi.ErrNotFound) {
 		return en, nil // Unknown error
