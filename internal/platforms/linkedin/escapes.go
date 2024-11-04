@@ -8,8 +8,9 @@ import (
 func escapeLinkedInText(input string) string {
 	var builder strings.Builder
 
+	// TODO: '"' escapes don't work correctly yet, they show up as \"...\" in LinkedIn posts
 	reservedChars := map[rune]string{
-		'"': "\\\"",
+		'"': "\\\"", // Just remove this line to fix the above?
 		'|': "\\|",
 		'{': "\\{",
 		'}': "\\}",
