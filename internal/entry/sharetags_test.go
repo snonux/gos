@@ -2,6 +2,7 @@ package entry
 
 import (
 	"slices"
+	"strings"
 	"testing"
 
 	"codeberg.org/snonux/gos/internal/config"
@@ -35,7 +36,7 @@ func TestShareTagsPositive(t *testing.T) {
 
 	for filePath, expectedResult := range testTable {
 		t.Run(filePath, func(t *testing.T) {
-			shareTags, err := newShareTags(args, filePath)
+			shareTags, err := newShareTags(args, filePathTags(filePath))
 			if err != nil {
 				t.Error(err)
 			}
@@ -74,7 +75,7 @@ func TestShareTagsNegative(t *testing.T) {
 
 	for filePath, unexpectedResult := range testTable {
 		t.Run(filePath, func(t *testing.T) {
-			shareTags, err := newShareTags(args, filePath)
+			shareTags, err := newShareTags(args, filePathTags(filePath))
 			if err != nil {
 				t.Error(err)
 			}
@@ -99,4 +100,12 @@ func sameElements(a, b []string) bool {
 		}
 	}
 	return true
+}
+
+func filePathTags(filePath string) map[string]struct{} {
+	tags := make(map[string]struct{})
+	for _, tag := range strings.Split(filePath, ".") {
+		tags[tag] = struct{}{}
+	}
+	return tags
 }

@@ -35,21 +35,26 @@ func queueEntries(args config.Args) error {
 	}
 
 	for filePath := range ch {
-		ent, err := entry.New(filePath)
+		en, err := entry.New(filePath)
 		if err != nil {
 			return err
 		}
-		if ent.HasTag("ask") {
-			if err := ent.FileAction("Do you want to queue this content"); err != nil {
+		// Extract any inline tags, if any!
+		if err := en.ExtractInlineTags(); err != nil {
+			return err
+		}
+		if en.HasTag("ask") {
+			// TODO: Handle inline tags
+			if err := en.FileAction("Do you want to queue this content"); err != nil {
 				return err
 			}
 		}
-		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir, filepath.Base(ent.Path), timestamp.Now())
+		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir, filepath.Base(en.Path), timestamp.Now())
 		if args.DryRun {
-			log.Println("Not queueing entry", ent.Path, "to", destPath, "as dry-run mode enabled")
+			log.Println("Not queueing entry", en.Path, "to", destPath, "as dry-run mode enabled")
 			continue
 		}
-		if err := oi.Rename(ent.Path, destPath); err != nil {
+		if err := oi.Rename(en.Path, destPath); err != nil {
 			return err
 		}
 	}

@@ -47,10 +47,10 @@ func (s State) String() string {
 var Zero = Entry{}
 
 type Entry struct {
-	Path       string
-	Time       time.Time
-	State      State
-	simpleTags []string
+	Path  string
+	Time  time.Time
+	State State
+	tags  map[string]struct{}
 }
 
 func (en Entry) String() string {
@@ -64,7 +64,7 @@ func (en Entry) String() string {
 // or for inboxed: /foo.txt
 // or inboxed with tags: /foo.prio.ask.txt
 func New(filePath string) (Entry, error) {
-	en := Entry{Path: filePath}
+	en := Entry{Path: filePath, tags: make(map[string]struct{})}
 
 	// We want to get the STAMP!
 	parts := strings.Split(filePath, ".")
@@ -72,12 +72,7 @@ func New(filePath string) (Entry, error) {
 		// Could be 2 if inboxed
 		return en, fmt.Errorf("not a valid entry path: %s", filePath)
 	}
-
-	for _, part := range parts {
-		if slices.Contains(validTags, part) {
-			en.simpleTags = append(en.simpleTags, part)
-		}
-	}
+	en.extractTags(parts)
 
 	switch parts[len(parts)-1] {
 	case "queued":
@@ -93,6 +88,7 @@ func New(filePath string) (Entry, error) {
 		// If not inboxed, must be longer.
 		return en, fmt.Errorf("not a valid entry path: %s", filePath)
 	}
+
 	var err error
 	if en.Time, err = timestamp.Parse(parts[len(parts)-2]); err != nil {
 		return en, err
@@ -110,11 +106,14 @@ func (en *Entry) Content() (string, []string, error) {
 	return content, extractURLs(content), err
 }
 
+// Returns the content and also checks for the size limit and also removes any
+// inline tags.
 func (en Entry) ContentWithLimit(sizeLimit int) (string, []string, error) {
 	content, urls, err := en.Content()
 	if err != nil {
 		return "", urls, err
 	}
+	// TODO: Handle inline tags, use the extractInlineTags method of entry
 	if len(content) > sizeLimit {
 		err := fmt.Errorf("%w (%d > %d): %v", ErrSizeLimitExceeded, len(content), sizeLimit, en)
 		if err2 := prompt.Acknowledge("You need to shorten the content as "+err.Error(), content); err2 != nil {
@@ -150,14 +149,15 @@ func (en *Entry) MarkPosted() error {
 }
 
 func (en Entry) HasTag(tag string) bool {
-	return slices.Contains(en.simpleTags, tag)
+	_, ok := en.tags[tag]
+	return ok
 }
 
 // Valid tags are: share:foo[,...]
 // whereas foo can be a supported plutform such as linkedin, mastodon, etc.
 // foo can also be prefixed with - to exclude it. See unit tests for examples.
 func (en Entry) PlatformExcluded(args config.Args, platform string) (bool, error) {
-	s, err := newShareTags(args, en.Path)
+	s, err := newShareTags(args, en.tags)
 	return slices.Contains(s.excludes, strings.ToLower(platform)) ||
 		!slices.Contains(s.includes, strings.ToLower(platform)), err
 }
@@ -181,8 +181,44 @@ func (en Entry) FileAction(question string) error {
 	return prompt.FileAction(question, content, en.Path)
 }
 
+func (en Entry) extractTags(parts []string) {
+	for _, part := range parts {
+		if slices.Contains(validTags, part) || strings.HasPrefix(part, "share:") {
+			en.tags[part] = struct{}{}
+		}
+	}
+}
+
+func (en Entry) ExtractInlineTags() error {
+	content, _, err := en.Content()
+	if err != nil {
+		return err
+	}
+	if tags, _, ok := extractInlineTags(content); ok {
+		en.extractTags(tags)
+	}
+	return nil
+}
+
 func extractURLs(input string) []string {
 	urlPattern := `(http://|https://|ftp://)[^\s]+`
 	re := regexp.MustCompile(urlPattern)
 	return re.FindAllString(input, -1)
+}
+
+// Returns inline tags, real content. And true when there were inline tags.
+func extractInlineTags(content string) ([]string, string, bool) {
+	parts := strings.Split(content, " ")
+	// If the first word of the content contains a dot or comma and there are
+	// more than 2 elems, then there are inline tags!
+	if strings.Contains(parts[0], ".") || strings.Contains(parts[0], ",") {
+		var tags []string
+		for _, elem := range strings.Split(parts[0], ".") {
+			tags = append(tags, strings.Split(elem, ",")...)
+		}
+		if len(tags) > 1 {
+			return tags, strings.Join(parts[1:], " "), true
+		}
+	}
+	return []string{}, content, false
 }

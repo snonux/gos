@@ -18,28 +18,50 @@ func TestEntry(t *testing.T) {
 		for _, stamp := range stamps {
 			queuedPath := fmt.Sprintf("gosdir/db/platforms/linkedin/helloworld.txt.%s.%s", stamp, state)
 
-			ent, err := New(queuedPath)
+			en, err := New(queuedPath)
 			if err != nil {
 				t.Error(err)
 			}
-			if ent.Path != queuedPath {
-				t.Errorf("expected path %s but got %s", queuedPath, ent.Path)
+			if en.Path != queuedPath {
+				t.Errorf("expected path %s but got %s", queuedPath, en.Path)
 			}
-			if ent.State != state {
-				t.Errorf("expected state %s but got %s", state, ent.State)
+			if en.State != state {
+				t.Errorf("expected state %s but got %s", state, en.State)
 			}
 
 			expectedTime, err := timestamp.Parse(stamp)
 			if err != nil {
 				t.Error(err)
 			}
-			if ent.Time != expectedTime {
-				t.Errorf("expected time to be %v but got %v", expectedTime, ent.Time)
+			if en.Time != expectedTime {
+				t.Errorf("expected time to be %v but got %v", expectedTime, en.Time)
 			}
 		}
 	}
 }
 
+func TestEntryTags(t *testing.T) {
+	tagss := []string{"prio", "share:linkedin:mastodon.now", "share:-mastodon", "ask", "invalid"}
+
+	for _, tagsStr := range tagss {
+		queuedPath := fmt.Sprintf("gosdir/db/platforms/linkedin/helloworld.%s.txt.20241111-111111.20241111-111111", tagsStr)
+		en, err := New(queuedPath)
+		if err != nil {
+			t.Error(err)
+		}
+		for _, expectedTag := range strings.Split(tagsStr, ".") {
+			if expectedTag == "invalid" {
+				if en.HasTag(expectedTag) {
+					t.Errorf("didn't expect tag '%s' to be present, but got '%v'", expectedTag, en.tags)
+				}
+				continue
+			}
+			if !en.HasTag(expectedTag) {
+				t.Errorf("expected tag '%s' to be present, but got '%v'", expectedTag, en.tags)
+			}
+		}
+	}
+}
 func TestExtractTwoURLs(t *testing.T) {
 	text := `Hello world https://foo.zone
 	Hello universe http://world.universe test 123`
@@ -89,18 +111,36 @@ func TestHasTag(t *testing.T) {
 	}
 
 	for fileName, expectedTags := range table {
-		ent, err := New(fileName)
+		en, err := New(fileName)
 		if err != nil {
 			t.Error(err)
 		}
-		if len(expectedTags) != len(ent.simpleTags) {
-			t.Errorf("expected '%d' tags but got '%d'", len(expectedTags), len(ent.simpleTags))
+		if len(expectedTags) != len(en.tags) {
+			t.Errorf("expected '%d' tags but got '%d'", len(expectedTags), len(en.tags))
 		}
 		for _, tag := range expectedTags {
-			if !ent.HasTag(tag) {
-				t.Errorf("expected tag '%s' but got '%s'", tag, ent.simpleTags)
+			if !en.HasTag(tag) {
+				t.Errorf("expected tag '%s' but got '%s'", tag, en.tags)
 			}
 		}
+	}
+}
+
+func TestExtractInlineTags(t *testing.T) {
+	tags, contentWithoutTags, ok := extractInlineTags(`share,foo.bar this is the main content`)
+	if !ok {
+		t.Error("expected inline tags")
+	}
+	if len(tags) != 3 {
+		t.Error("expected 3 inline tags")
+	}
+	for _, expectedTag := range []string{"share", "foo", "bar"} {
+		if !slices.Contains(tags, expectedTag) {
+			t.Errorf("expected '%s' to be an inline tag but got '%v'", expectedTag, tags)
+		}
+	}
+	if contentWithoutTags != "this is the main content" {
+		t.Errorf("expected the main content to be 'this is the main content' but got '%s'", contentWithoutTags)
 	}
 }
 
