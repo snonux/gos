@@ -44,8 +44,7 @@ func queueEntries(args config.Args) error {
 			return err
 		}
 		if en.HasTag("ask") {
-			// TODO: Handle inline tags
-			if err := en.FileAction("Do you want to queue this content"); err != nil {
+			if err := en.FileAction("Do you want to queue this"); err != nil {
 				return err
 			}
 		}

@@ -12,7 +12,6 @@ type shareTags struct {
 	excludes []string // The platforms to exclude
 }
 
-// TODO: Inline tag support, like in quicklogger.
 func newShareTags(args config.Args, tags map[string]struct{}) (shareTags, error) {
 	var s shareTags
 
