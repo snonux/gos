@@ -38,6 +38,9 @@ func NewPreview(ctx context.Context, urls []string) (preview, error) {
 }
 
 func (p preview) String() string {
+	if p.imageURL != "" {
+		return fmt.Sprintf("Title: %s; URL: %s, Image: %s", p.title, p.url, p.imageURL)
+	}
 	return fmt.Sprintf("Title: %s; URL: %s", p.title, p.url)
 }
 
