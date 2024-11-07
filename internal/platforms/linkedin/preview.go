@@ -30,6 +30,10 @@ func NewPreview(ctx context.Context, urls []string) (preview, error) {
 		log.Println("Setting title to", urls[0])
 		title = urls[0]
 	}
+	if errors.Is(err, errNoImageElementFound) {
+		log.Println("URL", urls[0], "without any image, that's fine, though.")
+		err = nil
+	}
 	return preview{title: title, imageURL: imageURL, url: urls[0]}, err
 }
 
