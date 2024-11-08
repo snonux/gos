@@ -19,11 +19,10 @@ func main() {
 	dry := flag.Bool("dry", false, "Dry run")
 	version := flag.Bool("version", false, "Display version")
 	gosDir := flag.String("gosDir", filepath.Join(os.Getenv("HOME"), ".gosdir"), "Gos' queue and DB directory")
+	cacheDir := flag.String("cacheDir", filepath.Join(*gosDir, "cache"), "Go's cache dir")
 	browser := flag.String("browser", "firefox", "OAuth2 browser")
 	secretsConfigPath := filepath.Join(os.Getenv("HOME"), ".config/gos/gosec.json")
 	secretsConfigPath = *flag.String("secretsConfig", secretsConfigPath, "Gos' secret config")
-	cacheDir := filepath.Join(os.Getenv("HOME"), ".config/gos/cache")
-	cacheDir = *flag.String("cacheDir", cacheDir, "Go's cache dir")
 	platforms := flag.String("platforms", "Mastodon:500,LinkedIn:1000", "Platforms enabled plus their post size limits")
 	target := flag.Int("target", 2, "How many posts per week are the target?")
 	minQueued := flag.Int("minQueued", 4, "Minimum of queued items until printing a warn message!")
@@ -47,7 +46,7 @@ func main() {
 		PauseDays:         *pauseDays,
 		Lookback:          time.Duration(*lookback) * time.Hour * 24,
 		SecretsConfigPath: secretsConfigPath,
-		CacheDir:          cacheDir,
+		CacheDir:          *cacheDir,
 		Secrets:           secrets,
 		OAuth2Browser:     *browser,
 	}

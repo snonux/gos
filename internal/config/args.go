@@ -13,6 +13,7 @@ var validPlatforms = []string{"mastodon", "linkedin"}
 
 type Args struct {
 	GosDir            string
+	CacheDir          string
 	DryRun            bool
 	Platforms         map[string]int // Platform name and post size limits
 	Target            int
@@ -20,7 +21,6 @@ type Args struct {
 	MaxDaysQueued     int
 	PauseDays         int
 	Lookback          time.Duration
-	CacheDir          string
 	SecretsConfigPath string
 	Secrets           Secrets
 	OAuth2Browser     string
