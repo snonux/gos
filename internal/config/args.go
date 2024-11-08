@@ -20,6 +20,7 @@ type Args struct {
 	MaxDaysQueued     int
 	PauseDays         int
 	Lookback          time.Duration
+	CacheDir          string
 	SecretsConfigPath string
 	Secrets           Secrets
 	OAuth2Browser     string

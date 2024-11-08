@@ -58,6 +58,14 @@ func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 		return err
 	}
 
+	var filePath string
+	if prev.imageURL != "" {
+		if filePath, err = prev.DownloadImage(args.CacheDir); err != nil {
+			return err
+		}
+		log.Println("Downloaded preview image to ", filePath)
+	}
+
 	question := fmt.Sprintf("Do you want to post this message to Linkedin (%v)?", prev)
 	if err := prompt.FileAction(question, content, en.Path); err != nil {
 		return err

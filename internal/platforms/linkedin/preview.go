@@ -8,7 +8,10 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 
+	"codeberg.org/snonux/gos/internal/oi"
 	"golang.org/x/net/html"
 )
 
@@ -46,6 +49,35 @@ func (p preview) String() string {
 
 func (p preview) Empty() bool {
 	return p.url == ""
+}
+
+func (p preview) DownloadImage(destPath string) (string, error) {
+	if err := oi.EnsureDir(destPath); err != nil {
+		return "", err
+	}
+	resp, err := http.Get(p.imageURL)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("bad status while trying to download image: %s", resp.Status)
+	}
+
+	destFile := fmt.Sprintf("%s/%s", destPath, filepath.Base(p.imageURL))
+	out, err := os.Create(destFile)
+	if err != nil {
+		return destFile, fmt.Errorf("%s: %w", destFile, err)
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return destFile, err
+	}
+
+	return destFile, nil
 }
 
 func findTitle(n *html.Node) (string, error) {
