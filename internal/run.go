@@ -21,13 +21,13 @@ func Run(ctx context.Context, args config.Args) error {
 		if !softError(err) {
 			return err
 		}
-		log.Println(err)
+		colour.Infoln(err)
 	}
 
 	for platform, sizeLimit := range args.Platforms {
 		if err := runPlatform(ctx, args, platform, sizeLimit); err != nil {
 			if softError(err) {
-				log.Println(err)
+				colour.Infoln(err)
 				continue
 			}
 			return err
@@ -41,16 +41,16 @@ func runPlatform(ctx context.Context, args config.Args, platform string, sizeLim
 	en, err := schedule.Run(args, platform)
 	switch {
 	case errors.Is(err, schedule.ErrNothingToSchedule):
-		log.Println("Nothing to be scheduled for", platform)
+		colour.Infoln("Nothing to be scheduled for", platform)
 		return nil
 	case errors.Is(err, schedule.ErrNothingQueued):
-		log.Println("Nothing queued for", platform)
+		colour.Infoln("Nothing queued for", platform)
 		return nil
 	case err != nil:
 		return err
 	}
 
-	log.Println("Posting", en)
+	colour.Infoln("Posting", en)
 	var postCB func(context.Context, config.Args, int, entry.Entry) error
 	switch strings.ToLower(platform) {
 	case "mastodon":

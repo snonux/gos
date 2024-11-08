@@ -7,10 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 
+	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/platforms/linkedin/oauth2"
@@ -27,7 +27,7 @@ const (
 func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) error {
 	err := post(ctx, args, sizeLimit, en)
 	if errors.Is(err, errUnauthorized) {
-		log.Println(err, "=> trying to refresh LinkedIn access token")
+		colour.Infoln(err, "=> trying to refresh LinkedIn access token")
 		args.Secrets.LinkedInAccessToken = "" // Reset the token
 		return post(ctx, args, sizeLimit, en)
 	}
@@ -36,7 +36,7 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 
 func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) error {
 	if args.DryRun {
-		log.Println("Not posting", en, "to LinkedIn as dry-run enabled")
+		colour.Infoln("Not posting", en, "to LinkedIn as dry-run enabled")
 		return nil
 	}
 
@@ -63,7 +63,7 @@ func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 		if filePath, err = prev.DownloadImage(args.CacheDir); err != nil {
 			return err
 		}
-		log.Println("Downloaded preview image to ", filePath)
+		colour.Infoln("Downloaded preview image to ", filePath)
 	}
 
 	question := fmt.Sprintf("Do you want to post this message to Linkedin (%v)?", prev)

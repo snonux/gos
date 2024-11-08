@@ -2,11 +2,12 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"slices"
 	"strconv"
 	"strings"
 	"time"
+
+	"codeberg.org/snonux/gos/internal/colour"
 )
 
 var validPlatforms = []string{"mastodon", "linkedin"}
@@ -38,7 +39,7 @@ func (a *Args) ParsePlatforms(platforms string) error {
 				return err
 			}
 		} else {
-			log.Println("No message length specified for", platform, "so assuming 500")
+			colour.Infoln("No message length specified for", platform, "so assuming 500")
 			a.Platforms[parts[0]] = 500
 		}
 	}

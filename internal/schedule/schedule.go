@@ -3,12 +3,12 @@ package schedule
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 
+	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/oi"
@@ -76,7 +76,7 @@ func selectRandomEntry(dir, tag string) (entry.Entry, error) {
 		}
 		en, err := entry.New(filepath.Join(dir, file.Name()))
 		if err != nil {
-			log.Println(err)
+			colour.Infoln(err)
 			return entry.Zero, false
 		}
 		return en, en.State == entry.Queued

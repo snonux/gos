@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
+
+	"codeberg.org/snonux/gos/internal/colour"
 )
 
 // The config file containing all the secrets and credentials.
@@ -42,7 +43,7 @@ func NewSecrets(configPath string) (Secrets, error) {
 }
 
 func (s Secrets) WriteToDisk(configPath string) error {
-	log.Println("Writing", configPath)
+	colour.Infoln("Writing", configPath)
 
 	bytes, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {

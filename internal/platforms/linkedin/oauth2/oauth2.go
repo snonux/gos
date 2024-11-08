@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os/exec"
 	"runtime"
 	"time"
 
+	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/config"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/linkedin"
@@ -72,7 +72,7 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	defer close(errCh)
 	code := r.URL.Query().Get("code")
 
-	log.Println("Exchanging OAuth2 token")
+	colour.Infoln("Exchanging OAuth2 token")
 	token, err := oauthConfig.Exchange(globalCtx, code)
 	if err != nil {
 		_, _ = w.Write([]byte(err.Error()))
@@ -110,7 +110,7 @@ func LinkedInCreds(ctx context.Context, args config.Args) (string, string, error
 	http.HandleFunc("/callback", oauthCallbackHandler)
 	http.HandleFunc("/up", upHandler)
 
-	log.Println("Listening on http://localhost:8080 for LinkedIn OAuth2")
+	colour.Infoln("Listening on http://localhost:8080 for LinkedIn OAuth2")
 	go func() {
 		if err := http.ListenAndServe(":8080", nil); err != nil {
 			errCh <- err
@@ -139,7 +139,7 @@ func LinkedInCreds(ctx context.Context, args config.Args) (string, string, error
 }
 
 func openURLInFirefox(browser, url string) error {
-	log.Println("Opening", url, "in", browser)
+	colour.Infoln("Opening", url, "in", browser)
 	switch runtime.GOOS {
 	case "windows":
 		cmd := exec.Command("cmd", "/C", "start", browser, url)
@@ -162,9 +162,11 @@ func WaitUntilURLIsReachable(url string) error {
 		resp, err := http.Get(url)
 
 		if err != nil {
-			log.Printf("URL is not reachable: %v\n", err)
+			colour.Infof("URL is not reachable: %v", err)
+			fmt.Print("\n")
 		} else {
-			log.Printf("URL is reachable: %s - Status Code: %d\n", url, resp.StatusCode)
+			colour.Infof("URL is reachable: %s - Status Code: %d", url, resp.StatusCode)
+			fmt.Print("\n")
 			resp.Body.Close()
 			return nil
 		}

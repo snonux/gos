@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 
+	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/oi"
 	"golang.org/x/net/html"
 )
@@ -30,11 +30,11 @@ func NewPreview(ctx context.Context, urls []string) (preview, error) {
 	}
 	title, imageURL, err := extractFromURL(ctx, urls[0])
 	if errors.Is(err, errNoTitleElementFound) || title == "" {
-		log.Println("Setting title to", urls[0])
+		colour.Infoln("Setting title to", urls[0])
 		title = urls[0]
 	}
 	if errors.Is(err, errNoImageElementFound) {
-		log.Println("URL", urls[0], "without any image, that's fine, though.")
+		colour.Infoln("URL", urls[0], "without any image, that's fine, though.")
 		err = nil
 	}
 	return preview{title: title, imageURL: imageURL, url: urls[0]}, err

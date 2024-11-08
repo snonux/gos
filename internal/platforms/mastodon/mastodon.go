@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 
+	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/prompt"
@@ -28,7 +28,7 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 		return fmt.Errorf("failed to marshal payload: %w", err)
 	}
 	if args.DryRun {
-		log.Println("Not posting", en, "to Mastodon as dry-run enabled")
+		colour.Infoln("Not posting", en, "to Mastodon as dry-run enabled")
 		return nil
 	}
 	if err := prompt.FileAction("Do you want to post this message to Mastodon?", content, en.Path); err != nil {

@@ -2,12 +2,12 @@ package queue
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/oi"
@@ -50,7 +50,7 @@ func queueEntries(args config.Args) error {
 		}
 		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir, filepath.Base(en.Path), timestamp.Now())
 		if args.DryRun {
-			log.Println("Not queueing entry", en.Path, "to", destPath, "as dry-run mode enabled")
+			colour.Infoln("Not queueing entry", en.Path, "to", destPath, "as dry-run mode enabled")
 			continue
 		}
 		if err := oi.Rename(en.Path, destPath); err != nil {
@@ -82,7 +82,7 @@ func queuePlatforms(args config.Args) error {
 				return err
 			}
 			if excluded {
-				log.Println("Not queueing entry", en, "to platform", platform, "as it is excluded")
+				colour.Infoln("Not queueing entry", en, "to platform", platform, "as it is excluded")
 				continue
 			}
 			if err := queuePlatform(en, args.GosDir, platform); err != nil {
@@ -95,7 +95,8 @@ func queuePlatforms(args config.Args) error {
 
 		// Keep queued items in trash for a while.
 		trashPath := filepath.Join(trashDir, strings.TrimSuffix(filepath.Base(en.Path), ".queued")+".trash")
-		log.Printf("Trashing %s -> %s", en.Path, trashPath)
+		colour.Infof("Trashing %s -> %s", en.Path, trashPath)
+		fmt.Print("\n")
 		if err := oi.EnsureParentDir(trashPath); err != nil {
 			return err
 		}
@@ -116,11 +117,11 @@ func queuePlatform(en entry.Entry, gosDir, platform string) error {
 
 	// Entry already posted platform?
 	if oi.IsRegular(postedFile) {
-		log.Println("Not re-queueing", destPath, "as", postedFile, "already exists")
+		colour.Infoln("Not re-queueing", destPath, "as", postedFile, "already exists")
 		return nil
 	}
 
-	log.Println("Queuing", en.Path, "->", destPath)
+	colour.Infoln("Queuing", en.Path, "->", destPath)
 	return oi.CopyFile(en.Path, destPath)
 }
 
@@ -135,7 +136,7 @@ func deleteFiles(path, suffix string, olderThan time.Time) error {
 			return err
 		}
 		if fileInfo.ModTime().Before(olderThan) {
-			log.Println("Cleaning up", filePath)
+			colour.Infoln("Cleaning up", filePath)
 			err := os.Remove(filePath)
 			if err != nil {
 				return err

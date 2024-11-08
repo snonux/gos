@@ -2,7 +2,6 @@ package schedule
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -81,11 +80,11 @@ func (s stats) targetHit(pauseDays, maxQueuedDays int) bool {
 		pauseDays--
 	}
 	if s.postsPerDay >= s.postsPerDayTarget {
-		log.Println("Posts per day target hit")
+		colour.Infoln("Posts per day target hit")
 		return true
 	}
 	if s.lastPostDaysAgo <= float64(pauseDays) {
-		log.Println("Need to wait a bit longer as last post isn't", pauseDays, "days ago yet")
+		colour.Infoln("Need to wait a bit longer as last post isn't", pauseDays, "days ago yet")
 		return true
 
 	}
