@@ -3,15 +3,12 @@ package colour
 import "github.com/fatih/color"
 
 var (
-	// Printf function(s)
-	info     = color.New(color.FgHiBlack, color.BgBlack)
-	Infof    = info.PrintfFunc()
-	Infoln   = info.PrintlnFunc()
-	Info1f   = color.New(color.FgCyan, color.BgBlue, color.Bold).PrintfFunc()
-	Info2f   = color.New(color.FgHiYellow, color.BgHiBlack, color.Bold).PrintfFunc()
+	infoCol  = color.New(color.FgCyan, color.BgBlue, color.Bold)
+	Infof    = infoCol.PrintfFunc()
+	Infoln   = infoCol.PrintlnFunc()
+	info2Col = color.New(color.FgHiYellow, color.BgBlue)
+	Info2f   = info2Col.PrintfFunc()
+	SInfo2f  = info2Col.SprintfFunc()
 	Ackf     = color.New(color.FgBlack, color.BgHiYellow, color.Bold).PrintfFunc()
 	Successf = color.New(color.FgWhite, color.BgGreen).PrintfFunc()
-
-	// Sprintf function(s)
-	Sstatsf = color.New(color.FgHiYellow, color.BgBlue).SprintfFunc()
 )

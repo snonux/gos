@@ -20,7 +20,7 @@ var (
 func FileAction(question, content, filePath string) error {
 	colour.Info2f(filePath + ":")
 	fmt.Print("\n")
-	colour.Info1f(content)
+	colour.Info2f(content)
 	fmt.Print("\n")
 	reader := bufio.NewReader(os.Stdin)
 
