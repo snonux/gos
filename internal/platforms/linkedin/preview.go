@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 
 	"codeberg.org/snonux/gos/internal/colour"
+	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/oi"
 	"golang.org/x/net/html"
 )
@@ -21,41 +22,61 @@ var (
 )
 
 type preview struct {
-	title, imageURL, url string
+	title, thumbnailURL, thumbnailDownloadPath, url string
 }
 
-func NewPreview(ctx context.Context, urls []string) (preview, error) {
+func NewPreview(ctx context.Context, args config.Args, urls []string) (preview, error) {
+	var (
+		p   preview
+		err error
+	)
 	if len(urls) == 0 {
-		return preview{}, nil
+		return p, nil
 	}
-	title, imageURL, err := extractFromURL(ctx, urls[0])
-	if errors.Is(err, errNoTitleElementFound) || title == "" {
-		colour.Infoln("Setting title to", urls[0])
-		title = urls[0]
+	p.url = urls[0]
+
+	if p.title, p.thumbnailURL, err = extractFromURL(ctx, urls[0]); err != nil {
+		if errors.Is(err, errNoTitleElementFound) || p.title == "" {
+			colour.Infoln("Setting title to", urls[0])
+			p.title = urls[0]
+		}
+		if errors.Is(err, errNoImageElementFound) {
+			colour.Infoln("URL", urls[0], "without any image, that's fine, though.")
+		}
+		if !errors.Is(err, errNoTitleElementFound) && !errors.Is(err, errNoImageElementFound) {
+			return p, err
+		}
 	}
-	if errors.Is(err, errNoImageElementFound) {
-		colour.Infoln("URL", urls[0], "without any image, that's fine, though.")
-		err = nil
+
+	if p.thumbnailURL != "" {
+		if p.thumbnailDownloadPath, err = p.DownloadImage(args.CacheDir); err != nil {
+			return p, err
+		}
+		colour.Infoln("Downloaded preview image to ", p.thumbnailDownloadPath)
 	}
-	return preview{title: title, imageURL: imageURL, url: urls[0]}, err
+	return p, nil
 }
 
 func (p preview) String() string {
-	if p.imageURL != "" {
-		return fmt.Sprintf("Title: %s; URL: %s, Image: %s", p.title, p.url, p.imageURL)
+	if p.thumbnailURL != "" {
+		return fmt.Sprintf("Title: %s; URL: %s, Image: %s", p.title, p.url, p.thumbnailURL)
 	}
 	return fmt.Sprintf("Title: %s; URL: %s", p.title, p.url)
 }
 
-func (p preview) Empty() bool {
-	return p.url == ""
+func (p preview) TitleAndURL() (string, string, bool) {
+	return p.title, p.url, p.url != ""
+}
+
+func (p preview) Thumbnail() (string, bool) {
+	return p.thumbnailDownloadPath, p.thumbnailDownloadPath != ""
 }
 
 func (p preview) DownloadImage(destPath string) (string, error) {
 	if err := oi.EnsureDir(destPath); err != nil {
 		return "", err
 	}
-	resp, err := http.Get(p.imageURL)
+	resp, err := http.Get(p.thumbnailURL)
 	if err != nil {
 		return "", err
 	}
@@ -65,7 +86,7 @@ func (p preview) DownloadImage(destPath string) (string, error) {
 		return "", fmt.Errorf("bad status while trying to download image: %s", resp.Status)
 	}
 
-	destFile := fmt.Sprintf("%s/%s", destPath, filepath.Base(p.imageURL))
+	destFile := fmt.Sprintf("%s/%s", destPath, filepath.Base(p.thumbnailURL))
 	out, err := os.Create(destFile)
 	if err != nil {
 		return destFile, fmt.Errorf("%s: %w", destFile, err)

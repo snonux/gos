@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"codeberg.org/snonux/gos/internal/colour"
@@ -19,10 +20,7 @@ import (
 
 var errUnauthorized = errors.New("unauthorized access, refresh or create token?")
 
-const (
-	linkedInPostsURL = "https://api.linkedin.com/rest/posts"
-	linkedInTimeout  = 10 * time.Second
-)
+const linkedInTimeout = 10 * time.Second
 
 func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) error {
 	err := post(ctx, args, sizeLimit, en)
@@ -53,17 +51,10 @@ func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 
 	newCtx, cancel = context.WithTimeout(ctx, linkedInTimeout)
 	defer cancel()
-	prev, err := NewPreview(newCtx, urls)
+
+	prev, err := NewPreview(newCtx, args, urls)
 	if err != nil {
 		return err
-	}
-
-	var filePath string
-	if prev.imageURL != "" {
-		if filePath, err = prev.DownloadImage(args.CacheDir); err != nil {
-			return err
-		}
-		colour.Infoln("Downloaded preview image to ", filePath)
 	}
 
 	question := fmt.Sprintf("Do you want to post this message to Linkedin (%v)?", prev)
@@ -73,13 +64,16 @@ func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 
 	newCtx, cancel = context.WithTimeout(ctx, linkedInTimeout)
 	defer cancel()
-	return callLinkedInAPI(newCtx, personID, accessToken, content, prev)
+	return postMessageToLinkedInAPI(newCtx, personID, accessToken, content, prev)
 }
 
-// TODO: Also post preview images
-func callLinkedInAPI(ctx context.Context, personID, accessToken, content string, prev preview) error {
+// https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api
+func postMessageToLinkedInAPI(ctx context.Context, personID, accessToken, content string, prev preview) error {
+	const linkedInPostsURL = "https://api.linkedin.com/rest/posts"
+
+	personURN := fmt.Sprintf("urn:li:person:%s", personID)
 	post := map[string]interface{}{
-		"author":     fmt.Sprintf("urn:li:person:%s", personID),
+		"author":     personURN,
 		"commentary": escapeLinkedInText(content),
 		"visibility": "PUBLIC",
 		"distribution": map[string]interface{}{
@@ -91,11 +85,20 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, content string,
 		"isReshareDisabledByAuthor": false,
 	}
 
-	if !prev.Empty() {
+	var thumbnailURN string
+	if thumbnailPath, ok := prev.Thumbnail(); ok {
+		imageURN, err := postImageToLinkedInAPI(ctx, personURN, accessToken, thumbnailPath)
+		if err != nil {
+			return err
+		}
+		thumbnailURN = imageURN
+	}
+	if title, url, ok := prev.TitleAndURL(); ok {
 		post["content"] = map[string]interface{}{
 			"article": map[string]interface{}{
-				"title":  prev.title,
-				"source": prev.url,
+				"title":     title,
+				"source":    url,
+				"thumbnail": thumbnailURN,
 			},
 		}
 	}
@@ -134,4 +137,96 @@ func callLinkedInAPI(ctx context.Context, personID, accessToken, content string,
 		}
 	}
 	return err
+}
+
+// https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/images-api
+func postImageToLinkedInAPI(ctx context.Context, personURN, accessToken, imagePath string) (string, error) {
+	uploadURL, imageURN, err := initializeImageUpload(ctx, personURN, accessToken)
+	if err != nil {
+		return imageURN, err
+	}
+	return imageURN, uploadImage(ctx, imagePath, uploadURL, accessToken)
+}
+
+func initializeImageUpload(ctx context.Context, personURN, accessToken string) (string, string, error) {
+	const linkedInAPIURL = "https://api.linkedin.com/rest/images?action=initializeUpload"
+
+	type InitializeUploadRequest struct {
+		Owner string `json:"owner"`
+	}
+	requestBody, err := json.Marshal(map[string]interface{}{
+		"initializeUploadRequest": InitializeUploadRequest{Owner: personURN},
+	})
+
+	if err != nil {
+		return "", "", fmt.Errorf("error creating request body: %w", err)
+	}
+
+	// Initialize image upload
+	req, err := http.NewRequestWithContext(ctx, "POST", linkedInAPIURL, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return "", "", fmt.Errorf("error creating request: %w", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("LinkedIn-Version", "202409")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", "", fmt.Errorf("error sending request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	type InitializeUploadResponse struct {
+		Value struct {
+			UploadURL string `json:"uploadUrl"`
+			Image     string `json:"image"`
+		} `json:"value"`
+	}
+	var response InitializeUploadResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return "", "", fmt.Errorf("error decoding response: %w", err)
+	}
+
+	return response.Value.UploadURL, response.Value.Image, nil
+}
+
+func uploadImage(ctx context.Context, imagePath, uploadURL, accessToken string) error {
+	file, err := os.Open(imagePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	imageData, err := io.ReadAll(file)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "PUT", uploadURL, bytes.NewBuffer(imageData))
+	if err != nil {
+		return fmt.Errorf("error creating upload request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	req.Header.Set("Content-Type", "application/octet-stream")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error sending upload request: %w", err)
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	colour.Infoln(string(body))
+
+	if resp.StatusCode != http.StatusCreated {
+		return fmt.Errorf("upload failed with status %s: %s", resp.Status, string(body))
+	}
+
+	return nil
 }
