@@ -85,22 +85,19 @@ func postMessageToLinkedInAPI(ctx context.Context, personID, accessToken, conten
 		"isReshareDisabledByAuthor": false,
 	}
 
-	var thumbnailURN string
+	article := map[string]interface{}{}
+
 	if thumbnailPath, ok := prev.Thumbnail(); ok {
-		imageURN, err := postImageToLinkedInAPI(ctx, personURN, accessToken, thumbnailPath)
+		thumbnailURN, err := postImageToLinkedInAPI(ctx, personURN, accessToken, thumbnailPath)
 		if err != nil {
 			return err
 		}
-		thumbnailURN = imageURN
+		article["thumbnail"] = thumbnailURN
 	}
 	if title, url, ok := prev.TitleAndURL(); ok {
-		post["content"] = map[string]interface{}{
-			"article": map[string]interface{}{
-				"title":     title,
-				"source":    url,
-				"thumbnail": thumbnailURN,
-			},
-		}
+		article["title"] = title
+		article["source"] = url
+		post["content"] = map[string]interface{}{"article": article}
 	}
 
 	payload, err := json.Marshal(post)
@@ -145,7 +142,7 @@ func postImageToLinkedInAPI(ctx context.Context, personURN, accessToken, imagePa
 	if err != nil {
 		return imageURN, err
 	}
-	return imageURN, uploadImage(ctx, imagePath, uploadURL, accessToken)
+	return imageURN, performImageUpload(ctx, imagePath, uploadURL, accessToken)
 }
 
 func initializeImageUpload(ctx context.Context, personURN, accessToken string) (string, string, error) {
@@ -193,7 +190,7 @@ func initializeImageUpload(ctx context.Context, personURN, accessToken string) (
 	return response.Value.UploadURL, response.Value.Image, nil
 }
 
-func uploadImage(ctx context.Context, imagePath, uploadURL, accessToken string) error {
+func performImageUpload(ctx context.Context, imagePath, uploadURL, accessToken string) error {
 	file, err := os.Open(imagePath)
 	if err != nil {
 		return err
@@ -222,11 +219,10 @@ func uploadImage(ctx context.Context, imagePath, uploadURL, accessToken string) 
 	if err != nil {
 		return err
 	}
-	colour.Infoln(string(body))
+	fmt.Println(string(body))
 
 	if resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("upload failed with status %s: %s", resp.Status, string(body))
 	}
-
 	return nil
 }
