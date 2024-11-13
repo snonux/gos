@@ -17,7 +17,8 @@ var (
 	ErrDeleted = errors.New("deleted")
 )
 
-func FileAction(question, content, filePath string) error {
+// TODO: Add option to randomly select another entry when no selected?
+func FileAction(question, content, filePath string) (string, error) {
 	colour.Info2f(filePath + ":")
 	fmt.Print("\n")
 	colour.Info2f(content)
@@ -34,22 +35,22 @@ func FileAction(question, content, filePath string) error {
 
 		switch strings.ToLower(strings.TrimSpace(input)) {
 		case "y", "yes":
-			return nil
+			return content, nil
 		case "n", "no":
-			return fmt.Errorf("%w %s", ErrAborted, filePath)
+			return content, fmt.Errorf("%w %s", ErrAborted, filePath)
 		case "e", "edit":
 			if err := EditFile(filePath); err != nil {
-				return err
+				return content, err
 			}
 			if content, err = oi.SlurpAndTrim(filePath); err != nil {
-				return err
+				return content, err
 			}
 			return FileAction(question, content, filePath)
 		case "d", "delete":
 			if err := os.Remove(filePath); err != nil {
-				return err
+				return content, err
 			}
-			return fmt.Errorf("%w %s", ErrDeleted, filePath)
+			return content, fmt.Errorf("%w %s", ErrDeleted, filePath)
 		default:
 			fmt.Println("Please enter 'y' or 'n' or 'e' or 'd'.")
 		}
