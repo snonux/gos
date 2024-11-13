@@ -178,7 +178,8 @@ func (en Entry) FileAction(question string) error {
 	if err != nil {
 		return err
 	}
-	return prompt.FileAction(question, content, en.Path)
+	_, err = prompt.FileAction(question, content, en.Path)
+	return err
 }
 
 func (en Entry) extractTags(parts []string) {

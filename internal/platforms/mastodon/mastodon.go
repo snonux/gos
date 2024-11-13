@@ -31,7 +31,7 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 		colour.Infoln("Not posting", en, "to Mastodon as dry-run enabled")
 		return nil
 	}
-	if content, err = prompt.FileAction("Do you want to post this message to Mastodon?", content, en.Path); err != nil {
+	if _, err = prompt.FileAction("Do you want to post this message to Mastodon?", content, en.Path); err != nil {
 		return err
 	}
 
