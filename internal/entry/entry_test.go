@@ -127,21 +127,40 @@ func TestHasTag(t *testing.T) {
 }
 
 func TestExtractInlineTags(t *testing.T) {
-	tags, contentWithoutTags, ok := extractInlineTags(`share,foo.bar this is the main content`)
-	if !ok {
-		t.Error("expected inline tags")
+	table := map[string][]string{
+		"foo,bar,baz blablablabla...":              {"foo", "bar", "baz"},
+		"foo.bar.baz blablablabla...":              {"foo", "bar", "baz"},
+		"foo.bar,baz blablablabla...":              {"foo", "bar", "baz"},
+		"foo,bar.baz    blablablabla...":           {"foo", "bar", "baz"},
+		"share:li,foo this    is the main content": {"share:li", "foo"},
 	}
-	if len(tags) != 3 {
-		t.Error("expected 3 inline tags")
+
+	for input, expectedTags := range table {
+		t.Run(input, func(t *testing.T) {
+			tags, contentWithoutTags, ok := extractInlineTags(input)
+			if !ok {
+				t.Error("expected inline tags but none were found")
+			}
+			if len(tags) != len(expectedTags) {
+				t.Errorf("expected %d inline tags (%v) but got %d (%v)",
+					len(expectedTags), expectedTags, len(tags), tags)
+			}
+			for _, expectedTag := range expectedTags {
+				if !slices.Contains(tags, expectedTag) {
+					t.Errorf("expected '%s' to be an inline tag but got '%v'",
+						expectedTag, tags)
+				}
+			}
+			parts := strings.Split(input, " ")
+			expectedMainContent := strings.Join(parts[1:], " ")
+			if contentWithoutTags != expectedMainContent {
+				t.Errorf("expected the main content to be '%s' but got '%s'",
+					expectedMainContent, contentWithoutTags)
+			}
+
+		})
 	}
-	for _, expectedTag := range []string{"share", "foo", "bar"} {
-		if !slices.Contains(tags, expectedTag) {
-			t.Errorf("expected '%s' to be an inline tag but got '%v'", expectedTag, tags)
-		}
-	}
-	if contentWithoutTags != "this is the main content" {
-		t.Errorf("expected the main content to be 'this is the main content' but got '%s'", contentWithoutTags)
-	}
+
 }
 
 func FuzzExtractURLs(f *testing.F) {
