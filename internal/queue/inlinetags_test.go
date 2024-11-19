@@ -32,11 +32,12 @@ func TestExtractInlineTagsToFilePath(t *testing.T) {
 
 func TestExtractInlineTagsFromContent(t *testing.T) {
 	table := map[string][]string{
-		"foo,bar,baz blablablabla...":              {"foo", "bar", "baz"},
-		"foo.bar.baz blablablabla...":              {"foo", "bar", "baz"},
-		"foo.bar,baz blablablabla...":              {"foo", "bar", "baz"},
-		"foo,bar.baz    blablablabla...":           {"foo", "bar", "baz"},
-		"share:li,foo this    is the main content": {"share:li", "foo"},
+		"foo,bar,baz blablablabla...":                {"foo", "bar", "baz"},
+		"foo.bar.baz blablablabla...":                {"foo", "bar", "baz"},
+		"foo.bar,baz blablablabla...":                {"foo", "bar", "baz"},
+		"foo,bar.baz    blablablabla...":             {"foo", "bar", "baz"},
+		"share:li,foo this    is the main content":   {"share:li", "foo"},
+		"shar()e:li,foo this    is the main content": {},
 	}
 
 	for input, expectedTags := range table {
@@ -55,13 +56,17 @@ func TestExtractInlineTagsFromContent(t *testing.T) {
 						expectedTag, tags)
 				}
 			}
+
+			expectedMainContent := input
 			parts := strings.Split(input, " ")
-			expectedMainContent := strings.Join(parts[1:], " ")
+			if inlineTagRE.MatchString(parts[0]) {
+				expectedMainContent = strings.Join(parts[1:], " ")
+			}
+
 			if contentWithoutTags != expectedMainContent {
 				t.Errorf("expected the main content to be '%s' but got '%s'",
 					expectedMainContent, contentWithoutTags)
 			}
-
 		})
 	}
 }

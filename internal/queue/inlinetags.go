@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/oi"
 )
 
-// TODO: Don't treat it as inline tags when there are other characters tan [a-z,.]
+var inlineTagRE = regexp.MustCompile(`^[a-z\.,:]*$`)
+
 // Extracts the inline tags into the filepath and removes them from the content.
 func extractInlineTags(filePath string) (string, error) {
 	content, err := oi.SlurpAndTrim(filePath)
@@ -54,9 +56,7 @@ func extractInlineTagsToFilePath(filePath, content string) (string, string, erro
 
 func extractInlineTagsFromContent(content string) ([]string, string, error) {
 	parts := strings.Split(content, " ")
-	// If the first word of the content contains a dot or comma and there are
-	// more than 2 elems, then there are inline tags!
-	if strings.Contains(parts[0], ".") || strings.Contains(parts[0], ",") {
+	if inlineTagRE.MatchString(parts[0]) {
 		var tags []string
 		for _, elem := range strings.Split(parts[0], ".") {
 			tags = append(tags, strings.Split(elem, ",")...)
