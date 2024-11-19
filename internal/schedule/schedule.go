@@ -12,6 +12,7 @@ import (
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/oi"
+	"codeberg.org/snonux/gos/internal/platforms"
 	"codeberg.org/snonux/gos/internal/prompt"
 )
 
@@ -20,8 +21,8 @@ var (
 	ErrNothingQueued     = errors.New("nothing queued")
 )
 
-func Run(args config.Args, platform string) (entry.Entry, error) {
-	dir := fmt.Sprintf("%s/db/platforms/%s", args.GosDir, strings.ToLower(platform))
+func Run(args config.Args, platform platforms.Platform) (entry.Entry, error) {
+	dir := fmt.Sprintf("%s/db/platforms/%s", args.GosDir, platform.String())
 	stats, err := newStats(dir, args.Lookback, args.Target)
 	if err != nil {
 		return entry.Zero, err

@@ -11,6 +11,7 @@ import (
 	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/oi"
+	"codeberg.org/snonux/gos/internal/platforms"
 	"codeberg.org/snonux/gos/internal/timestamp"
 )
 
@@ -44,7 +45,7 @@ func (s stats) String() string {
 	)
 }
 
-func (s stats) Render(platform string) {
+func (s stats) Render(platform platforms.Platform) {
 	var sb strings.Builder
 
 	sep := colour.SInfo2f("+%s+%s+", strings.Repeat("-", 22), strings.Repeat("-", 13))

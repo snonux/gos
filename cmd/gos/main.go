@@ -39,7 +39,6 @@ func main() {
 	args := config.Args{
 		DryRun:            *dry,
 		GosDir:            *gosDir,
-		Platforms:         make(map[string]int),
 		Target:            *target,
 		MinQueued:         *minQueued,
 		MaxDaysQueued:     *maxDaysQueued,

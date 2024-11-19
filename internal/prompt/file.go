@@ -17,11 +17,6 @@ var (
 	ErrDeleted = errors.New("deleted")
 )
 
-// type entry interface {
-// 	Path() string
-// 	ContentWithLimit(int) (string, error)
-// }
-
 // TODO: Add option to randomly select another entry when no selected?
 func FileAction(question, content, filePath string) (string, error) {
 	colour.Info2f(filePath + ":")

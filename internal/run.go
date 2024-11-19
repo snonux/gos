@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"log"
-	"strings"
 
 	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
+	"codeberg.org/snonux/gos/internal/platforms"
 	"codeberg.org/snonux/gos/internal/platforms/linkedin"
 	"codeberg.org/snonux/gos/internal/platforms/mastodon"
 	"codeberg.org/snonux/gos/internal/prompt"
@@ -37,7 +37,7 @@ func Run(ctx context.Context, args config.Args) error {
 	return nil
 }
 
-func runPlatform(ctx context.Context, args config.Args, platform string, sizeLimit int) error {
+func runPlatform(ctx context.Context, args config.Args, platform platforms.Platform, sizeLimit int) error {
 	en, err := schedule.Run(args, platform)
 	switch {
 	case errors.Is(err, schedule.ErrNothingToSchedule):
@@ -52,7 +52,7 @@ func runPlatform(ctx context.Context, args config.Args, platform string, sizeLim
 
 	colour.Infoln("Posting", en)
 	var postCB func(context.Context, config.Args, int, entry.Entry) error
-	switch strings.ToLower(platform) {
+	switch platform.String() {
 	case "mastodon":
 		postCB = mastodon.Post
 	case "linkedin":

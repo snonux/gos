@@ -6,10 +6,14 @@ import (
 	"testing"
 
 	"codeberg.org/snonux/gos/internal/config"
+	"codeberg.org/snonux/gos/internal/platforms"
 )
 
 func TestShareTagsPositive(t *testing.T) {
-	args := config.Args{Platforms: map[string]int{"mastodon": 100, "linkedin": 100}}
+	args := config.Args{Platforms: map[platforms.Platform]int{
+		platforms.Platform("mastodon"): 100,
+		platforms.Platform("linkedin"): 100,
+	}}
 	testTable := map[string]shareTags{
 		"./foo/bar.without.tags.txt.20240101-010101.queued": {
 			includes: []string{"mastodon", "linkedin"},
@@ -53,7 +57,10 @@ func TestShareTagsPositive(t *testing.T) {
 	}
 }
 func TestShareTagsNegative(t *testing.T) {
-	args := config.Args{Platforms: map[string]int{"mastodon": 100, "linkedin": 100}}
+	args := config.Args{Platforms: map[platforms.Platform]int{
+		platforms.Platform("mastodon"): 100,
+		platforms.Platform("linkedin"): 100,
+	}}
 	testTable := map[string]shareTags{
 		"./foo/bar.without.tags.txt.20240101-010101.queued": {
 			includes: []string{"linkedin"},

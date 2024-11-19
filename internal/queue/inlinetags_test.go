@@ -41,7 +41,10 @@ func TestExtractInlineTagsFromContent(t *testing.T) {
 
 	for input, expectedTags := range table {
 		t.Run(input, func(t *testing.T) {
-			tags, contentWithoutTags := extractInlineTagsFromContent(input)
+			tags, contentWithoutTags, err := extractInlineTagsFromContent(input)
+			if err != nil {
+				t.Error(err)
+			}
 			if len(tags) != len(expectedTags) {
 				t.Errorf("expected %d inline tags (%v) but got %d (%v)",
 					len(expectedTags), expectedTags, len(tags), tags)

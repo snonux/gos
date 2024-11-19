@@ -10,6 +10,7 @@ import (
 	"codeberg.org/snonux/gos/internal/oi"
 )
 
+// TODO: Don't treat it as inline tags when there are other characters tan [a-z,.]
 // Extracts the inline tags into the filepath and removes them from the content.
 func extractInlineTags(filePath string) (string, error) {
 	content, err := oi.SlurpAndTrim(filePath)
@@ -34,7 +35,10 @@ func extractInlineTags(filePath string) (string, error) {
 }
 
 func extractInlineTagsToFilePath(filePath, content string) (string, string, error) {
-	tags, newContent := extractInlineTagsFromContent(content)
+	tags, newContent, err := extractInlineTagsFromContent(content)
+	if err != nil {
+		return filePath, content, err
+	}
 	if len(tags) == 0 {
 		return filePath, content, nil
 	}
@@ -48,7 +52,7 @@ func extractInlineTagsToFilePath(filePath, content string) (string, string, erro
 	return newFilePath, newContent, nil
 }
 
-func extractInlineTagsFromContent(content string) ([]string, string) {
+func extractInlineTagsFromContent(content string) ([]string, string, error) {
 	parts := strings.Split(content, " ")
 	// If the first word of the content contains a dot or comma and there are
 	// more than 2 elems, then there are inline tags!
@@ -58,8 +62,8 @@ func extractInlineTagsFromContent(content string) ([]string, string) {
 			tags = append(tags, strings.Split(elem, ",")...)
 		}
 		if len(tags) > 1 {
-			return tags, strings.Join(parts[1:], " ")
+			return tags, strings.Join(parts[1:], " "), nil
 		}
 	}
-	return []string{}, content
+	return []string{}, content, nil
 }

@@ -11,6 +11,7 @@ import (
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/oi"
+	"codeberg.org/snonux/gos/internal/platforms"
 	"codeberg.org/snonux/gos/internal/timestamp"
 )
 
@@ -110,8 +111,8 @@ func queuePlatforms(args config.Args) error {
 }
 
 // Queue ./db/queued/*.txt.STAMP.queued to ./db/platforms/PLATFORM/*.txt.STAMP.queued
-func queuePlatform(en entry.Entry, gosDir, platform string) error {
-	destDir := filepath.Join(gosDir, "db/platforms", strings.ToLower(platform))
+func queuePlatform(en entry.Entry, gosDir string, platform platforms.Platform) error {
+	destDir := filepath.Join(gosDir, "db/platforms", platform.String())
 	destPath := filepath.Join(destDir, filepath.Base(en.Path))
 	postedFile := fmt.Sprintf("%s.posted", strings.TrimSuffix(destPath, ".queued"))
 
