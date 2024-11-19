@@ -35,7 +35,6 @@ func queueEntries(args config.Args) error {
 	}
 
 	for filePath := range ch {
-		// TODO: TEST THIS MANUALLY!
 		if filePath, err = extractInlineTags(filePath); err != nil {
 			return err
 		}
