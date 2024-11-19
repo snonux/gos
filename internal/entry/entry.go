@@ -50,7 +50,8 @@ type Entry struct {
 	Path  string
 	Time  time.Time
 	State State
-	tags  map[string]struct{}
+	// TODO: translate short form tags li ma x to linkedin mastidon xcom, etc
+	tags map[string]struct{}
 }
 
 func (en Entry) String() string {
