@@ -147,3 +147,18 @@ func SlurpAndTrim(filePath string) (string, error) {
 	}
 	return strings.TrimSpace(string(bytes)), nil
 }
+
+func WriteFile(filePath, content string) error {
+	tmpFilePath := fmt.Sprintf("%s.tmp", filePath)
+	file, err := os.OpenFile(tmpFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(content)
+	if err != nil {
+		return err
+	}
+	return os.Rename(tmpFilePath, filePath)
+}

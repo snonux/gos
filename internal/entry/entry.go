@@ -106,14 +106,12 @@ func (en *Entry) Content() (string, []string, error) {
 	return content, extractURLs(content), err
 }
 
-// Returns the content and also checks for the size limit and also removes any
-// inline tags.
+// Returns the content and also checks for the size limit
 func (en Entry) ContentWithLimit(sizeLimit int) (string, []string, error) {
 	content, urls, err := en.Content()
 	if err != nil {
 		return "", urls, err
 	}
-	_, content, _ = extractInlineTags(content)
 	if len(content) > sizeLimit {
 		err := fmt.Errorf("%w (%d > %d): %v", ErrSizeLimitExceeded, len(content), sizeLimit, en)
 		if err2 := prompt.Acknowledge("You need to shorten the content as "+err.Error(), content); err2 != nil {
@@ -190,36 +188,8 @@ func (en Entry) extractTags(parts []string) {
 	}
 }
 
-func (en Entry) ExtractInlineTags() error {
-	content, _, err := en.Content()
-	if err != nil {
-		return err
-	}
-	if tags, _, ok := extractInlineTags(content); ok {
-		en.extractTags(tags)
-	}
-	return nil
-}
-
 func extractURLs(input string) []string {
 	urlPattern := `(http://|https://|ftp://)[^\s]+`
 	re := regexp.MustCompile(urlPattern)
 	return re.FindAllString(input, -1)
-}
-
-// Returns inline tags, real content. And true when there were inline tags.
-func extractInlineTags(content string) ([]string, string, bool) {
-	parts := strings.Split(content, " ")
-	// If the first word of the content contains a dot or comma and there are
-	// more than 2 elems, then there are inline tags!
-	if strings.Contains(parts[0], ".") || strings.Contains(parts[0], ",") {
-		var tags []string
-		for _, elem := range strings.Split(parts[0], ".") {
-			tags = append(tags, strings.Split(elem, ",")...)
-		}
-		if len(tags) > 1 {
-			return tags, strings.Join(parts[1:], " "), true
-		}
-	}
-	return []string{}, content, false
 }

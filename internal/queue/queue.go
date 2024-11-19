@@ -35,12 +35,11 @@ func queueEntries(args config.Args) error {
 	}
 
 	for filePath := range ch {
-		en, err := entry.New(filePath)
-		if err != nil {
+		if filePath, err = extractInlineTags(filePath); err != nil {
 			return err
 		}
-		// Extract any inline tags, if any!
-		if err := en.ExtractInlineTags(); err != nil {
+		en, err := entry.New(filePath)
+		if err != nil {
 			return err
 		}
 		if en.HasTag("ask") {
@@ -48,6 +47,7 @@ func queueEntries(args config.Args) error {
 				return err
 			}
 		}
+
 		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir, filepath.Base(en.Path), timestamp.Now())
 		if args.DryRun {
 			colour.Infoln("Not queueing entry", en.Path, "to", destPath, "as dry-run mode enabled")
