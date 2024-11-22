@@ -3,7 +3,7 @@ package internal
 import (
 	"context"
 	"errors"
-	"log"
+	"fmt"
 
 	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/config"
@@ -49,19 +49,27 @@ func runPlatform(ctx context.Context, args config.Args, platform platforms.Platf
 	case err != nil:
 		return err
 	}
+	err = postPlatform(ctx, args, platform, sizeLimit, en)
+	if errors.Is(err, prompt.ErrRamdomOther) {
+		return runPlatform(ctx, args, platform, sizeLimit)
+	}
+	return err
+}
+
+func postPlatform(ctx context.Context, args config.Args, platform platforms.Platform,
+	sizeLimit int, en entry.Entry) (err error) {
 
 	colour.Infoln("Posting", en)
-	var postCB func(context.Context, config.Args, int, entry.Entry) error
 	switch platform.String() {
 	case "mastodon":
-		postCB = mastodon.Post
+		err = mastodon.Post(ctx, args, sizeLimit, en)
 	case "linkedin":
-		postCB = linkedin.Post
+		err = linkedin.Post(ctx, args, sizeLimit, en)
 	default:
-		log.Fatal("Platform", platform, "(not yet) implemented")
+		err = fmt.Errorf("Platform '%s' (not yet) implemented", platform)
 	}
 
-	if err := postCB(ctx, args, sizeLimit, en); err != nil {
+	if err != nil {
 		return err
 	}
 	if err := en.MarkPosted(); err != nil {

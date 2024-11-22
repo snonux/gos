@@ -57,8 +57,6 @@ func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 		return err
 	}
 
-	// TODO: Refactor this. Make it so that in a loop we can also check for the content with limit.
-	// Maybe pass an interface en.ContentWithLimit and en.Path() to prompt.FileAction
 	question := fmt.Sprintf("Do you want to post this message to Linkedin (%v)?", prev)
 	if content, err = prompt.FileAction(question, content, en.Path); err != nil {
 		return err

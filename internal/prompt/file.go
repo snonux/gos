@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	ErrAborted = errors.New("aborted")
-	ErrDeleted = errors.New("deleted")
+	ErrAborted     = errors.New("aborted")
+	ErrDeleted     = errors.New("deleted")
+	ErrRamdomOther = errors.New("randomOther")
 )
 
-// TODO: Add option to randomly select another entry when no selected?
 func FileAction(question, content, filePath string) (string, error) {
 	colour.Info2f(filePath + ":")
 	fmt.Print("\n")
@@ -26,7 +26,7 @@ func FileAction(question, content, filePath string) (string, error) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		colour.Ackf("%s (y=yes/n=no/e=edit/d=delete):", question)
+		colour.Ackf("%s (y=yes/n=no/e=edit/d=delete/r=random other):", question)
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Error reading input:", err)
@@ -51,6 +51,8 @@ func FileAction(question, content, filePath string) (string, error) {
 				return content, err
 			}
 			return content, fmt.Errorf("%w %s", ErrDeleted, filePath)
+		case "r", "random", "random other":
+			return content, fmt.Errorf("%w %s", ErrRamdomOther, filePath)
 		default:
 			fmt.Println("Please enter 'y' or 'n' or 'e' or 'd'.")
 		}
