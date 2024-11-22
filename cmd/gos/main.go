@@ -53,9 +53,6 @@ func main() {
 	if err := args.ParsePlatforms(*platforms); err != nil {
 		log.Fatal(err)
 	}
-	if err := args.Validate(); err != nil {
-		log.Fatal(err)
-	}
 
 	if *version {
 		fmt.Printf("This is Gos version %s; (C) by Paul Buetow\n", versionStr)

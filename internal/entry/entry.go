@@ -11,7 +11,6 @@ import (
 
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/oi"
-	"codeberg.org/snonux/gos/internal/platforms"
 	"codeberg.org/snonux/gos/internal/prompt"
 	"codeberg.org/snonux/gos/internal/timestamp"
 )
@@ -155,10 +154,10 @@ func (en Entry) HasTag(tag string) bool {
 // Valid tags are: share:foo[,...]
 // whereas foo can be a supported plutform such as linkedin, mastodon, etc.
 // foo can also be prefixed with - to exclude it. See unit tests for examples.
-func (en Entry) PlatformExcluded(args config.Args, platform platforms.Platform) (bool, error) {
+func (en Entry) PlatformExcluded(args config.Args, platformStr string) (bool, error) {
 	s, err := newShareTags(args, en.tags)
-	return slices.Contains(s.excludes, platform.String()) ||
-		!slices.Contains(s.includes, platform.String()), err
+	return slices.Contains(s.excludes, platformStr) ||
+		!slices.Contains(s.includes, platformStr), err
 }
 
 func (en Entry) Edit() error {

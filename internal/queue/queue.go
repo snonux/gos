@@ -77,8 +77,12 @@ func queuePlatforms(args config.Args) error {
 		if err != nil {
 			return err
 		}
-		for platform := range args.Platforms {
-			excluded, err := en.PlatformExcluded(args, platform)
+		for platformStr := range args.Platforms {
+			platform, err := platforms.New(platformStr)
+			if err != nil {
+				return err
+			}
+			excluded, err := en.PlatformExcluded(args, platform.String())
 			if err != nil {
 				return err
 			}
