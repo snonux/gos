@@ -57,5 +57,6 @@ func (p Platform) Post(ctx context.Context, args config.Args, sizeLimit int, en 
 	}
 
 	colour.Successf("Successfully posted message to %s", p)
+	fmt.Print("\n")
 	return nil
 }
