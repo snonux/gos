@@ -33,6 +33,7 @@ func TestInlineExtractTagsToFilePath(t *testing.T) {
 }
 
 func TestInlineExtractTagsFromContent(t *testing.T) {
+	T = t
 	table := map[string][]string{
 		"foo,bar,baz blablablabla...":                {"foo", "bar", "baz"},
 		"foo.bar.baz blablablabla...":                {"foo", "bar", "baz"},
@@ -40,7 +41,8 @@ func TestInlineExtractTagsFromContent(t *testing.T) {
 		"foo,bar.baz    blablablabla...":             {"foo", "bar", "baz"},
 		"share:li this    is the main content":       {"share:linkedin"},
 		"share:li,foo this    is the main content":   {"share:linkedin", "foo"},
-		"shar()e:li,foo this    is the main content": {},
+		"shar()e:li,foo this    is the main content": {"shar()e:li", "foo"},
+		"share this post":                            {},
 	}
 
 	for input, expectedTags := range table {
@@ -49,9 +51,10 @@ func TestInlineExtractTagsFromContent(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
+			t.Log(expectedTags, tags)
 			if len(tags) != len(expectedTags) {
-				t.Errorf("expected %d inline tags (%v) but got %d (%v)",
-					len(expectedTags), expectedTags, len(tags), tags)
+				t.Errorf("expected %d inline tags (%v) but got %d (%v) for input '%v'",
+					len(expectedTags), expectedTags, len(tags), tags, input)
 			}
 			for _, expectedTag := range expectedTags {
 				if !slices.Contains(tags, expectedTag) {
