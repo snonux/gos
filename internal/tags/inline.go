@@ -14,7 +14,7 @@ import (
 
 var inlineTagRE = regexp.MustCompile(`^[a-z\.,:]*$`)
 
-// Extracts the inline tags into the filepath and removes them from the content.
+// Extracts the inline tags from the content ant inserts them into the file path.
 func InlineExtract(filePath string) (string, error) {
 	content, err := oi.SlurpAndTrim(filePath)
 	if err != nil {
