@@ -61,7 +61,10 @@ func extractInlineTagsFromContent(content string) ([]string, string, error) {
 		for _, elem := range strings.Split(parts[0], ".") {
 			tags = append(tags, strings.Split(elem, ",")...)
 		}
-		if len(tags) > 1 {
+		if len(tags) == 0 {
+			tags = []string{parts[0]}
+		}
+		if len(tags) > 0 {
 			return tags, strings.Join(parts[1:], " "), nil
 		}
 	}
