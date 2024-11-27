@@ -9,6 +9,7 @@ import (
 
 	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/oi"
+	"codeberg.org/snonux/gos/internal/platforms"
 )
 
 var inlineTagRE = regexp.MustCompile(`^[a-z\.,:]*$`)
@@ -62,9 +63,17 @@ func extractInlineTagsFromContent(content string) ([]string, string, error) {
 			tags = append(tags, strings.Split(elem, ",")...)
 		}
 		if len(tags) == 0 {
-			tags = []string{parts[0]}
+			tags = parts[:1]
 		}
 		if len(tags) > 0 {
+			for i := range len(tags) {
+				if strings.HasPrefix(tags[i], "share:") {
+					var err error
+					if tags[i], err = platforms.ExpandAliases(tags[i]); err != nil {
+						return []string{}, content, err
+					}
+				}
+			}
 			return tags, strings.Join(parts[1:], " "), nil
 		}
 	}

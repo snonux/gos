@@ -14,9 +14,9 @@ func TestExtractInlineTagsToFilePath(t *testing.T) {
 		"foo.bar.baz blablablabla...":              "./gosdir/foo.golang.rox.foo.bar.baz.extracted.txt",
 		"foo.bar,baz blablablabla...":              "./gosdir/foo.golang.rox.foo.bar.baz.extracted.txt",
 		"foo,bar.baz    blablablabla...":           "./gosdir/foo.golang.rox.foo.bar.baz.extracted.txt",
-		"share:li,foo this    is the main content": "./gosdir/foo.golang.rox.share:li.foo.extracted.txt",
-		"share:li:ma this is the main content":     "./gosdir/foo.golang.rox.share:li:ma.extracted.txt",
-		"share:li:ma,now this is the main content": "./gosdir/foo.golang.rox.share:li:ma.now.extracted.txt",
+		"share:li,foo this    is the main content": "./gosdir/foo.golang.rox.share:linkedin.foo.extracted.txt",
+		"share:li:ma this is the main content":     "./gosdir/foo.golang.rox.share:linkedin:mastodon.extracted.txt",
+		"share:li:ma,now this is the main content": "./gosdir/foo.golang.rox.share:linkedin:mastodon.now.extracted.txt",
 	}
 
 	for content, expectedFilePath := range table {
@@ -38,8 +38,8 @@ func TestExtractInlineTagsFromContent(t *testing.T) {
 		"foo.bar.baz blablablabla...":                {"foo", "bar", "baz"},
 		"foo.bar,baz blablablabla...":                {"foo", "bar", "baz"},
 		"foo,bar.baz    blablablabla...":             {"foo", "bar", "baz"},
-		"share:li this    is the main content":       {"share:li"},
-		"share:li,foo this    is the main content":   {"share:li", "foo"},
+		"share:li this    is the main content":       {"share:linkedin"},
+		"share:li,foo this    is the main content":   {"share:linkedin", "foo"},
 		"shar()e:li,foo this    is the main content": {},
 	}
 
