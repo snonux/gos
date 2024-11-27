@@ -22,17 +22,18 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 	if err != nil {
 		return err
 	}
-	payload := map[string]string{"status": content}
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		return fmt.Errorf("failed to marshal payload: %w", err)
-	}
 	if args.DryRun {
 		colour.Infoln("Not posting", en, "to Mastodon as dry-run enabled")
 		return nil
 	}
-	if _, err = prompt.FileAction("Do you want to post this message to Mastodon?", content, en.Path); err != nil {
+	if content, err = prompt.FileAction("Do you want to post this message to Mastodon?", content, en.Path); err != nil {
 		return err
+	}
+
+	payload := map[string]string{"status": content}
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("failed to marshal payload: %w", err)
 	}
 
 	newCtx, cancel := context.WithTimeout(ctx, mastodonTimeout)
