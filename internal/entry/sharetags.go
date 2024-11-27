@@ -7,6 +7,7 @@ import (
 	"codeberg.org/snonux/gos/internal/config"
 )
 
+// TODO: Own package only dealing with tags, and put all tag code in there.
 type shareTags struct {
 	includes []string // The platforms to include
 	excludes []string // The platforms to exclude
