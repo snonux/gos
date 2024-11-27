@@ -33,7 +33,6 @@ func TestInlineExtractTagsToFilePath(t *testing.T) {
 }
 
 func TestInlineExtractTagsFromContent(t *testing.T) {
-	T = t
 	table := map[string][]string{
 		"foo,bar,baz blablablabla...":                {"foo", "bar", "baz"},
 		"foo.bar.baz blablablabla...":                {"foo", "bar", "baz"},

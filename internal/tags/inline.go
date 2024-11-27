@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"testing"
 
 	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/oi"
@@ -55,8 +54,6 @@ func inlineExtractTagsToFilePath(filePath, content string) (string, string, erro
 	newFilePath := strings.Join(parts, ".")
 	return newFilePath, newContent, nil
 }
-
-var T *testing.T
 
 func inlineExtractTagsFromContent(content string) ([]string, string, error) {
 	isShare := func(tag string) bool {
