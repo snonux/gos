@@ -1,4 +1,4 @@
-package entry
+package tags
 
 import (
 	"slices"
@@ -8,85 +8,86 @@ import (
 	"codeberg.org/snonux/gos/internal/config"
 )
 
-func TestShareTagsPositive(t *testing.T) {
+func TestSharePositive(t *testing.T) {
 	args := config.Args{Platforms: map[string]int{
 		"mastodon": 100,
 		"linkedin": 100,
 	}}
-	testTable := map[string]shareTags{
+	testTable := map[string]Share{
 		"./foo/bar.without.tags.txt.20240101-010101.queued": {
-			includes: []string{"mastodon", "linkedin"},
+			Includes: []string{"mastodon", "linkedin"},
 		},
 		"./foo/bar.share:linkeDin.txt.20240101-010101.queued": {
-			includes: []string{"linkedin"},
+			Includes: []string{"linkedin"},
 		},
 		"./foo/bar.share:-LinkedIn.txt.20240101-010101.queued": {
-			includes: []string{"mastodon"},
-			excludes: []string{"linkedin"},
+			Includes: []string{"mastodon"},
+			Excludes: []string{"linkedin"},
 		},
 		"./foo/bar.share:linkedin:mastOdon.txt.20240101-010101.queued": {
-			includes: []string{"linkedin", "mastodon"},
+			Includes: []string{"linkedin", "mastodon"},
 		},
 		"./foo/bar.share:linkediN:-mastodon:XCOM.txt.20240101-010101.queued": {
-			includes: []string{"linkedin", "xcom"},
-			excludes: []string{"mastodon"},
+			Includes: []string{"linkedin", "xcom"},
+			Excludes: []string{"mastodon"},
 		},
 		"./foo/bar/ql-e7657e8a1ab573f84ad0dbc55199e937.share:-mastodon.txt.20241018-105524.queued": {
-			includes: []string{"linkedin"},
-			excludes: []string{"mastodon"},
+			Includes: []string{"linkedin"},
+			Excludes: []string{"mastodon"},
 		},
 	}
 
 	for filePath, expectedResult := range testTable {
 		t.Run(filePath, func(t *testing.T) {
-			shareTags, err := newShareTags(args, filePathTags(filePath))
+			shareTags, err := NewShare(args, filePathTags(filePath))
 			if err != nil {
 				t.Error(err)
 			}
-			if !sameElements(shareTags.includes, expectedResult.includes) {
+			if !sameElements(shareTags.Includes, expectedResult.Includes) {
 				t.Errorf("Expected includes to be %v but got %v with %s",
-					expectedResult.includes, shareTags.includes, filePath)
+					expectedResult.Includes, shareTags.Includes, filePath)
 			}
-			if !sameElements(shareTags.excludes, expectedResult.excludes) {
+			if !sameElements(shareTags.Excludes, expectedResult.Excludes) {
 				t.Errorf("Expected excludes to be %v but got %v with %s",
-					expectedResult.excludes, shareTags.excludes, filePath)
+					expectedResult.Excludes, shareTags.Excludes, filePath)
 			}
 		})
 
 	}
 }
-func TestShareTagsNegative(t *testing.T) {
+
+func TestShareNegative(t *testing.T) {
 	args := config.Args{Platforms: map[string]int{
 		string("mastodon"): 100,
 		string("linkedin"): 100,
 	}}
-	testTable := map[string]shareTags{
+	testTable := map[string]Share{
 		"./foo/bar.without.tags.txt.20240101-010101.queued": {
-			includes: []string{"linkedin"},
+			Includes: []string{"linkedin"},
 		},
 		"./foo/bar.share:linkedIn.txt.20240101-010101.queued": {
-			includes: []string{"mastodon"},
+			Includes: []string{"mastodon"},
 		},
 		"./foo/bar.share:-liNkedin.txt.20240101-010101.queued": {
-			includes: []string{"linkedin"},
+			Includes: []string{"linkedin"},
 		},
 		"./foo/bar.share:linkedin:mastodon.txt.20240101-010101.queued": {
-			includes: []string{"oups", "mastodon"},
+			Includes: []string{"oups", "mastodon"},
 		},
 		"./foo/bar.share:linkedin:-MASTODON:xcom.txt.20240101-010101.queued": {
-			includes: []string{"linkedin", "xcom"},
-			excludes: []string{"mastodon", "xcom"},
+			Includes: []string{"linkedin", "xcom"},
+			Excludes: []string{"mastodon", "xcom"},
 		},
 	}
 
 	for filePath, unexpectedResult := range testTable {
 		t.Run(filePath, func(t *testing.T) {
-			shareTags, err := newShareTags(args, filePathTags(filePath))
+			shareTags, err := NewShare(args, filePathTags(filePath))
 			if err != nil {
 				t.Error(err)
 			}
-			if sameElements(shareTags.includes, unexpectedResult.includes) &&
-				sameElements(shareTags.excludes, unexpectedResult.excludes) {
+			if sameElements(shareTags.Includes, unexpectedResult.Includes) &&
+				sameElements(shareTags.Excludes, unexpectedResult.Excludes) {
 				t.Errorf("expected %v not to be the actual result with %s",
 					unexpectedResult, filePath)
 			}

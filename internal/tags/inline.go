@@ -1,4 +1,4 @@
-package queue
+package tags
 
 import (
 	"fmt"
@@ -15,13 +15,13 @@ import (
 var inlineTagRE = regexp.MustCompile(`^[a-z\.,:]*$`)
 
 // Extracts the inline tags into the filepath and removes them from the content.
-func extractInlineTags(filePath string) (string, error) {
+func InlineExtract(filePath string) (string, error) {
 	content, err := oi.SlurpAndTrim(filePath)
 	if err != nil {
 		return "", err
 	}
 
-	newFilePath, newContent, err := extractInlineTagsToFilePath(filePath, content)
+	newFilePath, newContent, err := inlineExtractTagsToFilePath(filePath, content)
 	if err != nil {
 		return "", err
 	}
@@ -37,8 +37,8 @@ func extractInlineTags(filePath string) (string, error) {
 	return newFilePath, os.Remove(filePath)
 }
 
-func extractInlineTagsToFilePath(filePath, content string) (string, string, error) {
-	tags, newContent, err := extractInlineTagsFromContent(content)
+func inlineExtractTagsToFilePath(filePath, content string) (string, string, error) {
+	tags, newContent, err := inlineExtractTagsFromContent(content)
 	if err != nil {
 		return filePath, content, err
 	}
@@ -55,7 +55,7 @@ func extractInlineTagsToFilePath(filePath, content string) (string, string, erro
 	return newFilePath, newContent, nil
 }
 
-func extractInlineTagsFromContent(content string) ([]string, string, error) {
+func inlineExtractTagsFromContent(content string) ([]string, string, error) {
 	parts := strings.Split(content, " ")
 	if inlineTagRE.MatchString(parts[0]) {
 		var tags []string

@@ -12,6 +12,7 @@ import (
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/oi"
 	"codeberg.org/snonux/gos/internal/platforms"
+	"codeberg.org/snonux/gos/internal/tags"
 	"codeberg.org/snonux/gos/internal/timestamp"
 )
 
@@ -36,7 +37,7 @@ func queueEntries(args config.Args) error {
 	}
 
 	for filePath := range ch {
-		if filePath, err = extractInlineTags(filePath); err != nil {
+		if filePath, err = tags.InlineExtract(filePath); err != nil {
 			return err
 		}
 		en, err := entry.New(filePath)
@@ -82,11 +83,12 @@ func queuePlatforms(args config.Args) error {
 			if err != nil {
 				return err
 			}
-			excluded, err := en.PlatformExcluded(args, platform.String())
+			// func NewShare(args config.Args, tags map[string]struct{}) (Share, error) {
+			share, err := tags.NewShare(args, en.Tags)
 			if err != nil {
 				return err
 			}
-			if excluded {
+			if share.Excluded(platform.String()) {
 				colour.Infoln("Not queueing entry", en, "to platform", platform, "as it is excluded")
 				continue
 			}

@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/oi"
 	"codeberg.org/snonux/gos/internal/prompt"
 	"codeberg.org/snonux/gos/internal/timestamp"
@@ -50,7 +49,7 @@ type Entry struct {
 	Path  string
 	Time  time.Time
 	State State
-	tags  map[string]struct{}
+	Tags  map[string]struct{}
 }
 
 func (en Entry) String() string {
@@ -64,7 +63,7 @@ func (en Entry) String() string {
 // or for inboxed: /foo.txt
 // or inboxed with tags: /foo.prio.ask.txt
 func New(filePath string) (Entry, error) {
-	en := Entry{Path: filePath, tags: make(map[string]struct{})}
+	en := Entry{Path: filePath, Tags: make(map[string]struct{})}
 
 	// We want to get the STAMP!
 	parts := strings.Split(filePath, ".")
@@ -147,18 +146,8 @@ func (en *Entry) MarkPosted() error {
 }
 
 func (en Entry) HasTag(tag string) bool {
-	_, ok := en.tags[tag]
+	_, ok := en.Tags[tag]
 	return ok
-}
-
-// Valid tags are: share:foo[,...]
-// whereas foo can be a supported platform such as linkedin, mastodon, etc.
-// foo can also be prefixed with - to exclude it. See unit tests for examples.
-func (en Entry) PlatformExcluded(args config.Args, platformStr string) (bool, error) {
-	s, err := newShareTags(args, en.tags)
-	fmt.Println(s)
-	return slices.Contains(s.excludes, platformStr) ||
-		!slices.Contains(s.includes, platformStr), err
 }
 
 func (en Entry) Edit() error {
@@ -184,7 +173,7 @@ func (en Entry) FileAction(question string) error {
 func (en Entry) extractTags(parts []string) {
 	for _, part := range parts {
 		if slices.Contains(validTags, part) || strings.HasPrefix(part, "share:") {
-			en.tags[part] = struct{}{}
+			en.Tags[part] = struct{}{}
 		}
 	}
 }

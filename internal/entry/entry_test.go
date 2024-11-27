@@ -52,12 +52,12 @@ func TestEntryTags(t *testing.T) {
 		for _, expectedTag := range strings.Split(tagsStr, ".") {
 			if expectedTag == "invalid" {
 				if en.HasTag(expectedTag) {
-					t.Errorf("didn't expect tag '%s' to be present, but got '%v'", expectedTag, en.tags)
+					t.Errorf("didn't expect tag '%s' to be present, but got '%v'", expectedTag, en.Tags)
 				}
 				continue
 			}
 			if !en.HasTag(expectedTag) {
-				t.Errorf("expected tag '%s' to be present, but got '%v'", expectedTag, en.tags)
+				t.Errorf("expected tag '%s' to be present, but got '%v'", expectedTag, en.Tags)
 			}
 		}
 	}
@@ -115,12 +115,12 @@ func TestHasTag(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		if len(expectedTags) != len(en.tags) {
-			t.Errorf("expected '%d' tags but got '%d'", len(expectedTags), len(en.tags))
+		if len(expectedTags) != len(en.Tags) {
+			t.Errorf("expected '%d' tags but got '%d'", len(expectedTags), len(en.Tags))
 		}
 		for _, tag := range expectedTags {
 			if !en.HasTag(tag) {
-				t.Errorf("expected tag '%s' but got '%s'", tag, en.tags)
+				t.Errorf("expected tag '%s' but got '%s'", tag, en.Tags)
 			}
 		}
 	}

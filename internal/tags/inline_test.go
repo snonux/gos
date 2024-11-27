@@ -1,4 +1,4 @@
-package queue
+package tags
 
 import (
 	"slices"
@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestExtractInlineTagsToFilePath(t *testing.T) {
+func TestInlineExtractTagsToFilePath(t *testing.T) {
 	const filePath = "./gosdir/foo.golang.rox.txt"
 
 	table := map[string]string{
@@ -21,7 +21,7 @@ func TestExtractInlineTagsToFilePath(t *testing.T) {
 
 	for content, expectedFilePath := range table {
 		t.Run(content, func(t *testing.T) {
-			newFilePath, _, err := extractInlineTagsToFilePath(filePath, content)
+			newFilePath, _, err := inlineExtractTagsToFilePath(filePath, content)
 			if err != nil {
 				t.Error(err)
 			}
@@ -32,7 +32,7 @@ func TestExtractInlineTagsToFilePath(t *testing.T) {
 	}
 }
 
-func TestExtractInlineTagsFromContent(t *testing.T) {
+func TestInlineExtractTagsFromContent(t *testing.T) {
 	table := map[string][]string{
 		"foo,bar,baz blablablabla...":                {"foo", "bar", "baz"},
 		"foo.bar.baz blablablabla...":                {"foo", "bar", "baz"},
@@ -45,7 +45,7 @@ func TestExtractInlineTagsFromContent(t *testing.T) {
 
 	for input, expectedTags := range table {
 		t.Run(input, func(t *testing.T) {
-			tags, contentWithoutTags, err := extractInlineTagsFromContent(input)
+			tags, contentWithoutTags, err := inlineExtractTagsFromContent(input)
 			if err != nil {
 				t.Error(err)
 			}
