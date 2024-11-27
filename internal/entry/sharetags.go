@@ -30,10 +30,10 @@ func newShareTags(args config.Args, tags map[string]struct{}) (shareTags, error)
 
 	if len(s.includes) == 0 {
 		for platformStr := range args.Platforms {
-			if slices.Contains(s.excludes, platformStr) {
+			if slices.Contains(s.excludes, strings.ToLower(platformStr)) {
 				continue
 			}
-			s.includes = append(s.includes, platformStr)
+			s.includes = append(s.includes, strings.ToLower(platformStr))
 		}
 	}
 

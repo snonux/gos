@@ -152,10 +152,11 @@ func (en Entry) HasTag(tag string) bool {
 }
 
 // Valid tags are: share:foo[,...]
-// whereas foo can be a supported plutform such as linkedin, mastodon, etc.
+// whereas foo can be a supported platform such as linkedin, mastodon, etc.
 // foo can also be prefixed with - to exclude it. See unit tests for examples.
 func (en Entry) PlatformExcluded(args config.Args, platformStr string) (bool, error) {
 	s, err := newShareTags(args, en.tags)
+	fmt.Println(s)
 	return slices.Contains(s.excludes, platformStr) ||
 		!slices.Contains(s.includes, platformStr), err
 }
