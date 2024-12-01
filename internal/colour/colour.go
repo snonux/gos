@@ -1,11 +1,15 @@
 package colour
 
-import "github.com/fatih/color"
+import (
+	"fmt"
+
+	"github.com/fatih/color"
+)
 
 var (
-	infoCol  = color.New(color.FgCyan, color.BgBlue, color.Bold)
-	Infof    = infoCol.PrintfFunc()
-	Infoln   = infoCol.PrintlnFunc()
+	// infoCol  = color.New(color.FgCyan, color.BgBlue, color.Bold)
+	Infof    = fmt.Printf
+	Infoln   = fmt.Println
 	info2Col = color.New(color.FgHiYellow, color.BgBlue)
 	Info2f   = info2Col.PrintfFunc()
 	SInfo2f  = info2Col.SprintfFunc()
