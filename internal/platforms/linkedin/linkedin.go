@@ -100,7 +100,6 @@ func postMessageToLinkedInAPI(ctx context.Context, personID, accessToken, conten
 	}
 
 	payload, err := json.Marshal(post)
-	fmt.Println(string(payload))
 	if err != nil {
 		return fmt.Errorf("Error encoding JSON:%w", err)
 	}
