@@ -29,8 +29,7 @@ func FileAction(question, content, filePath string) (string, error) {
 		colour.Ackf("%s (y=yes/n=no/e=edit/d=delete/r=random other):", question)
 		input, err := reader.ReadString('\n')
 		if err != nil {
-			fmt.Println("Error reading input:", err)
-			continue
+			return "", fmt.Errorf("error reading input: %w", err)
 		}
 
 		switch strings.ToLower(strings.TrimSpace(input)) {
