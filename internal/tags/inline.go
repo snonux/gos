@@ -29,7 +29,7 @@ func InlineExtract(filePath string) (string, error) {
 		return filePath, nil
 	}
 
-	colour.Infof("Rewriting path '%s' to '%s' (inline tag extraction)", filePath, newFilePath)
+	_, _ = colour.Infof("Rewriting path '%s' to '%s' (inline tag extraction)", filePath, newFilePath)
 	fmt.Print("\n")
 	if err := oi.WriteFile(newFilePath, newContent); err != nil {
 		return "", err

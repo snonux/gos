@@ -39,7 +39,7 @@ func (p Platform) String() string {
 }
 
 func (p Platform) Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) (err error) {
-	colour.Infoln("Posting", en)
+	_, _ = colour.Infoln("Posting", en)
 	switch p.String() {
 	case "mastodon":
 		err = mastodon.Post(ctx, args, sizeLimit, en)

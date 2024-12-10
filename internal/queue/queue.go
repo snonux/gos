@@ -52,7 +52,7 @@ func queueEntries(args config.Args) error {
 
 		destPath := fmt.Sprintf("%s/db/%s.%s.queued", args.GosDir, filepath.Base(en.Path), timestamp.Now())
 		if args.DryRun {
-			colour.Infoln("Not queueing entry", en.Path, "to", destPath, "as dry-run mode enabled")
+			_, _ = colour.Infoln("Not queueing entry", en.Path, "to", destPath, "as dry-run mode enabled")
 			continue
 		}
 		if err := oi.Rename(en.Path, destPath); err != nil {
@@ -89,7 +89,7 @@ func queuePlatforms(args config.Args) error {
 				return err
 			}
 			if share.Excluded(platform.String()) {
-				colour.Infoln("Not queueing entry", en, "to platform", platform, "as it is excluded")
+				_, _ = colour.Infoln("Not queueing entry", en, "to platform", platform, "as it is excluded")
 				continue
 			}
 			if err := queuePlatform(en, args.GosDir, platform); err != nil {
@@ -102,7 +102,7 @@ func queuePlatforms(args config.Args) error {
 
 		// Keep queued items in trash for a while.
 		trashPath := filepath.Join(trashDir, strings.TrimSuffix(filepath.Base(en.Path), ".queued")+".trash")
-		colour.Infof("Trashing %s -> %s", en.Path, trashPath)
+		_, _ = colour.Infof("Trashing %s -> %s", en.Path, trashPath)
 		fmt.Print("\n")
 		if err := oi.EnsureParentDir(trashPath); err != nil {
 			return err
@@ -124,11 +124,11 @@ func queuePlatform(en entry.Entry, gosDir string, platform platforms.Platform) e
 
 	// Entry already posted platform?
 	if oi.IsRegular(postedFile) {
-		colour.Infoln("Not re-queueing", destPath, "as", postedFile, "already exists")
+		_, _ = colour.Infoln("Not re-queueing", destPath, "as", postedFile, "already exists")
 		return nil
 	}
 
-	colour.Infoln("Queuing", en.Path, "->", destPath)
+	_, _ = colour.Infoln("Queuing", en.Path, "->", destPath)
 	return oi.CopyFile(en.Path, destPath)
 }
 
@@ -143,7 +143,7 @@ func deleteFiles(path, suffix string, olderThan time.Time) error {
 			return err
 		}
 		if fileInfo.ModTime().Before(olderThan) {
-			colour.Infoln("Cleaning up", filePath)
+			_, _ = colour.Infoln("Cleaning up", filePath)
 			err := os.Remove(filePath)
 			if err != nil {
 				return err

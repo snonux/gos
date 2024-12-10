@@ -17,7 +17,7 @@ func Run(ctx context.Context, args config.Args) error {
 		if !softError(err) {
 			return err
 		}
-		colour.Infoln(err)
+		_, _ = colour.Infoln(err)
 	}
 
 	for platformStr, sizeLimit := range args.Platforms {
@@ -27,7 +27,7 @@ func Run(ctx context.Context, args config.Args) error {
 		}
 		if err := runPlatform(ctx, args, platform, sizeLimit); err != nil {
 			if softError(err) {
-				colour.Infoln(err)
+				_, _ = colour.Infoln(err)
 				continue
 			}
 			return err
@@ -41,10 +41,10 @@ func runPlatform(ctx context.Context, args config.Args, platform platforms.Platf
 	en, err := schedule.Run(args, platform)
 	switch {
 	case errors.Is(err, schedule.ErrNothingToSchedule):
-		colour.Infoln("Nothing to be scheduled for", platform)
+		_, _ = colour.Infoln("Nothing to be scheduled for", platform)
 		return nil
 	case errors.Is(err, schedule.ErrNothingQueued):
-		colour.Infoln("Nothing queued for", platform)
+		_, _ = colour.Infoln("Nothing queued for", platform)
 		return nil
 	case err != nil:
 		return err

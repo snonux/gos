@@ -72,7 +72,7 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	defer close(errCh)
 	code := r.URL.Query().Get("code")
 
-	colour.Infoln("Exchanging OAuth2 token")
+	_, _ = colour.Infoln("Exchanging OAuth2 token")
 	token, err := oauthConfig.Exchange(globalCtx, code)
 	if err != nil {
 		_, _ = w.Write([]byte(err.Error()))
@@ -110,7 +110,7 @@ func LinkedInCreds(ctx context.Context, args config.Args) (string, string, error
 	http.HandleFunc("/callback", oauthCallbackHandler)
 	http.HandleFunc("/up", upHandler)
 
-	colour.Infoln("Listening on http://localhost:8080 for LinkedIn OAuth2")
+	_, _ = colour.Infoln("Listening on http://localhost:8080 for LinkedIn OAuth2")
 	go func() {
 		if err := http.ListenAndServe(":8080", nil); err != nil {
 			errCh <- err
@@ -139,7 +139,7 @@ func LinkedInCreds(ctx context.Context, args config.Args) (string, string, error
 }
 
 func openURLInFirefox(browser, url string) error {
-	colour.Infoln("Opening", url, "in", browser)
+	_, _ = colour.Infoln("Opening", url, "in", browser)
 	switch runtime.GOOS {
 	case "windows":
 		cmd := exec.Command("cmd", "/C", "start", browser, url)
@@ -162,10 +162,10 @@ func WaitUntilURLIsReachable(url string) error {
 		resp, err := http.Get(url)
 
 		if err != nil {
-			colour.Infof("URL is not reachable: %v", err)
+			_, _ = colour.Infof("URL is not reachable: %v", err)
 			fmt.Print("\n")
 		} else {
-			colour.Infof("URL is reachable: %s - Status Code: %d", url, resp.StatusCode)
+			_, _ = colour.Infof("URL is reachable: %s - Status Code: %d", url, resp.StatusCode)
 			fmt.Print("\n")
 			resp.Body.Close()
 			return nil

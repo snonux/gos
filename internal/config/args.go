@@ -40,7 +40,7 @@ func (a *Args) ParsePlatforms(platformStrs string) error {
 				return err
 			}
 		} else {
-			colour.Infoln("No message length specified for", platformStr, "so assuming 500")
+			_, _ = colour.Infoln("No message length specified for", platformStr, "so assuming 500")
 			a.Platforms[platformStr] = 500
 		}
 	}
