@@ -59,23 +59,26 @@ func inlineExtractTagsFromContent(content string) ([]string, string, error) {
 	}
 	parts := strings.Split(content, " ")
 	// First word must contain certain symbols to clarify as (inline) tags.
-	if inlineTagRE.MatchString(parts[0]) {
-		var tags []string
-		// String separator either a dot or a comma. Each element will be a tag.
-		for _, elem := range strings.Split(parts[0], ".") {
-			tags = append(tags, strings.Split(elem, ",")...)
-		}
-		if len(tags) > 0 {
-			for i := range len(tags) {
-				if isShare(tags[i]) {
-					var err error
-					if tags[i], err = platforms.ExpandAliases(tags[i]); err != nil {
-						return []string{}, content, err
-					}
+	if !inlineTagRE.MatchString(parts[0]) {
+		return []string{}, content, nil
+	}
+
+	var tags []string
+	// String separator either a dot or a comma. Each element will be a tag.
+	for _, elem := range strings.Split(parts[0], ".") {
+		tags = append(tags, strings.Split(elem, ",")...)
+	}
+	if len(tags) > 0 {
+		for i := range len(tags) {
+			if isShare(tags[i]) {
+				var err error
+				if tags[i], err = platforms.ExpandAliases(tags[i]); err != nil {
+					return []string{}, content, err
 				}
 			}
-			return tags, strings.Join(parts[1:], " "), nil
 		}
+		return tags, strings.Join(parts[1:], " "), nil
 	}
+
 	return []string{}, content, nil
 }
