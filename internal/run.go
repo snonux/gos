@@ -10,9 +10,14 @@ import (
 	"codeberg.org/snonux/gos/internal/prompt"
 	"codeberg.org/snonux/gos/internal/queue"
 	"codeberg.org/snonux/gos/internal/schedule"
+	"codeberg.org/snonux/gos/internal/summary"
 )
 
 func Run(ctx context.Context, args config.Args) error {
+	if len(args.SummaryFor) > 0 {
+		return summary.Run(ctx, args)
+	}
+
 	if err := queue.Run(args); err != nil {
 		if !softError(err) {
 			return err

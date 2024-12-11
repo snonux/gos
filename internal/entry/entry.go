@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
@@ -103,6 +104,24 @@ func New(filePath string) (Entry, error) {
 func (en *Entry) Content() (string, []string, error) {
 	content, err := oi.SlurpAndTrim(en.Path)
 	return content, extractURLs(content), err
+}
+
+// Returns the Name, e.g. foo.bar.baz from /path/foo.bar.baz.TIMESTAMP.posted
+func (en *Entry) Name() string {
+	base := filepath.Base(en.Path)
+	parts := strings.Split(base, ".")
+
+	offset := len(parts) - 1
+
+	switch en.State {
+	case Queued:
+		fallthrough
+	case Posted:
+		offset -= 2
+	}
+
+	// TODO: Unit test this
+	return strings.Join(parts[:offset], ".")
 }
 
 // Returns the content and also checks for the size limit

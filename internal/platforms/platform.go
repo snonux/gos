@@ -62,23 +62,27 @@ func (p Platform) Post(ctx context.Context, args config.Args, sizeLimit int, en 
 }
 
 func ExpandAliases(shareTag string) (string, error) {
-	a := make(map[string]struct{}, len(aliases))
+
 	parts := strings.Split(shareTag, ":")
 	if parts[0] != "share" {
 		return "", fmt.Errorf("expected share tag, but got '%s' in '%s'", parts[0], shareTag)
 	}
 
 	elems := []string{"share"}
-	// Dedup
+	dedup := make(map[string]struct{}, len(aliases))
+
 	for _, alias := range parts[1:] {
-		a[alias] = struct{}{}
-	}
-	for alias := range a {
 		platformStr, ok := aliases[alias]
 		if !ok {
 			return "", fmt.Errorf("invalid platform alias '%s' in '%s'", alias, shareTag)
 		}
+		if _, ok := dedup[platformStr]; ok {
+			// Duplicate, ignore
+			continue
+		}
 		elems = append(elems, platformStr)
+		dedup[platformStr] = struct{}{}
 	}
+
 	return strings.Join(elems, ":"), nil
 }

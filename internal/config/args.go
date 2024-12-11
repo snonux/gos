@@ -22,6 +22,7 @@ type Args struct {
 	SecretsConfigPath string
 	Secrets           Secrets
 	OAuth2Browser     string
+	SummaryFor        []string
 }
 
 func (a *Args) ParsePlatforms(platformStrs string) error {

@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"codeberg.org/snonux/gos/internal"
@@ -29,6 +30,7 @@ func main() {
 	maxDaysQueued := flag.Int("maxDaysQueued", 365, "Maximum days worth of queued posts until target++ and pauseDays--")
 	pauseDays := flag.Int("pauseDays", 3, "How many days until next post can be posted?")
 	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
+	summaryFor := flag.String("summaryFor", "", "Generate a summary in Gemtext format, format is coma separated string of months, e.g. 202410,202411")
 	flag.Parse()
 
 	secrets, err := config.NewSecrets(secretsConfigPath)
@@ -48,6 +50,7 @@ func main() {
 		CacheDir:          *cacheDir,
 		Secrets:           secrets,
 		OAuth2Browser:     *browser,
+		SummaryFor:        strings.Split(*summaryFor, ","),
 	}
 
 	if err := args.ParsePlatforms(*platforms); err != nil {
