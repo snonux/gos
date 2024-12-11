@@ -111,7 +111,7 @@ func (en *Entry) Name() string {
 	base := filepath.Base(en.Path)
 	parts := strings.Split(base, ".")
 
-	offset := len(parts) - 1
+	offset := len(parts)
 
 	switch en.State {
 	case Queued:

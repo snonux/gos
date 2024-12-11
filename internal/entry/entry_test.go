@@ -40,6 +40,26 @@ func TestEntry(t *testing.T) {
 	}
 }
 
+func TestEntryName(t *testing.T) {
+	table := map[string]string{
+		"/foo/bar/baz.txt":                            "baz.txt",
+		"/foo/bar/baz.foo.txt":                        "baz.foo.txt",
+		"/foo/bar/baz.foo.txt.20250101-010101.posted": "baz.foo.txt",
+		"/foo/bar/baz.foo.txt.20250101-010101.queued": "baz.foo.txt",
+	}
+
+	for path, expectedName := range table {
+		en, err := New(path)
+		if err != nil {
+			t.Error(err)
+		}
+		if en.Name() != expectedName {
+			t.Errorf("expected entry name '%s' but got '%s' for path '%s'",
+				expectedName, en.Name(), path)
+		}
+	}
+}
+
 func TestEntryTags(t *testing.T) {
 	tagss := []string{"prio", "share:linkedin:mastodon.now", "share:-mastodon", "ask", "invalid"}
 
