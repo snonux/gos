@@ -50,7 +50,9 @@ func main() {
 		CacheDir:          *cacheDir,
 		Secrets:           secrets,
 		OAuth2Browser:     *browser,
-		SummaryFor:        strings.Split(*summaryFor, ","),
+	}
+	if *summaryFor != "" {
+		args.SummaryFor = strings.Split(*summaryFor, ",")
 	}
 
 	if err := args.ParsePlatforms(*platforms); err != nil {
