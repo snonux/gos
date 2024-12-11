@@ -8,8 +8,8 @@ import (
 
 var (
 	// infoCol  = color.New(color.FgCyan, color.BgBlue, color.Bold)
-	Infof    = fmt.Printf
-	Infoln   = fmt.Println
+	Infof    = func(format string, args ...any) { fmt.Printf(format, args...) }
+	Infoln   = func(args ...any) { fmt.Println(args...) }
 	info2Col = color.New(color.FgHiYellow, color.BgBlue)
 	Info2f   = info2Col.PrintfFunc()
 	SInfo2f  = info2Col.SprintfFunc()

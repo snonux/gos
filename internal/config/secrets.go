@@ -43,7 +43,7 @@ func NewSecrets(configPath string) (Secrets, error) {
 }
 
 func (s Secrets) WriteToDisk(configPath string) error {
-	_, _ = colour.Infoln("Writing", configPath)
+	colour.Infoln("Writing", configPath)
 
 	bytes, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {

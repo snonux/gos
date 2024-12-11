@@ -37,11 +37,11 @@ func NewPreview(ctx context.Context, args config.Args, urls []string) (preview, 
 
 	if p.title, p.thumbnailURL, err = extractFromURL(ctx, urls[0]); err != nil {
 		if errors.Is(err, errNoTitleElementFound) || p.title == "" {
-			_, _ = colour.Infoln("Setting title to", urls[0])
+			colour.Infoln("Setting title to", urls[0])
 			p.title = urls[0]
 		}
 		if errors.Is(err, errNoImageElementFound) {
-			_, _ = colour.Infoln("URL", urls[0], "without any image, that's fine, though.")
+			colour.Infoln("URL", urls[0], "without any image, that's fine, though.")
 		}
 		if !errors.Is(err, errNoTitleElementFound) && !errors.Is(err, errNoImageElementFound) {
 			return p, err
@@ -52,7 +52,7 @@ func NewPreview(ctx context.Context, args config.Args, urls []string) (preview, 
 		if p.thumbnailDownloadPath, err = p.DownloadImage(args.CacheDir); err != nil {
 			return p, err
 		}
-		_, _ = colour.Infoln("Downloaded preview image to ", p.thumbnailDownloadPath)
+		colour.Infoln("Downloaded preview image to ", p.thumbnailDownloadPath)
 	}
 	return p, nil
 }

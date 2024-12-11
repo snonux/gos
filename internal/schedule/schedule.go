@@ -77,7 +77,7 @@ func selectRandomEntry(dir, tag string) (entry.Entry, error) {
 		}
 		en, err := entry.New(filepath.Join(dir, file.Name()))
 		if err != nil {
-			_, _ = colour.Infoln(err)
+			colour.Infoln(err)
 			return entry.Zero, false
 		}
 		return en, en.State == entry.Queued

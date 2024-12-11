@@ -81,13 +81,12 @@ func (s stats) targetHit(pauseDays, maxQueuedDays int) bool {
 		pauseDays--
 	}
 	if s.postsPerDay >= s.postsPerDayTarget {
-		_, _ = colour.Infoln("Posts per day target hit")
+		colour.Infoln("Posts per day target hit")
 		return true
 	}
 	if s.lastPostDaysAgo <= float64(pauseDays) {
-		_, _ = colour.Infoln("Need to wait a bit longer as last post isn't", pauseDays, "days ago yet")
+		colour.Infoln("Need to wait a bit longer as last post isn't", pauseDays, "days ago yet")
 		return true
-
 	}
 	return false
 }

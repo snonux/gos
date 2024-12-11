@@ -25,9 +25,7 @@ const linkedInTimeout = 10 * time.Second
 func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) error {
 	err := post(ctx, args, sizeLimit, en)
 	if errors.Is(err, errUnauthorized) {
-		if _, err = colour.Infoln(err, "=> trying to refresh LinkedIn access token"); err != nil {
-			return err
-		}
+		colour.Infoln(err, "=> trying to refresh LinkedIn access token")
 		args.Secrets.LinkedInAccessToken = "" // Reset the token
 		return post(ctx, args, sizeLimit, en)
 	}
@@ -36,8 +34,7 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 
 func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) error {
 	if args.DryRun {
-		_, err := colour.Infoln("Not posting", en, "to LinkedIn as dry-run enabled")
-		return err
+		colour.Infoln("Not posting", en, "to LinkedIn as dry-run enabled")
 	}
 
 	timeout := linkedInTimeout
