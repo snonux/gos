@@ -196,6 +196,26 @@ func (en Entry) extractTags(parts []string) {
 	}
 }
 
+func (en Entry) Timestamp() (time.Time, error) {
+	fileInfo, err := os.Stat(en.Path)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return fileInfo.ModTime(), nil
+}
+
+func (en Entry) After(other Entry) (bool, error) {
+	t1, err := en.Timestamp()
+	if err != nil {
+		return false, err
+	}
+	t2, err := other.Timestamp()
+	if err != nil {
+		return false, err
+	}
+	return t1.After(t2), nil
+}
+
 func extractURLs(input string) []string {
 	urlPattern := `(http://|https://|ftp://)[^\s]+`
 	re := regexp.MustCompile(urlPattern)
