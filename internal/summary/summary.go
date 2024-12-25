@@ -23,22 +23,17 @@ func Run(ctx context.Context, args config.Args) error {
 	return nil
 }
 
-type maybeEntry struct {
-	en  entry.Entry
-	err error
-}
-
-func matchingEntries(args config.Args) iter.Seq[maybeEntry] {
-	return func(yield func(maybeEntry) bool) {
+func matchingEntries(args config.Args) iter.Seq2[entry.Entry, error] {
+	return func(yield func(entry.Entry, error) bool) {
 		for _, dateStr := range args.SummaryFor {
 			glob := filepath.Join(args.GosDir, "db/platforms/*/", fmt.Sprintf("*%s*-??????.posted", dateStr))
 			paths, err := filepath.Glob(glob)
-			if err != nil && !yield(maybeEntry{err: err}) {
+			if err != nil && !yield(entry.Zero, err) {
 				return
 			}
 			for _, path := range paths {
 				en, err := entry.New(path)
-				if !yield(maybeEntry{en, err}) {
+				if !yield(en, err) {
 					return
 				}
 			}
@@ -49,22 +44,22 @@ func matchingEntries(args config.Args) iter.Seq[maybeEntry] {
 func deduppedEntries(args config.Args) ([]entry.Entry, error) {
 	dedup := make(map[string]entry.Entry)
 
-	for maybe := range matchingEntries(args) {
-		if maybe.err != nil {
-			return []entry.Entry{}, maybe.err
+	for en, err := range matchingEntries(args) {
+		if err != nil {
+			return entry.Zeroes, err
 		}
-		if en, ok := dedup[maybe.en.Name()]; ok {
+		if other, ok := dedup[en.Name()]; ok {
 			// If two conflicting entries (e.g. same post for mastodon and linkedin)
 			// select the one which was modified latest.
-			after, err := en.After(maybe.en)
+			after, err := other.After(en)
 			if err != nil {
-				return []entry.Entry{}, err
+				return entry.Zeroes, err
 			}
 			if after {
 				continue
 			}
 		}
-		dedup[maybe.en.Name()] = maybe.en
+		dedup[en.Name()] = en
 	}
 
 	entries := make([]entry.Entry, len(dedup))

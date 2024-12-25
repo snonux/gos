@@ -45,6 +45,7 @@ func (s State) String() string {
 }
 
 var Zero = Entry{}
+var Zeroes = []Entry{}
 
 type Entry struct {
 	Path  string
