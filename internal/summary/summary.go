@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"iter"
 	"path/filepath"
+	"strings"
 
 	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/config"
@@ -18,9 +19,42 @@ func Run(ctx context.Context, args config.Args) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(entries)
+
+	title := strings.Join(args.SummaryFor, " ")
+	gemtext, err := fmt.Print(generateGemtext(entries, title))
+	if err != nil {
+		return err
+	}
+	fmt.Print(gemtext)
 
 	return nil
+}
+
+func generateGemtext(entries []entry.Entry, title string) (string, error) {
+	var sb strings.Builder
+
+	sb.WriteString("# ")
+	sb.WriteString(title)
+
+	for _, en := range entries {
+		sb.WriteString("\n\n## ")
+		sb.WriteString(en.Name())
+		sb.WriteString("\n\n")
+		content, urls, err := en.Content()
+		if err != err {
+			return "", err
+		}
+		sb.WriteString(content)
+		if len(urls) > 0 {
+			for _, url := range urls {
+				// TODO: Shorten URLs display
+				sb.WriteString("\n\n=> ")
+				sb.WriteString(url)
+			}
+		}
+	}
+
+	return sb.String(), nil
 }
 
 func matchingEntries(args config.Args) iter.Seq2[entry.Entry, error] {
@@ -62,7 +96,7 @@ func deduppedEntries(args config.Args) ([]entry.Entry, error) {
 		dedup[en.Name()] = en
 	}
 
-	entries := make([]entry.Entry, len(dedup))
+	var entries []entry.Entry
 	for _, val := range dedup {
 		entries = append(entries, val)
 	}
