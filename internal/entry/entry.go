@@ -120,7 +120,6 @@ func (en *Entry) Name() string {
 		offset -= 2
 	}
 
-	// TODO: Unit test this
 	return strings.Join(parts[:offset], ".")
 }
 
