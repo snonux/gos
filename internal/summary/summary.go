@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"iter"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -25,7 +26,7 @@ func Run(ctx context.Context, args config.Args) error {
 		return entries[i].Time.Before(entries[j].Time)
 	})
 
-	title := strings.Join(args.SummaryFor, " ")
+	title := fmt.Sprintf("Summary for %s", strings.Join(args.SummaryFor, " "))
 	gemtext, err := fmt.Print(generateGemtext(entries, title))
 	if err != nil {
 		return err
@@ -35,8 +36,7 @@ func Run(ctx context.Context, args config.Args) error {
 	return nil
 }
 
-// TODO: Header should be a 80char summary. Use LLM to generate this?
-// TODO: Links should not be too long, max length 80chars...?
+// TODO: Fix the Gemtexter inline toc when there are tags in it
 func generateGemtext(entries []entry.Entry, title string) (string, error) {
 	var (
 		sb             strings.Builder
@@ -45,6 +45,9 @@ func generateGemtext(entries []entry.Entry, title string) (string, error) {
 
 	sb.WriteString("# ")
 	sb.WriteString(title)
+	// TODO: Make this configurable
+	// TODO: Also add gemtexter index to previous posts like this
+	sb.WriteString("\n\n<< template::inline::toc")
 
 	for _, en := range entries {
 		dateStr := en.Time.Format("January 2006")
@@ -54,19 +57,26 @@ func generateGemtext(entries []entry.Entry, title string) (string, error) {
 			sb.WriteString(currentDateStr)
 		}
 
-		sb.WriteString("\n\n### ")
-		sb.WriteString(en.Name())
-		sb.WriteString("\n\n")
 		content, urls, err := en.Content()
+		if err != nil {
+			return "", err
+		}
+
+		content = prepare(content)
+		sb.WriteString("\n\n### ")
+		sb.WriteString(firstFewWords(content, 50))
+
 		if err != err {
 			return "", err
 		}
+		sb.WriteString("\n\n")
 		sb.WriteString(content)
+
 		if len(urls) > 0 {
+			sb.WriteString("\n")
 			for _, url := range urls {
-				// TODO: Shorten URLs display
-				sb.WriteString("\n\n=> ")
-				sb.WriteString(url)
+				sb.WriteString("\n")
+				sb.WriteString(gemtextLink(url, 70))
 			}
 		}
 	}
@@ -119,4 +129,45 @@ func deduppedEntries(args config.Args) ([]entry.Entry, error) {
 		entries = append(entries, val)
 	}
 	return entries, nil
+}
+
+var (
+	newlineRegex    = regexp.MustCompile(`\n`)
+	urlRegex        = regexp.MustCompile(`https?://\S+`)
+	multiSpaceRegex = regexp.MustCompile(`\s{2,}`)
+	tagRegex        = regexp.MustCompile(`\B#\w+\b`)
+)
+
+func prepare(content string) string {
+	content = newlineRegex.ReplaceAllString(content, " ")
+	content = urlRegex.ReplaceAllString(content, "")
+	content = multiSpaceRegex.ReplaceAllString(content, " ")
+	content = strings.TrimSpace(content)
+	content = tagRegex.ReplaceAllString(content, "`$0`")
+	return content
+}
+
+func gemtextLink(url string, maxLen int) string {
+	url = strings.TrimSpace(url)
+	if len(url) <= maxLen {
+		return "=> " + url
+	}
+	halfLen := (maxLen - 3) / 2
+	shorten := url[:halfLen] + "..." + url[len(url)-halfLen:]
+	return "=> " + url + " " + shorten
+}
+
+func firstFewWords(content string, maxLen int) string {
+	words := strings.Fields(content)
+	result := ""
+	for _, word := range words {
+		if len(result)+len(word)+len(" ...") > maxLen {
+			break
+		}
+		if result != "" {
+			result += " "
+		}
+		result += word
+	}
+	return result + " ..."
 }
