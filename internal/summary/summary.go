@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"iter"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"codeberg.org/snonux/gos/internal/colour"
@@ -20,6 +21,10 @@ func Run(ctx context.Context, args config.Args) error {
 		return err
 	}
 
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].Time.Before(entries[j].Time)
+	})
+
 	title := strings.Join(args.SummaryFor, " ")
 	gemtext, err := fmt.Print(generateGemtext(entries, title))
 	if err != nil {
@@ -30,16 +35,26 @@ func Run(ctx context.Context, args config.Args) error {
 	return nil
 }
 
-// TODO: One sub-header per month
 // TODO: Header should be a 80char summary. Use LLM to generate this?
+// TODO: Links should not be too long, max length 80chars...?
 func generateGemtext(entries []entry.Entry, title string) (string, error) {
-	var sb strings.Builder
+	var (
+		sb             strings.Builder
+		currentDateStr string
+	)
 
 	sb.WriteString("# ")
 	sb.WriteString(title)
 
 	for _, en := range entries {
-		sb.WriteString("\n\n## ")
+		dateStr := en.Time.Format("January 2006")
+		if currentDateStr != dateStr {
+			currentDateStr = dateStr
+			sb.WriteString("\n\n## ")
+			sb.WriteString(currentDateStr)
+		}
+
+		sb.WriteString("\n\n### ")
 		sb.WriteString(en.Name())
 		sb.WriteString("\n\n")
 		content, urls, err := en.Content()
@@ -62,7 +77,8 @@ func generateGemtext(entries []entry.Entry, title string) (string, error) {
 func matchingEntries(args config.Args) iter.Seq2[entry.Entry, error] {
 	return func(yield func(entry.Entry, error) bool) {
 		for _, dateStr := range args.SummaryFor {
-			glob := filepath.Join(args.GosDir, "db/platforms/*/", fmt.Sprintf("*%s*-??????.posted", dateStr))
+			glob := filepath.Join(args.GosDir,
+				"db/platforms/*/", fmt.Sprintf("*%s*-??????.posted", dateStr))
 			paths, err := filepath.Glob(glob)
 			if err != nil && !yield(entry.Zero, err) {
 				return
