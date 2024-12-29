@@ -30,6 +30,8 @@ func Run(ctx context.Context, args config.Args) error {
 	return nil
 }
 
+// TODO: One sub-header per month
+// TODO: Header should be a 80char summary. Use LLM to generate this?
 func generateGemtext(entries []entry.Entry, title string) (string, error) {
 	var sb strings.Builder
 

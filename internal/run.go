@@ -55,12 +55,13 @@ func runPlatform(ctx context.Context, args config.Args, platform platforms.Platf
 		return err
 	}
 	err = platform.Post(ctx, args, sizeLimit, en)
-	if errors.Is(err, prompt.ErrRamdomOther) {
+	if errors.Is(err, prompt.ErrRamdomOther) || errors.Is(err, prompt.ErrDeleted) {
+
 		return runPlatform(ctx, args, platform, sizeLimit)
 	}
 	return err
 }
 
 func softError(err error) bool {
-	return errors.Is(err, prompt.ErrAborted) || errors.Is(err, prompt.ErrDeleted)
+	return errors.Is(err, prompt.ErrAborted)
 }

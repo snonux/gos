@@ -53,7 +53,7 @@ func FileAction(question, content, filePath string) (string, error) {
 		case "r", "random", "random other":
 			return content, fmt.Errorf("%w %s", ErrRamdomOther, filePath)
 		default:
-			fmt.Println("Please enter 'y' or 'n' or 'e' or 'd'.")
+			fmt.Println("Please respond with one of [ynedr].")
 		}
 	}
 }
