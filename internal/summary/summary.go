@@ -28,7 +28,7 @@ func Run(ctx context.Context, args config.Args) error {
 	if err != nil {
 		return err
 	}
-	fmt.Print(gemtext)
+	fmt.Println(gemtext)
 
 	return nil
 }
@@ -80,7 +80,7 @@ func generateGemtext(entries []entry.Entry, title string, gemtexterEnable bool) 
 
 	if gemtexterEnable {
 		sb.WriteString("\n\nOther related posts:")
-		sb.WriteString("\n\n<< template::inline::index posts-for")
+		sb.WriteString("\n\n<< template::inline::index posts-from")
 		sb.WriteString("\n\n")
 	}
 
