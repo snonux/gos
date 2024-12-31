@@ -23,6 +23,7 @@ type Args struct {
 	Secrets           Secrets
 	OAuth2Browser     string
 	SummaryFor        []string
+	GemtexterEnable   bool
 }
 
 func (a *Args) ParsePlatforms(platformStrs string) error {

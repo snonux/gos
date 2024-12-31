@@ -9,14 +9,11 @@ import (
 	"sort"
 	"strings"
 
-	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
 )
 
 func Run(ctx context.Context, args config.Args) error {
-	colour.Infoln("Generating summary for", args.SummaryFor)
-
 	entries, err := deduppedEntries(args)
 	if err != nil {
 		return err
@@ -26,8 +23,8 @@ func Run(ctx context.Context, args config.Args) error {
 		return entries[i].Time.Before(entries[j].Time)
 	})
 
-	title := fmt.Sprintf("Summary for %s", strings.Join(args.SummaryFor, " "))
-	gemtext, err := fmt.Print(generateGemtext(entries, title))
+	title := fmt.Sprintf("Posts for %s", strings.Join(args.SummaryFor, " "))
+	gemtext, err := fmt.Print(generateGemtext(entries, title, args.GemtexterEnable))
 	if err != nil {
 		return err
 	}
@@ -37,7 +34,7 @@ func Run(ctx context.Context, args config.Args) error {
 }
 
 // TODO: Fix the Gemtexter inline toc when there are tags in it
-func generateGemtext(entries []entry.Entry, title string) (string, error) {
+func generateGemtext(entries []entry.Entry, title string, gemtexterEnable bool) (string, error) {
 	var (
 		sb             strings.Builder
 		currentDateStr string
@@ -45,9 +42,9 @@ func generateGemtext(entries []entry.Entry, title string) (string, error) {
 
 	sb.WriteString("# ")
 	sb.WriteString(title)
-	// TODO: Make this configurable
-	// TODO: Also add gemtexter index to previous posts like this
-	sb.WriteString("\n\n<< template::inline::toc")
+	if gemtexterEnable {
+		sb.WriteString("\n\n<< template::inline::toc")
+	}
 
 	for _, en := range entries {
 		dateStr := en.Time.Format("January 2006")
@@ -79,6 +76,12 @@ func generateGemtext(entries []entry.Entry, title string) (string, error) {
 				sb.WriteString(gemtextLink(url, 70))
 			}
 		}
+	}
+
+	if gemtexterEnable {
+		sb.WriteString("\n\nOther related posts:")
+		sb.WriteString("\n\n<< template::inline::index posts-for")
+		sb.WriteString("\n\n")
 	}
 
 	return sb.String(), nil
