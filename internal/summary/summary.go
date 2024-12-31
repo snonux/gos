@@ -154,8 +154,8 @@ func gemtextLink(url string, maxLen int) string {
 	url = strings.TrimSpace(url)
 	urlNoProto := regexp.MustCompile(`^[a-zA-Z]+://`).ReplaceAllString(url, "")
 
-	if len(url) <= maxLen {
-		return "=> " + url
+	if len(urlNoProto) <= maxLen {
+		return "=> " + url + " " + urlNoProto
 	}
 	halfLen := (maxLen - 3) / 2
 	shorten := urlNoProto[:halfLen] + "..." + urlNoProto[len(urlNoProto)-halfLen:]
