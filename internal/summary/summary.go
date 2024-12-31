@@ -73,7 +73,7 @@ func generateGemtext(entries []entry.Entry, title string, gemtexterEnable bool) 
 			sb.WriteString("\n")
 			for _, url := range urls {
 				sb.WriteString("\n")
-				sb.WriteString(gemtextLink(url, 70))
+				sb.WriteString(gemtextLink(url, 30))
 			}
 		}
 	}
@@ -152,11 +152,13 @@ func prepare(content string) string {
 
 func gemtextLink(url string, maxLen int) string {
 	url = strings.TrimSpace(url)
+	urlNoProto := regexp.MustCompile(`^[a-zA-Z]+://`).ReplaceAllString(url, "")
+
 	if len(url) <= maxLen {
 		return "=> " + url
 	}
 	halfLen := (maxLen - 3) / 2
-	shorten := url[:halfLen] + "..." + url[len(url)-halfLen:]
+	shorten := urlNoProto[:halfLen] + "..." + urlNoProto[len(urlNoProto)-halfLen:]
 	return "=> " + url + " " + shorten
 }
 
