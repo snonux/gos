@@ -164,6 +164,18 @@ func (en *Entry) MarkPosted() error {
 	return nil
 }
 
+func (en Entry) HasHashtags() (bool, error) {
+	content, err := oi.SlurpAndTrim(en.Path)
+	if err != nil {
+		return false, err
+	}
+	matched, err := regexp.MatchString(`#\w+`, content)
+	if err != nil {
+		return false, err
+	}
+	return matched, nil
+}
+
 func (en Entry) HasTag(tag string) bool {
 	_, ok := en.Tags[tag]
 	return ok

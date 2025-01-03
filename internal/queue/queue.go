@@ -44,7 +44,16 @@ func queueEntries(args config.Args) error {
 		if err != nil {
 			return err
 		}
-		if en.HasTag("ask") {
+
+		hasHashtags, err := en.HasHashtags()
+		if err != nil {
+			return err
+		}
+		if !hasHashtags {
+			if err := en.FileAction("Do you want to queue this despite there are no Hashtags?"); err != nil {
+				return err
+			}
+		} else if en.HasTag("ask") {
 			if err := en.FileAction("Do you want to queue this"); err != nil {
 				return err
 			}
