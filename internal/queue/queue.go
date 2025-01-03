@@ -50,10 +50,10 @@ func queueEntries(args config.Args) error {
 			return err
 		}
 		if !hasHashtags {
-			if err := en.FileAction("Do you want to queue this despite there are no Hashtags?"); err != nil {
-				return err
-			}
-		} else if en.HasTag("ask") {
+			colour.Warnf("The following entry has got no hashtags:")
+			fmt.Printf("\n")
+		}
+		if !hasHashtags || en.HasTag("ask") {
 			if err := en.FileAction("Do you want to queue this"); err != nil {
 				return err
 			}

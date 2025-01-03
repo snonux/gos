@@ -14,5 +14,7 @@ var (
 	Info2f   = info2Col.PrintfFunc()
 	SInfo2f  = info2Col.SprintfFunc()
 	Ackf     = color.New(color.FgBlack, color.BgHiYellow, color.Bold).PrintfFunc()
+	warnCol  = color.New(color.FgHiWhite, color.BgRed)
+	Warnf    = warnCol.PrintfFunc()
 	Successf = color.New(color.FgWhite, color.BgGreen).PrintfFunc()
 )

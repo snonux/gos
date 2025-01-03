@@ -193,7 +193,7 @@ func (en Entry) Remove() error {
 }
 
 func (en Entry) FileAction(question string) error {
-	content, _, err := en.Content()
+	content, err := oi.SlurpAndTrim(en.Path)
 	if err != nil {
 		return err
 	}
