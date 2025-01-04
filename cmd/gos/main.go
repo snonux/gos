@@ -32,6 +32,7 @@ func main() {
 	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
 	summaryFor := flag.String("summaryFor", "", "Generate a summary in Gemtext format, format is coma separated string of months, e.g. 202410,202411")
 	gemtexterEnable := flag.Bool("gemtexterEnable", true, "Add special Gemtexter tags to the Gemtext summary")
+	composeEntry := flag.Bool("compose", true, "Compose a new entry")
 	flag.Parse()
 
 	secrets, err := config.NewSecrets(secretsConfigPath)
@@ -52,6 +53,7 @@ func main() {
 		Secrets:           secrets,
 		OAuth2Browser:     *browser,
 		GemtexterEnable:   *gemtexterEnable,
+		ComposeEntry:      *composeEntry,
 	}
 	if *summaryFor != "" {
 		args.SummaryFor = strings.Split(*summaryFor, ",")

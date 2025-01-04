@@ -62,7 +62,7 @@ func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 	}
 
 	question := fmt.Sprintf("Do you want to post this message to Linkedin (%v)?", prev)
-	if content, err = prompt.FileAction(question, content, en.Path); err != nil {
+	if content, err = prompt.FileAction(question, content, en.Path, prompt.RandomOption); err != nil {
 		return err
 	}
 

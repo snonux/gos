@@ -3,6 +3,8 @@ package internal
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/config"
@@ -16,6 +18,13 @@ import (
 func Run(ctx context.Context, args config.Args) error {
 	if len(args.SummaryFor) > 0 {
 		return summary.Run(ctx, args)
+	}
+
+	if args.ComposeEntry {
+		entryPath := fmt.Sprintf("%s/%d.ask.txt", args.GosDir, time.Now().Unix())
+		if err := prompt.EditFile(entryPath); err != nil {
+			return err
+		}
 	}
 
 	if err := queue.Run(args); err != nil {

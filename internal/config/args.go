@@ -24,6 +24,7 @@ type Args struct {
 	OAuth2Browser     string
 	SummaryFor        []string
 	GemtexterEnable   bool
+	ComposeEntry      bool
 }
 
 func (a *Args) ParsePlatforms(platformStrs string) error {

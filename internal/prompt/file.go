@@ -16,17 +16,24 @@ var (
 	ErrAborted     = errors.New("aborted")
 	ErrDeleted     = errors.New("deleted")
 	ErrRamdomOther = errors.New("randomOther")
+	RandomOption   = true
 )
 
-func FileAction(question, content, filePath string) (string, error) {
+func FileAction(question, content, filePath string, includeRandomOption ...bool) (string, error) {
 	colour.Info2f(filePath + ":")
 	fmt.Print("\n")
 	colour.Info2f(content)
 	fmt.Print("\n")
 	reader := bufio.NewReader(os.Stdin)
 
+	includeRandom := len(includeRandomOption) > 0 && includeRandomOption[0] == RandomOption
+	var randomOption string
+	if includeRandom {
+		randomOption = "/r=random other"
+	}
+
 	for {
-		colour.Ackf("%s (y=yes/n=no/e=edit/d=delete/r=random other):", question)
+		colour.Ackf("%s (y=yes/n=no/e=edit/d=delete%s):", question, randomOption)
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			return "", fmt.Errorf("error reading input: %w", err)
@@ -44,16 +51,23 @@ func FileAction(question, content, filePath string) (string, error) {
 			if content, err = oi.SlurpAndTrim(filePath); err != nil {
 				return content, err
 			}
-			return FileAction(question, content, filePath)
+			return FileAction(question, content, filePath, includeRandomOption...)
 		case "d", "delete":
 			if err := os.Remove(filePath); err != nil {
 				return content, err
 			}
 			return content, fmt.Errorf("%w %s", ErrDeleted, filePath)
 		case "r", "random", "random other":
-			return content, fmt.Errorf("%w %s", ErrRamdomOther, filePath)
+			if includeRandom {
+				return content, fmt.Errorf("%w %s", ErrRamdomOther, filePath)
+			}
+			fallthrough
 		default:
-			fmt.Println("Please respond with one of [ynedr].")
+			var r string
+			if includeRandom {
+				r = "r"
+			}
+			fmt.Printf("Please respond with one of [yned%s].\n", r)
 		}
 	}
 }
