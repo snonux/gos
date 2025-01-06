@@ -12,8 +12,6 @@ import (
 	"golang.org/x/exp/rand"
 )
 
-// TODO: Rewrite all functions here which use channels with range over functions iterators?
-
 var ErrNotFound = errors.New("no file/entry found")
 
 func EnsureDir(dir string) error {

@@ -8,7 +8,6 @@ import (
 	"codeberg.org/snonux/gos/internal/colour"
 )
 
-// TODO: Support quarterly summary in Gemtext format of all posted posts.
 type Args struct {
 	GosDir            string
 	CacheDir          string

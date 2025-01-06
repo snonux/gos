@@ -106,7 +106,7 @@ However, you will notice that there are no messages queued to be posted yet. Rea
 
 ## Composing Messages to Be Posted
 
-To post messages using Gos, you need to create text files that contain the content of the posts. These files are placed inside the directory specified by the --gosDir flag (the default directory is `~/.gosdir`). Each text file represents a single post and must have the .txt extension.
+To post messages using Gos, you need to create text files that contain the content of the posts. These files are placed inside the directory specified by the --gosDir flag (the default directory is `~/.gosdir`). Each text file represents a single post and must have the .txt extension. You can also simply run `gos --compose` to compose a new entry. It will open simply a new text file in `gosDir`.
 
 ### Basic Structure of a Message File
 
@@ -120,22 +120,26 @@ Maybe add a link here: https://foo.zone
 #foo #cool #gos #golang
 ```
 
-The message is just arbitrary text, and Gos does not parse any of the content other than ensuring the overall allowed size for the social media platform isn't exceeded. If it exceeds the limit, Gos will prompt you to edit the post using your standard text editor (as specified by the `EDITOR` environment variable). All the hyperlinks, hashtags, etc., are interpreted by the social platforms themselves (e.g., Mastodon, LinkedIn) when posting.
+The message is just arbitrary text, and, besides of inline share tags (see later in this document) at the beginning, Gos does not parse any of the content other than ensuring the overall allowed size for the social media platform isn't exceeded. If it exceeds the limit, Gos will prompt you to edit the post using your standard text editor (as specified by the `EDITOR` environment variable). All the hyperlinks, hashtags, etc., are interpreted by the social platforms themselves (e.g., Mastodon, LinkedIn) when posting.
 
-### Adding share tags in the Filename
+### Adding Share Tags in the Filename
 
-You can control which platforms the post is shared to and manage other behaviors using tags embedded in the filename.
+You can control which platforms a post is shared to, and manage other behaviors using tags embedded in the filename. To target specific platforms, add tags in the format `share:platform1.-platform2` within the filename. This instructs Gos to share the message only to `platform1` (e.g., Mastodon) and explicitly exclude `platform2` (e.g., LinkedIn). You can include multiple platforms by listing them after `share:`, separated by a `.`. Use the `-` symbol to exclude a platform.
 
-To target specific platforms, you can add tags in the format `share:platform1.-platform2` within the filename. This tells Gos to share the message only to platform1 (e.g., Mastodon) and explicitly exclude platform2 (e.g., LinkedIn). 
+**Examples:**
 
-You can include multiple platforms by listing them after share:, separated by a .. Use the - symbol to exclude a platform.
+- To share only on Mastodon: `~/.gosdir/foopost.share:mastodon.txt`
+- To exclude sharing on LinkedIn: `~/.gosdir/foopost.share:-linkedin.txt`
+- To explicitly share on both LinkedIn and Mastodon: `~/.gosdir/foopost.share:linkedin:mastodon.txt`
+- To explicitly share only on LinkedIn and exclude Mastodon: `~/.gosdir/foopost.share:linkedin:-mastodon.txt`
 
-*Examples:*
+Besides encoding share tags in the filename, they can also be embedded within the `.txt` file content to be queued. For example, a file named `~/.gosdir/foopost.txt` with the following content:
 
-* To share only on Mastodon: `~/.gosdir/foopost.share:mastodon.txt`
-* To not share on LinkedIn: `~/.gosdir/foopost.share:-linkedin.txt`
-* To explicitly share on both: `~/.gosdir/foopost.share:linkedin:mastodon.txt`
-* To explicitly share on only linkedin: `~/.gosdir/foopost.share:linkedin:-mastodon.txt`
+```
+share:mastodon The content of the post here
+```
+
+Gos will parse this content, extract the tags, and queue it as `~/.gosdir/db/platforms/mastodon/foopost.share:mastodon.txt` (see how post queueing works later in this document).
 
 ### Using the `prio` Tag
 
@@ -165,6 +169,9 @@ So you could also have filenames like those:
 * `~/.gosdir/foopost.now.share:-linkedin.txt`
 
 etc...
+
+All of above also works with embedded tags.
+
 
 ### Summary of Filename Structure
 
@@ -199,7 +206,7 @@ When you place a message file in the gosDir, Gos processes it by moving the mess
 ./db/platforms/linkedin/foo.share:-mastodon.txt.20241112-121323.posted
 ```
 
-##  How Message Selection Works in Gos
+## How Message Selection Works in Gos
 
 Gos uses a combination of priority, platform-specific tags, and timing rules to decide which messages to post. The message selection process ensures that messages are posted according to your configured cadence and targets, while respecting pauses between posts and previously met goals.
 
@@ -209,3 +216,18 @@ The key factors in message selection are:
 * Post History Lookback: The `-lookback` flag tells Gos how many days back to look in the post history to calculate whether the weekly post target has already been met. It ensures that previously posted content is considered before deciding to queue up another message.
 * Message Priority: Messages with no priority value are processed after those with priority. If two messages have the same priority, one is selected randomly.
 * Pause Between Posts: The `-pauseDays` flag allows you to specify a minimum number of days to wait between posts for the same platform. This prevents oversaturation of content and ensures that posts are spread out over time.
+
+## Post Summary as Gemini Gemtext
+
+For my blog, I want to post a summary of all the social messages posted over the last couple of months. For an example, have a look here: https://foo.zone/gemfeed/2025-01-01-posts-from-october-to-december-2024.html. To accomplish this, run:
+
+```sh
+gos --summaryFor 202410,202411,202412
+```
+
+This outputs the summary for the three months specified, as shown in the example. The summary contains posts from all social media networks but removes duplicates.
+
+## More options
+
+Just run `gos --help` for more available options.
+

@@ -33,7 +33,6 @@ func Run(ctx context.Context, args config.Args) error {
 	return nil
 }
 
-// TODO: Fix the Gemtexter inline toc when there are tags in it
 func generateGemtext(entries []entry.Entry, title string, gemtexterEnable bool) (string, error) {
 	var (
 		sb             strings.Builder
