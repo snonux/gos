@@ -162,9 +162,9 @@ func WaitUntilURLIsReachable(url string) error {
 		resp, err := http.Get(url)
 
 		if err != nil {
-			colour.Infof("URL is not reachable: %v", err)
+			colour.Infofln("URL is not reachable: %v", err)
 		} else {
-			colour.Infof("URL is reachable: %s - Status Code: %d", url, resp.StatusCode)
+			colour.Infofln("URL is reachable: %s - Status Code: %d", url, resp.StatusCode)
 			resp.Body.Close()
 			return nil
 		}

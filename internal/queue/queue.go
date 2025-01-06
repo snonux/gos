@@ -110,7 +110,7 @@ func queuePlatforms(args config.Args) error {
 
 		// Keep queued items in trash for a while.
 		trashPath := filepath.Join(trashDir, strings.TrimSuffix(filepath.Base(en.Path), ".queued")+".trash")
-		colour.Infof("Trashing %s -> %s", en.Path, trashPath)
+		colour.Infofln("Trashing %s -> %s", en.Path, trashPath)
 		if err := oi.EnsureParentDir(trashPath); err != nil {
 			return err
 		}

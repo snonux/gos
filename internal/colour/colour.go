@@ -7,14 +7,14 @@ import (
 )
 
 var (
-	Infof = func(format string, args ...any) {
+	Infofln = func(format string, args ...any) {
 		fmt.Printf(format, args...)
 		fmt.Print("\n")
 	}
 	Infoln = func(args ...any) { fmt.Println(args...) }
 
 	info2Col = color.New(color.FgHiYellow, color.BgBlue)
-	Info2f   = func(format string, args ...any) {
+	Info2fln = func(format string, args ...any) {
 		info2Col.Printf(format, args...)
 		fmt.Print("\n")
 	}
@@ -24,7 +24,7 @@ var (
 	Warnln  = warnCol.PrintlnFunc()
 
 	successCol = color.New(color.FgWhite, color.BgGreen)
-	Successf   = func(format string, args ...any) {
+	Successfln = func(format string, args ...any) {
 		successCol.Printf(format, args...)
 		fmt.Print("\n")
 

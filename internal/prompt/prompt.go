@@ -11,7 +11,7 @@ import (
 func Acknowledge(messages ...string) error {
 	if len(messages) > 1 {
 		for _, content := range messages[1:] {
-			colour.Info2f("%s", content)
+			colour.Info2fln("%s", content)
 			fmt.Print("\n")
 		}
 	}
