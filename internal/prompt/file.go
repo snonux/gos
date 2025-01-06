@@ -21,9 +21,7 @@ var (
 
 func FileAction(question, content, filePath string, includeRandomOption ...bool) (string, error) {
 	colour.Info2f("%s:", filePath)
-	fmt.Print("\n")
 	colour.Info2f("%s", content)
-	fmt.Print("\n")
 	reader := bufio.NewReader(os.Stdin)
 
 	includeRandom := len(includeRandomOption) > 0 && includeRandomOption[0] == RandomOption

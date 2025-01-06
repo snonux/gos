@@ -50,8 +50,7 @@ func queueEntries(args config.Args) error {
 			return err
 		}
 		if !hasHashtags {
-			colour.Warnf("The following entry has got no hashtags:")
-			fmt.Printf("\n")
+			colour.Warnln("The following entry has got no hashtags:")
 		}
 		if !hasHashtags || en.HasTag("ask") {
 			if err := en.FileAction("Do you want to queue this"); err != nil {
@@ -112,7 +111,6 @@ func queuePlatforms(args config.Args) error {
 		// Keep queued items in trash for a while.
 		trashPath := filepath.Join(trashDir, strings.TrimSuffix(filepath.Base(en.Path), ".queued")+".trash")
 		colour.Infof("Trashing %s -> %s", en.Path, trashPath)
-		fmt.Print("\n")
 		if err := oi.EnsureParentDir(trashPath); err != nil {
 			return err
 		}

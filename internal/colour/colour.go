@@ -7,14 +7,28 @@ import (
 )
 
 var (
-	// infoCol  = color.New(color.FgCyan, color.BgBlue, color.Bold)
-	Infof    = func(format string, args ...any) { fmt.Printf(format, args...) }
-	Infoln   = func(args ...any) { fmt.Println(args...) }
+	Infof = func(format string, args ...any) {
+		fmt.Printf(format, args...)
+		fmt.Print("\n")
+	}
+	Infoln = func(args ...any) { fmt.Println(args...) }
+
 	info2Col = color.New(color.FgHiYellow, color.BgBlue)
-	Info2f   = info2Col.PrintfFunc()
-	SInfo2f  = info2Col.SprintfFunc()
-	Ackf     = color.New(color.FgBlack, color.BgHiYellow, color.Bold).PrintfFunc()
-	warnCol  = color.New(color.FgHiWhite, color.BgRed)
-	Warnf    = warnCol.PrintfFunc()
-	Successf = color.New(color.FgWhite, color.BgGreen).PrintfFunc()
+	Info2f   = func(format string, args ...any) {
+		info2Col.Printf(format, args...)
+		fmt.Print("\n")
+	}
+	SInfo2f = info2Col.SprintfFunc()
+
+	warnCol = color.New(color.FgHiWhite, color.BgRed)
+	Warnln  = warnCol.PrintlnFunc()
+
+	successCol = color.New(color.FgWhite, color.BgGreen)
+	Successf   = func(format string, args ...any) {
+		successCol.Printf(format, args...)
+		fmt.Print("\n")
+
+	}
+
+	Ackf = color.New(color.FgBlack, color.BgHiYellow, color.Bold).PrintfFunc()
 )
