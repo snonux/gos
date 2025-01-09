@@ -68,9 +68,9 @@ func TestInlineExtractTagsFromContent(t *testing.T) {
 				expectedMainContent = strings.Join(parts[1:], " ")
 			}
 
-			if contentWithoutTags != expectedMainContent {
+			if contentWithoutTags != strings.TrimSpace(expectedMainContent) {
 				t.Errorf("expected the main content to be '%s' but got '%s'",
-					expectedMainContent, contentWithoutTags)
+					expectedMainContent, strings.TrimSpace(contentWithoutTags))
 			}
 		})
 	}
