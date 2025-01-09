@@ -77,7 +77,7 @@ func inlineExtractTagsFromContent(content string) ([]string, string, error) {
 				}
 			}
 		}
-		return tags, strings.Join(parts[1:], " "), nil
+		return tags, strings.TrimSpace(strings.Join(parts[1:], " ")), nil
 	}
 
 	return []string{}, content, nil
