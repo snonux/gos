@@ -15,7 +15,7 @@ import (
 	"codeberg.org/snonux/gos/internal/summary"
 )
 
-func Run(ctx context.Context, args config.Args) error {
+func run(ctx context.Context, args config.Args) error {
 	if len(args.SummaryFor) > 0 {
 		return summary.Run(ctx, args)
 	}

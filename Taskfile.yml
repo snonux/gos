@@ -7,6 +7,7 @@ tasks:
     deps: ["build"]
     cmds:
       - cp -v ./gos ~/go/bin/
+      - cp -v ./gosc ~/go/bin/
   run:
     deps: ["dev"]
     cmds:
@@ -14,10 +15,12 @@ tasks:
   build:
     cmds:
       - go build -o gos cmd/gos/main.go
+      - go build -o gosc cmd/gosc/main.go
   dev:
     deps: ["test", "vet", "lint"]
     cmds:
       - go build -race -o gos cmd/gos/main.go
+      - go build -race -o gosc cmd/gosc/main.go
   test:
     cmds:
       - go clean -testcache
@@ -36,5 +39,3 @@ tasks:
     cmds:
       - go install golang.org/x/tools/gopls@latest
       - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-
-      
