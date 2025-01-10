@@ -27,7 +27,7 @@ func Run(args config.Args, platform platforms.Platform) (entry.Entry, error) {
 	if err != nil {
 		return entry.Zero, err
 	}
-	stats.Render(platform)
+	stats.RenderTable(platform)
 
 	if stats.queued < args.MinQueued {
 		_ = prompt.Acknowledge(

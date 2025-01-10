@@ -24,6 +24,10 @@ type stats struct {
 	postsPerDay       float64
 	postsPerDayTarget float64
 	lastPostDaysAgo   float64
+
+	totalPosted      int
+	totalSinceDays   float64
+	totalPostsPerDay float64
 }
 
 func newStats(dir string, lookback time.Duration, target int) (stats, error) {
@@ -45,36 +49,6 @@ func (s stats) String() string {
 	)
 }
 
-func (s stats) Render(platform platforms.Platform) {
-	var sb strings.Builder
-
-	sep := colour.SInfo2f("+%s+%s+", strings.Repeat("-", 22), strings.Repeat("-", 13))
-	sb.WriteString(sep)
-	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo2f("| %-20s | %-11s |", platform, "Stat. value"))
-	sb.WriteString("\n")
-	sb.WriteString(sep)
-	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo2f("| %-20s | %-11s |", "Stats since (days)", fmt.Sprintf("%.02f", s.sinceDays)))
-	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo2f("| %-20s | %-11s |", "#Posted entries", strconv.Itoa(s.posted)))
-	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo2f("| %-20s | %-11s |", "#Queued entries", strconv.Itoa(s.queued)))
-	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo2f("| %-20s | %-11s |", "Enough for (days)", fmt.Sprintf("%.02f", s.queuedForDays)))
-	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo2f("| %-20s | %-11s |", "Last post (days ago)", fmt.Sprintf("%.02f", s.lastPostDaysAgo)))
-	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo2f("| %-20s | %-11s |", "Posts per day", fmt.Sprintf("%.02f", s.postsPerDay)))
-	sb.WriteString("\n")
-	sb.WriteString(colour.SInfo2f("| %-20s | %-11s |", "Posts per day target", fmt.Sprintf("%.02f", s.postsPerDayTarget)))
-	sb.WriteString("\n")
-	sb.WriteString(sep)
-	sb.WriteString("\n")
-
-	fmt.Print(sb.String())
-}
-
 func (s stats) targetHit(pauseDays, maxQueuedDays int) bool {
 	if s.queuedForDays > float64(maxQueuedDays) {
 		s.postsPerDayTarget++
@@ -93,9 +67,10 @@ func (s stats) targetHit(pauseDays, maxQueuedDays int) bool {
 
 func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 	var (
-		now    time.Time = timestamp.NowTime()
-		oldest time.Time = now
-		newest time.Time = timestamp.OldestValidTime()
+		now         time.Time = timestamp.NowTime()
+		newest      time.Time = timestamp.OldestValidTime()
+		oldest      time.Time = now // Oldest since lookbackTime
+		totalOldest time.Time = now // All time oldest
 	)
 
 	err := oi.TraverseDir(dir, func(file os.DirEntry) error {
@@ -104,7 +79,14 @@ func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 		if err != nil {
 			return err
 		}
-		if ent.State != entry.Posted || ent.Time.Before(lookbackTime) {
+		if ent.State != entry.Posted {
+			return nil
+		}
+		if ent.Time.Before(totalOldest) {
+			totalOldest = ent.Time
+		}
+		s.totalPosted++
+		if ent.Time.Before(lookbackTime) {
 			return nil
 		}
 		// Ignore .now.
@@ -125,9 +107,13 @@ func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 	}
 
 	since := now.Sub(oldest)
-	s.sinceDays = since.Abs().Hours() / 24
+	s.sinceDays = since.Abs().Hours() / 24.0
 	s.postsPerDay = float64(s.posted) / float64(s.sinceDays)
 	s.lastPostDaysAgo = now.Sub(newest).Hours() / 24.0
+
+	since = now.Sub(totalOldest)
+	s.totalSinceDays = since.Abs().Hours() / 24.0
+	s.totalPostsPerDay = float64(s.totalPosted) / float64(s.totalSinceDays)
 
 	return nil
 }
@@ -153,6 +139,49 @@ func (s *stats) gatherQueuedStats(dir string) error {
 	s.queuedForDays = float64(s.queued) / s.postsPerDayTarget
 
 	return err
+}
+
+func (s stats) RenderTable(platform platforms.Platform) {
+	var sb strings.Builder
+
+	dataRow := func(descr1, val1, descr2, val2 string) {
+		const format = "| %-21s | %-11s | %-21s | %-11s |"
+		sb.WriteString(colour.SInfo2f(format, descr1, val1, descr2, val2))
+		sb.WriteString("\n")
+	}
+
+	sep := colour.SInfo2f("+%s+%s+%s+%s+", strings.Repeat("-", 23),
+		strings.Repeat("-", 13), strings.Repeat("-", 23), strings.Repeat("-", 13))
+
+	separator := func() {
+		sb.WriteString(sep)
+		sb.WriteString("\n")
+	}
+
+	val := func(val any) string {
+		switch v := val.(type) {
+		case int:
+			return strconv.Itoa(v)
+		case float64:
+			return fmt.Sprintf("%0.2f", v)
+		default:
+			panic("unexpeced type")
+		}
+	}
+
+	separator()
+	dataRow(platform.String(), "value", "Lifetime stats", "value")
+	separator()
+	dataRow("Since (days)", val(s.sinceDays), "Total since (days)", val(s.totalSinceDays))
+	dataRow("#Posted entries", val(s.posted), "#Total posted entries", val(s.totalPosted))
+	dataRow("#Queued entries", val(s.queued), "", "")
+	dataRow("Enough for (days)", val(s.queuedForDays), "", "")
+	dataRow("Last post (days ago)", val(s.lastPostDaysAgo), "", "")
+	dataRow("Posts per day", val(s.postsPerDay), "Total posts per day", val(s.totalPostsPerDay))
+	dataRow("Posts per day target", val(s.postsPerDayTarget), "", "")
+	separator()
+
+	fmt.Print(sb.String())
 }
 
 func pastTime(duration time.Duration) time.Time {
