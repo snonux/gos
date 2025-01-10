@@ -23,7 +23,7 @@ var (
 
 func Run(args config.Args, platform platforms.Platform) (entry.Entry, error) {
 	dir := fmt.Sprintf("%s/db/platforms/%s", args.GosDir, platform.String())
-	stats, err := newStats(dir, args.Lookback, args.Target)
+	stats, err := newStats(dir, args.Lookback, args.Target, args.PauseDays, args.MaxDaysQueued)
 	if err != nil {
 		return entry.Zero, err
 	}
@@ -40,7 +40,7 @@ func Run(args config.Args, platform platforms.Platform) (entry.Entry, error) {
 	if err != nil && !errors.Is(err, oi.ErrNotFound) {
 		return en, nil // Unknown error
 	}
-	if !en.HasTag("now") && stats.targetHit(args.PauseDays, args.MaxDaysQueued) {
+	if !en.HasTag("now") && stats.targetHit() {
 		return entry.Zero, ErrNothingToSchedule
 	}
 	return en, nil

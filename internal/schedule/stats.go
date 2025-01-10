@@ -28,10 +28,12 @@ type stats struct {
 	totalPosted      int
 	totalSinceDays   float64
 	totalPostsPerDay float64
+
+	pauseDays int
 }
 
-func newStats(dir string, lookback time.Duration, target int) (stats, error) {
-	s := stats{postsPerDayTarget: float64(target) / 7}
+func newStats(dir string, lookback time.Duration, target, pauseDays, maxQueuedDays int) (stats, error) {
+	s := stats{postsPerDayTarget: float64(target) / 7, pauseDays: pauseDays}
 
 	if err := s.gatherPostedStats(dir, pastTime(lookback)); err != nil {
 		return s, err
@@ -40,26 +42,37 @@ func newStats(dir string, lookback time.Duration, target int) (stats, error) {
 		return s, err
 	}
 
+	// Dynamically increase the target when there are many entries queued.
+	if s.queuedForDays > float64(maxQueuedDays) {
+		add := (s.queuedForDays - float64(maxQueuedDays)) * 0.01
+		if add > 0.5 {
+			add = 0.5
+		}
+		newTarget := s.postsPerDayTarget + add
+
+		colour.Infoln("Increasing posts per day target", s.postsPerDayTarget, "by", add, "to", newTarget)
+		s.postsPerDayTarget = newTarget
+
+		colour.Infoln("Decreasing pause days from", s.pauseDays, "to", s.pauseDays-1)
+		s.pauseDays--
+	}
+
 	return s, nil
 }
 
-func (s stats) String() string {
-	return fmt.Sprintf("posted:%d,queued:%d,sinceDays:%v,postsPerDayTarget:%v>?%v,lastPostDaysAgo:%v",
-		s.posted, s.queued, s.sinceDays, s.postsPerDay, s.postsPerDayTarget, s.lastPostDaysAgo,
-	)
-}
+// func (s stats) String() string {
+// 	return fmt.Sprintf("posted:%d,queued:%d,sinceDays:%v,postsPerDayTarget:%v>?%v,lastPostDaysAgo:%v",
+// 		s.posted, s.queued, s.sinceDays, s.postsPerDay, s.postsPerDayTarget, s.lastPostDaysAgo,
+// 	)
+// }
 
-func (s stats) targetHit(pauseDays, maxQueuedDays int) bool {
-	if s.queuedForDays > float64(maxQueuedDays) {
-		s.postsPerDayTarget++
-		pauseDays--
-	}
+func (s stats) targetHit() bool {
 	if s.postsPerDay >= s.postsPerDayTarget {
-		colour.Infoln("Posts per day target hit")
+		colour.Infoln("Posts per day target hit", s.postsPerDay, "is greater or equal than", s.postsPerDayTarget)
 		return true
 	}
-	if s.lastPostDaysAgo <= float64(pauseDays) {
-		colour.Infoln("Need to wait a bit longer as last post isn't", pauseDays, "days ago yet")
+	if s.lastPostDaysAgo <= float64(s.pauseDays) {
+		colour.Infoln("Need to wait a bit longer as last post isn't", s.pauseDays, "days ago yet")
 		return true
 	}
 	return false
@@ -144,9 +157,22 @@ func (s *stats) gatherQueuedStats(dir string) error {
 func (s stats) RenderTable(platform platforms.Platform) {
 	var sb strings.Builder
 
-	dataRow := func(descr1, val1, descr2, val2 string) {
+	val := func(val any) string {
+		switch v := val.(type) {
+		case int:
+			return strconv.Itoa(v)
+		case float64:
+			return fmt.Sprintf("%0.2f", v)
+		case string:
+			return v
+		default:
+			return fmt.Sprintf("%v", v)
+		}
+	}
+
+	dataRow := func(descr1 string, val1 any, descr2 string, val2 any) {
 		const format = "| %-21s | %-11s | %-21s | %-11s |"
-		sb.WriteString(colour.SInfo2f(format, descr1, val1, descr2, val2))
+		sb.WriteString(colour.SInfo2f(format, descr1, val(val1), descr2, val(val2)))
 		sb.WriteString("\n")
 	}
 
@@ -158,27 +184,16 @@ func (s stats) RenderTable(platform platforms.Platform) {
 		sb.WriteString("\n")
 	}
 
-	val := func(val any) string {
-		switch v := val.(type) {
-		case int:
-			return strconv.Itoa(v)
-		case float64:
-			return fmt.Sprintf("%0.2f", v)
-		default:
-			panic("unexpeced type")
-		}
-	}
-
 	separator()
 	dataRow(platform.String(), "value", "Lifetime stats", "value")
 	separator()
-	dataRow("Since (days)", val(s.sinceDays), "Total since (days)", val(s.totalSinceDays))
-	dataRow("#Posted entries", val(s.posted), "#Total posted entries", val(s.totalPosted))
-	dataRow("#Queued entries", val(s.queued), "", "")
-	dataRow("Enough for (days)", val(s.queuedForDays), "", "")
-	dataRow("Last post (days ago)", val(s.lastPostDaysAgo), "", "")
-	dataRow("Posts per day", val(s.postsPerDay), "Total posts per day", val(s.totalPostsPerDay))
-	dataRow("Posts per day target", val(s.postsPerDayTarget), "", "")
+	dataRow("Since (days)", s.sinceDays, "Total since (days)", s.totalSinceDays)
+	dataRow("#Posted entries", s.posted, "#Total posted entries", s.totalPosted)
+	dataRow("#Queued entries", s.queued, "", "")
+	dataRow("Enough for (days)", s.queuedForDays, "", "")
+	dataRow("Last post (days ago)", s.lastPostDaysAgo, "Pause days", s.pauseDays)
+	dataRow("Posts per day", s.postsPerDay, "Total posts per day", s.totalPostsPerDay)
+	dataRow("Posts per day target", s.postsPerDayTarget, "", "")
 	separator()
 
 	fmt.Print(sb.String())
