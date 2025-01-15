@@ -17,6 +17,7 @@ func TestInlineExtractTagsToFilePath(t *testing.T) {
 		"share:li,foo this    is the main content": "./gosdir/foo.golang.rox.share:linkedin.foo.extracted.txt",
 		"share:li:ma this is the main content":     "./gosdir/foo.golang.rox.share:linkedin:mastodon.extracted.txt",
 		"share:li:ma,now this is the main content": "./gosdir/foo.golang.rox.share:linkedin:mastodon.now.extracted.txt",
+		"share,soon this will be shared soon":      "./gosdir/foo.golang.rox.share.soon.extracted.txt",
 	}
 
 	for content, expectedFilePath := range table {
@@ -42,6 +43,11 @@ func TestInlineExtractTagsFromContent(t *testing.T) {
 		"share:li,foo this    is the main content":   {"share:linkedin", "foo"},
 		"shar()e:li,foo this    is the main content": {"shar()e:li", "foo"},
 		"share this post":                            {},
+		"share,soon the main content here":           {"share", "soon"},
+		`share,soon
+			
+			the main content here
+			#foo`: {"share", "soon"},
 	}
 
 	for input, expectedTags := range table {
@@ -63,9 +69,9 @@ func TestInlineExtractTagsFromContent(t *testing.T) {
 			}
 
 			expectedMainContent := input
-			parts := strings.Split(input, " ")
+			parts := strings.Fields(input)
 			if inlineTagRE.MatchString(parts[0]) {
-				expectedMainContent = strings.Join(parts[1:], " ")
+				expectedMainContent = strings.TrimPrefix(expectedMainContent, parts[0])
 			}
 
 			if contentWithoutTags != strings.TrimSpace(expectedMainContent) {

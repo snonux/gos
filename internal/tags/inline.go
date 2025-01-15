@@ -57,7 +57,7 @@ func inlineExtractTagsFromContent(content string) ([]string, string, error) {
 	isShare := func(tag string) bool {
 		return strings.HasPrefix(tag, "share:")
 	}
-	parts := strings.Split(content, " ")
+	parts := strings.Fields(content)
 	// First word must contain certain symbols to clarify as (inline) tags.
 	if !inlineTagRE.MatchString(parts[0]) {
 		return []string{}, content, nil
@@ -77,7 +77,8 @@ func inlineExtractTagsFromContent(content string) ([]string, string, error) {
 				}
 			}
 		}
-		return tags, strings.TrimSpace(strings.Join(parts[1:], " ")), nil
+		content = strings.TrimPrefix(content, parts[0])
+		return tags, strings.TrimSpace(content), nil
 	}
 
 	return []string{}, content, nil
