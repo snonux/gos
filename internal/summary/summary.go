@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"testing"
 
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
@@ -149,8 +148,6 @@ func prepare(content string) string {
 	content = tagRegex.ReplaceAllString(content, "`$0`")
 	return content
 }
-
-var T *testing.T
 
 func gemtextLink(geminiCapsules []string, url string, maxLen int) string {
 	url = strings.TrimSpace(url)

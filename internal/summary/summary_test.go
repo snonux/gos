@@ -3,7 +3,6 @@ package summary
 import "testing"
 
 func TestGemtextLink(t *testing.T) {
-	T = t
 	geminiCapsules := []string{"foo.zone"}
 
 	table := map[string]string{
