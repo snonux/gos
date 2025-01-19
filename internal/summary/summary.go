@@ -72,7 +72,7 @@ func generateGemtext(args config.Args, entries []entry.Entry, title string) (str
 			sb.WriteString("\n")
 			for _, url := range urls {
 				sb.WriteString("\n")
-				sb.WriteString(gemtextLink(url, 30))
+				sb.WriteString(gemtextLink(args.GeminiCapsule, url, 30))
 			}
 		}
 	}
@@ -149,9 +149,15 @@ func prepare(content string) string {
 	return content
 }
 
-func gemtextLink(url string, maxLen int) string {
+func gemtextLink(geminiCapsule, url string, maxLen int) string {
 	url = strings.TrimSpace(url)
 	urlNoProto := regexp.MustCompile(`^[a-zA-Z]+://`).ReplaceAllString(url, "")
+
+	if strings.HasPrefix(urlNoProto, geminiCapsule) &&
+		(strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://")) {
+		// This is an internal link, so replace proto with gemini://
+		url = "gemini://" + urlNoProto
+	}
 
 	if len(urlNoProto) <= maxLen {
 		return "=> " + url + " " + urlNoProto
