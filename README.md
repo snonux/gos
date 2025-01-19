@@ -233,6 +233,14 @@ Also add the `--gemtexterEnable` flag, if you are using [Gemtexter](https://code
 gos --gemtexterEnable --geminiSummaryFor 202410,202411,202412
 ```
 
+In case there are HTTP links that translate directly to the Geminispace for certain capsules, specify the Gemini capsules as a comma-separated list as follows:
+
+```sh
+gos --gemtexterEnable --geminiSummaryFor 202410,202411,202412 --geminiCapsules "foo.zone,paul.buetow.org"
+```
+
+It will then also generate Gemini Gemtext links in the summary page and flag them with `(Gemini)`.
+
 ## More options
 
 Just run `gos --help` for more available options.
