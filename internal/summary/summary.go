@@ -24,7 +24,7 @@ func Run(ctx context.Context, args config.Args) error {
 	})
 
 	title := fmt.Sprintf("Posts for %s", strings.Join(args.GeminiSummaryFor, " "))
-	gemtext, err := fmt.Print(generateGemtext(entries, title, args.GeminiEnable))
+	gemtext, err := fmt.Print(generateGemtext(args, entries, title))
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func Run(ctx context.Context, args config.Args) error {
 	return nil
 }
 
-func generateGemtext(entries []entry.Entry, title string, geminiEnable bool) (string, error) {
+func generateGemtext(args config.Args, entries []entry.Entry, title string) (string, error) {
 	var (
 		sb             strings.Builder
 		currentDateStr string
@@ -41,7 +41,7 @@ func generateGemtext(entries []entry.Entry, title string, geminiEnable bool) (st
 
 	sb.WriteString("# ")
 	sb.WriteString(title)
-	if geminiEnable {
+	if args.GemtexterEnable {
 		sb.WriteString("\n\n<< template::inline::toc")
 	}
 
@@ -77,7 +77,7 @@ func generateGemtext(entries []entry.Entry, title string, geminiEnable bool) (st
 		}
 	}
 
-	if geminiEnable {
+	if args.GemtexterEnable {
 		sb.WriteString("\n\nOther related posts:")
 		sb.WriteString("\n\n<< template::inline::index posts-from")
 		sb.WriteString("\n\n")

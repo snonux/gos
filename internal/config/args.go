@@ -22,7 +22,7 @@ type Args struct {
 	Secrets           Secrets
 	OAuth2Browser     string
 	GeminiSummaryFor  []string
-	GeminiEnable      bool
+	GemtexterEnable   bool
 	GeminiCapsule     string
 	ComposeEntry      bool
 }

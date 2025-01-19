@@ -15,6 +15,7 @@ import (
 func Main(composeEntryDefault bool) {
 	dry := flag.Bool("dry", false, "Dry run")
 	version := flag.Bool("version", false, "Display version")
+	composeEntry := flag.Bool("compose", composeEntryDefault, "Compose a new entry")
 	gosDir := flag.String("gosDir", filepath.Join(os.Getenv("HOME"), ".gosdir"), "Gos' queue and DB directory")
 	cacheDir := flag.String("cacheDir", filepath.Join(*gosDir, "cache"), "Go's cache dir")
 	browser := flag.String("browser", "firefox", "OAuth2 browser")
@@ -27,9 +28,8 @@ func Main(composeEntryDefault bool) {
 	pauseDays := flag.Int("pauseDays", 3, "How many days until next post can be posted?")
 	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
 	geminiSummaryFor := flag.String("GeminiSummaryFor", "", "Generate a summary in Gemini Gemtext format, format is coma separated string of months, e.g. 202410,202411")
-	geminiEnable := flag.Bool("geminiEnable", true, "Add special Gemtexter tags to the Gemini summary")
 	geminiCapsule := flag.String("geminiCapsule", "foo.zone", "Address of the Gemini capsule. Used by geminiEnable to detect internal links")
-	composeEntry := flag.Bool("compose", composeEntryDefault, "Compose a new entry")
+	gemtexterEnable := flag.Bool("gemtexterEnable", false, "Add special Gemtexter (the static site generator) tags to the Gemini Gemtext summary")
 	flag.Parse()
 
 	secrets, err := config.NewSecrets(secretsConfigPath)
@@ -49,7 +49,7 @@ func Main(composeEntryDefault bool) {
 		CacheDir:          *cacheDir,
 		Secrets:           secrets,
 		OAuth2Browser:     *browser,
-		GeminiEnable:      *geminiEnable,
+		GemtexterEnable:   *gemtexterEnable,
 		GeminiCapsule:     *geminiCapsule,
 		ComposeEntry:      *composeEntry,
 	}

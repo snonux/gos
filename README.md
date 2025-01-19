@@ -222,10 +222,16 @@ The key factors in message selection are:
 For my blog, I want to post a summary of all the social messages posted over the last couple of months. For an example, have a look here: https://foo.zone/gemfeed/2025-01-01-posts-from-october-to-december-2024.html. To accomplish this, run:
 
 ```sh
-gos --summaryFor 202410,202411,202412
+gos --geminiSummaryFor 202410,202411,202412
 ```
 
-This outputs the summary for the three months specified, as shown in the example. The summary contains posts from all social media networks but removes duplicates.
+This outputs the summary for the three months specified, as shown in the example. The summary has posts from all social media networks but removes duplicates.
+
+Also add the `--gemtexterEnable` flag, if you are using [Gemtexter](https://codeberg.org/snonux/gemtexter):
+
+```sh
+gos --gemtexterEnable --geminiSummaryFor 202410,202411,202412
+```
 
 ## More options
 
