@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"testing"
 
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
@@ -72,7 +73,7 @@ func generateGemtext(args config.Args, entries []entry.Entry, title string) (str
 			sb.WriteString("\n")
 			for _, url := range urls {
 				sb.WriteString("\n")
-				sb.WriteString(gemtextLink(args.GeminiCapsule, url, 30))
+				sb.WriteString(gemtextLink(args.GeminiCapsules, url, 30))
 			}
 		}
 	}
@@ -149,23 +150,44 @@ func prepare(content string) string {
 	return content
 }
 
-func gemtextLink(geminiCapsule, url string, maxLen int) string {
+var T *testing.T
+
+func gemtextLink(geminiCapsules []string, url string, maxLen int) string {
 	url = strings.TrimSpace(url)
-	urlNoProto := regexp.MustCompile(`^[a-zA-Z]+://`).ReplaceAllString(url, "")
+	var (
+		urlNoProto = regexp.MustCompile(`^[a-zA-Z]+://`).ReplaceAllString(url, "")
+		links      []string
+	)
 
-	// Is tttttis an internal link? If so, replace PROTO:// with gemini://
-	if strings.HasPrefix(urlNoProto, geminiCapsule) &&
-		(strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://")) {
-		urlNoProto = strings.ReplaceAll(urlNoProto, ".html", ".gmi")
-		url = "gemini://" + urlNoProto
+	// Check whether any element of the slice starts with prefix.
+	hasPrefix := func(str string, prefixes []string) bool {
+		for _, element := range prefixes {
+			if strings.HasPrefix(str, element) {
+				return true
+			}
+		}
+		return false
 	}
 
-	if len(urlNoProto) <= maxLen {
-		return "=> " + url + " " + urlNoProto
+	// Shorten the link description if too long.
+	shorten := func(url, urlNoProto string, maxLen int) string {
+		if len(urlNoProto) <= maxLen {
+			return "=> " + url + " " + urlNoProto
+		}
+		halfLen := (maxLen - 3) / 2
+		shortened := urlNoProto[:halfLen] + "..." + urlNoProto[len(urlNoProto)-halfLen:]
+		return "=> " + url + " " + shortened
 	}
-	halfLen := (maxLen - 3) / 2
-	shorten := urlNoProto[:halfLen] + "..." + urlNoProto[len(urlNoProto)-halfLen:]
-	return "=> " + url + " " + shorten
+
+	// Is this a Gemini link? If so, add it to the link list.
+	if hasPrefix(urlNoProto, geminiCapsules) && hasPrefix(url, []string{"http://", "https://"}) {
+		urlNoProto := strings.ReplaceAll(urlNoProto, ".html", ".gmi")
+		url := "gemini://" + urlNoProto
+		links = append(links, shorten(url, urlNoProto, maxLen)+" (Gemini)")
+	}
+
+	links = append(links, shorten(url, urlNoProto, maxLen))
+	return strings.Join(links, "\n")
 }
 
 func firstFewWords(content string, maxLen int) string {

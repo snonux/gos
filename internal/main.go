@@ -28,7 +28,7 @@ func Main(composeEntryDefault bool) {
 	pauseDays := flag.Int("pauseDays", 3, "How many days until next post can be posted?")
 	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
 	geminiSummaryFor := flag.String("geminiSummaryFor", "", "Generate a summary in Gemini Gemtext format, format is coma separated string of months, e.g. 202410,202411")
-	geminiCapsule := flag.String("geminiCapsule", "foo.zone", "Address of the Gemini capsule. Used by geminiEnable to detect internal links")
+	geminiCapsules := flag.String("geminiCapsules", "foo.zone", "Comma sepaeated list Gemini capsules. Used by geminiEnable to detect Gemtext links")
 	gemtexterEnable := flag.Bool("gemtexterEnable", false, "Add special Gemtexter (the static site generator) tags to the Gemini Gemtext summary")
 	flag.Parse()
 
@@ -50,7 +50,7 @@ func Main(composeEntryDefault bool) {
 		Secrets:           secrets,
 		OAuth2Browser:     *browser,
 		GemtexterEnable:   *gemtexterEnable,
-		GeminiCapsule:     *geminiCapsule,
+		GeminiCapsules:    strings.Split(*geminiCapsules, ","),
 		ComposeEntry:      *composeEntry,
 	}
 	if *geminiSummaryFor != "" {
