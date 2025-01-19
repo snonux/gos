@@ -16,7 +16,7 @@ import (
 )
 
 func run(ctx context.Context, args config.Args) error {
-	if len(args.SummaryFor) > 0 {
+	if len(args.GeminiSummaryFor) > 0 {
 		return summary.Run(ctx, args)
 	}
 

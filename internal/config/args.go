@@ -21,8 +21,9 @@ type Args struct {
 	SecretsConfigPath string
 	Secrets           Secrets
 	OAuth2Browser     string
-	SummaryFor        []string
-	GemtexterEnable   bool
+	GeminiSummaryFor  []string
+	GeminiEnable      bool
+	GeminiCapsule     string
 	ComposeEntry      bool
 }
 

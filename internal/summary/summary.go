@@ -23,8 +23,8 @@ func Run(ctx context.Context, args config.Args) error {
 		return entries[i].Time.Before(entries[j].Time)
 	})
 
-	title := fmt.Sprintf("Posts for %s", strings.Join(args.SummaryFor, " "))
-	gemtext, err := fmt.Print(generateGemtext(entries, title, args.GemtexterEnable))
+	title := fmt.Sprintf("Posts for %s", strings.Join(args.GeminiSummaryFor, " "))
+	gemtext, err := fmt.Print(generateGemtext(entries, title, args.GeminiEnable))
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func Run(ctx context.Context, args config.Args) error {
 	return nil
 }
 
-func generateGemtext(entries []entry.Entry, title string, gemtexterEnable bool) (string, error) {
+func generateGemtext(entries []entry.Entry, title string, geminiEnable bool) (string, error) {
 	var (
 		sb             strings.Builder
 		currentDateStr string
@@ -41,7 +41,7 @@ func generateGemtext(entries []entry.Entry, title string, gemtexterEnable bool) 
 
 	sb.WriteString("# ")
 	sb.WriteString(title)
-	if gemtexterEnable {
+	if geminiEnable {
 		sb.WriteString("\n\n<< template::inline::toc")
 	}
 
@@ -77,7 +77,7 @@ func generateGemtext(entries []entry.Entry, title string, gemtexterEnable bool) 
 		}
 	}
 
-	if gemtexterEnable {
+	if geminiEnable {
 		sb.WriteString("\n\nOther related posts:")
 		sb.WriteString("\n\n<< template::inline::index posts-from")
 		sb.WriteString("\n\n")
@@ -88,7 +88,7 @@ func generateGemtext(entries []entry.Entry, title string, gemtexterEnable bool) 
 
 func matchingEntries(args config.Args) iter.Seq2[entry.Entry, error] {
 	return func(yield func(entry.Entry, error) bool) {
-		for _, dateStr := range args.SummaryFor {
+		for _, dateStr := range args.GeminiSummaryFor {
 			glob := filepath.Join(args.GosDir,
 				"db/platforms/*/", fmt.Sprintf("*%s*-??????.posted", dateStr))
 			paths, err := filepath.Glob(glob)

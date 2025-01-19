@@ -26,8 +26,9 @@ func Main(composeEntryDefault bool) {
 	maxDaysQueued := flag.Int("maxDaysQueued", 365, "Maximum days worth of queued posts until target++ and pauseDays--")
 	pauseDays := flag.Int("pauseDays", 3, "How many days until next post can be posted?")
 	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
-	summaryFor := flag.String("summaryFor", "", "Generate a summary in Gemtext format, format is coma separated string of months, e.g. 202410,202411")
-	gemtexterEnable := flag.Bool("gemtexterEnable", true, "Add special Gemtexter tags to the Gemtext summary")
+	geminiSummaryFor := flag.String("GeminiSummaryFor", "", "Generate a summary in Gemini Gemtext format, format is coma separated string of months, e.g. 202410,202411")
+	geminiEnable := flag.Bool("geminiEnable", true, "Add special Gemtexter tags to the Gemini summary")
+	geminiCapsule := flag.String("geminiCapsule", "foo.zone", "Address of the Gemini capsule. Used by geminiEnable to detect internal links")
 	composeEntry := flag.Bool("compose", composeEntryDefault, "Compose a new entry")
 	flag.Parse()
 
@@ -48,11 +49,12 @@ func Main(composeEntryDefault bool) {
 		CacheDir:          *cacheDir,
 		Secrets:           secrets,
 		OAuth2Browser:     *browser,
-		GemtexterEnable:   *gemtexterEnable,
+		GeminiEnable:      *geminiEnable,
+		GeminiCapsule:     *geminiCapsule,
 		ComposeEntry:      *composeEntry,
 	}
-	if *summaryFor != "" {
-		args.SummaryFor = strings.Split(*summaryFor, ",")
+	if *geminiSummaryFor != "" {
+		args.GeminiSummaryFor = strings.Split(*geminiSummaryFor, ",")
 	}
 
 	if err := args.ParsePlatforms(*platforms); err != nil {
