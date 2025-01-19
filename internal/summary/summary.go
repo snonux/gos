@@ -153,9 +153,10 @@ func gemtextLink(geminiCapsule, url string, maxLen int) string {
 	url = strings.TrimSpace(url)
 	urlNoProto := regexp.MustCompile(`^[a-zA-Z]+://`).ReplaceAllString(url, "")
 
+	// Is tttttis an internal link? If so, replace PROTO:// with gemini://
 	if strings.HasPrefix(urlNoProto, geminiCapsule) &&
 		(strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://")) {
-		// This is an internal link, so replace proto with gemini://
+		urlNoProto = strings.ReplaceAll(urlNoProto, ".html", ".gmi")
 		url = "gemini://" + urlNoProto
 	}
 

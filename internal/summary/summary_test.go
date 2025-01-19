@@ -9,10 +9,11 @@ func TestGemtextLink(t *testing.T) {
 		"http://example.com":  "=> http://example.com example.com",
 		"https://example.org": "=> https://example.org example.org",
 		"https://example.org/some/very/long/link/here?with=a&free=of&parameters=here": "=> https://example.org/some/very/long/link/here?with=a&free=of&parameters=here example.org/s...rameters=here",
-		"http://foo.zone":  "=> gemini://foo.zone foo.zone",
-		"https://foo.zone": "=> gemini://foo.zone foo.zone",
-		"beer://foo.zone":  "=> beer://foo.zone foo.zone",
-		"https://foo.zone/some/very/long/link/here?with=a&free=of&parameters=here": "=> gemini://foo.zone/some/very/long/link/here?with=a&free=of&parameters=here foo.zone/some...rameters=here",
+
+		"beer://foo.zone":                               "=> beer://foo.zone foo.zone",
+		"http://foo.zone":                               "=> gemini://foo.zone foo.zone",
+		"https://foo.zone/index.html":                   "=> gemini://foo.zone/index.gmi foo.zone/index.gmi",
+		"https://foo.zone/gemtext/this-is-awesome.html": "=> gemini://foo.zone/gemtext/this-is-awesome.gmi foo.zone/gemt...s-awesome.gmi",
 	}
 
 	for url, expected := range table {
