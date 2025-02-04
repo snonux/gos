@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"codeberg.org/snonux/gos/internal/config"
+	"codeberg.org/snonux/gos/internal/table"
 )
 
 func Main(composeEntryDefault bool) {
@@ -30,7 +31,19 @@ func Main(composeEntryDefault bool) {
 	geminiSummaryFor := flag.String("geminiSummaryFor", "", "Generate a summary in Gemini Gemtext format, format is coma separated string of months, e.g. 202410,202411")
 	geminiCapsules := flag.String("geminiCapsules", "foo.zone", "Comma sepaeated list Gemini capsules. Used by geminiEnable to detect Gemtext links")
 	gemtexterEnable := flag.Bool("gemtexterEnable", false, "Add special Gemtexter (the static site generator) tags to the Gemini Gemtext summary")
+	dev := flag.Bool("dev", false, "For internal development purposes only")
 	flag.Parse()
+
+	if *dev {
+		tab := table.New("foo", "bar", "baz", 3).
+			Add("hans", "wurst", "klo", 3.3).
+			Add("Klopapier", "Hans", "Wurst", 7)
+
+		if err := tab.Render(); err != nil {
+			log.Fatal(err)
+		}
+		os.Exit(0)
+	}
 
 	secrets, err := config.NewSecrets(secretsConfigPath)
 	if err != nil {
