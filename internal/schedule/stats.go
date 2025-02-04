@@ -1,10 +1,8 @@
 package schedule
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -12,6 +10,7 @@ import (
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/oi"
 	"codeberg.org/snonux/gos/internal/platforms"
+	"codeberg.org/snonux/gos/internal/table"
 	"codeberg.org/snonux/gos/internal/timestamp"
 )
 
@@ -155,48 +154,20 @@ func (s *stats) gatherQueuedStats(dir string) error {
 }
 
 func (s stats) RenderTable(platform platforms.Platform) {
-	var sb strings.Builder
+	err := table.New(platform.String(), "value", "Lifetime stats", "value").
+		WithColor(colour.Info2Col).
+		Add("Since (days)", s.sinceDays, "Total since (days)", s.totalSinceDays).
+		Add("#Posted entries", s.posted, "#Total posted entries", s.totalPosted).
+		Add("#Queued entries", s.queued, "", "").
+		Add("Enough for (days)", s.queuedForDays, "", "").
+		Add("Last post (days ago)", s.lastPostDaysAgo, "Pause days", s.pauseDays).
+		Add("Posts per day", s.postsPerDay, "Total posts per day", s.totalPostsPerDay).
+		Add("Posts per day target", s.postsPerDayTarget, "", "").
+		Render()
 
-	val := func(val any) string {
-		switch v := val.(type) {
-		case int:
-			return strconv.Itoa(v)
-		case float64:
-			return fmt.Sprintf("%0.2f", v)
-		case string:
-			return v
-		default:
-			return fmt.Sprintf("%v", v)
-		}
+	if err != nil {
+		panic(err)
 	}
-
-	dataRow := func(descr1 string, val1 any, descr2 string, val2 any) {
-		const format = "| %-21s | %-11s | %-21s | %-11s |"
-		sb.WriteString(colour.SInfo2f(format, descr1, val(val1), descr2, val(val2)))
-		sb.WriteString("\n")
-	}
-
-	sep := colour.SInfo2f("+%s+%s+%s+%s+", strings.Repeat("-", 23),
-		strings.Repeat("-", 13), strings.Repeat("-", 23), strings.Repeat("-", 13))
-
-	separator := func() {
-		sb.WriteString(sep)
-		sb.WriteString("\n")
-	}
-
-	separator()
-	dataRow(platform.String(), "value", "Lifetime stats", "value")
-	separator()
-	dataRow("Since (days)", s.sinceDays, "Total since (days)", s.totalSinceDays)
-	dataRow("#Posted entries", s.posted, "#Total posted entries", s.totalPosted)
-	dataRow("#Queued entries", s.queued, "", "")
-	dataRow("Enough for (days)", s.queuedForDays, "", "")
-	dataRow("Last post (days ago)", s.lastPostDaysAgo, "Pause days", s.pauseDays)
-	dataRow("Posts per day", s.postsPerDay, "Total posts per day", s.totalPostsPerDay)
-	dataRow("Posts per day target", s.postsPerDayTarget, "", "")
-	separator()
-
-	fmt.Print(sb.String())
 }
 
 func pastTime(duration time.Duration) time.Time {

@@ -13,12 +13,12 @@ var (
 	}
 	Infoln = func(args ...any) { fmt.Println(args...) }
 
-	info2Col = color.New(color.FgHiYellow, color.BgBlue)
+	Info2Col = color.New(color.FgHiYellow, color.BgBlue)
 	Info2fln = func(format string, args ...any) {
-		info2Col.Printf(format, args...)
+		Info2Col.Printf(format, args...)
 		fmt.Print("\n")
 	}
-	SInfo2f = info2Col.SprintfFunc()
+	SInfo2f = Info2Col.SprintfFunc()
 
 	warnCol = color.New(color.FgHiWhite, color.BgRed)
 	Warnln  = warnCol.PrintlnFunc()

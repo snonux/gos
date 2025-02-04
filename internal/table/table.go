@@ -3,6 +3,8 @@ package table
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/fatih/color"
 )
 
 type row []string
@@ -10,15 +12,16 @@ type row []string
 type Table struct {
 	headers []string
 	rows    []row
-	lengths []int // Max length of each col
+	lengths []int                                   // Max length of each col
+	sprintf func(format string, args ...any) string // For colored output
 	err     error
 }
 
 func New(args ...any) *Table {
-
 	t := Table{
 		headers: make([]string, 0, len(args)),
 		lengths: make([]int, 0, len(args)),
+		sprintf: fmt.Sprintf,
 	}
 
 	for _, arg := range args {
@@ -28,6 +31,11 @@ func New(args ...any) *Table {
 	}
 
 	return &t
+}
+
+func (t *Table) WithColor(col *color.Color) *Table {
+	t.sprintf = col.Sprintf
+	return t
 }
 
 func (t *Table) Add(args ...any) *Table {
