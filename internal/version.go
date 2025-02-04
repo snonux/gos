@@ -1,10 +1,12 @@
 package internal
 
-import "fmt"
+import "codeberg.org/snonux/gos/internal/table"
 
-const versionStr = "v0.0.3"
+const versionStr = "v0.0.4"
 
 func printVersion() {
-	fmt.Printf("This is Gos version %s; (C) by Paul Buetow\n", versionStr)
-	fmt.Println("https://codeberg.org/snonux/gos")
+	table.New().
+		Header("Gos version", "Author", "URL").
+		Row(versionStr, "Paul Buetow", "https://codeberg.org/snonux/gos").
+		MustRender()
 }
