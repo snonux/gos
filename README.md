@@ -1,5 +1,7 @@
 # Gos (Go Social Media)
 
+![Gos](gos-small.webp "Gos")
+
 Gos is a Go-based replacement for Buffer.com, providing the ability to schedule and manage social media posts from the command line.
 
 ## Features
