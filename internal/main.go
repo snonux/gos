@@ -35,13 +35,11 @@ func Main(composeEntryDefault bool) {
 	flag.Parse()
 
 	if *dev {
-		tab := table.New("foo", "bar", "baz", 3).
-			Add("hans", "wurst", "klo", 3.3).
-			Add("Klopapier", "Hans", "Wurst", 7)
-
-		if err := tab.Render(); err != nil {
-			log.Fatal(err)
-		}
+		table.New().
+			Header("foo", "bar", "baz", 3).
+			Row("hans", "wurst", "klo", 3.3).
+			Row("Klopapier", "Hans", "Wurst", 7).
+			MustRender()
 		os.Exit(0)
 	}
 

@@ -59,12 +59,6 @@ func newStats(dir string, lookback time.Duration, target, pauseDays, maxQueuedDa
 	return s, nil
 }
 
-// func (s stats) String() string {
-// 	return fmt.Sprintf("posted:%d,queued:%d,sinceDays:%v,postsPerDayTarget:%v>?%v,lastPostDaysAgo:%v",
-// 		s.posted, s.queued, s.sinceDays, s.postsPerDay, s.postsPerDayTarget, s.lastPostDaysAgo,
-// 	)
-// }
-
 func (s stats) targetHit() bool {
 	if s.postsPerDay >= s.postsPerDayTarget {
 		colour.Infoln("Posts per day target hit", s.postsPerDay, "is greater or equal than", s.postsPerDayTarget)
@@ -154,20 +148,17 @@ func (s *stats) gatherQueuedStats(dir string) error {
 }
 
 func (s stats) RenderTable(platform platforms.Platform) {
-	err := table.New(platform.String(), "value", "Lifetime stats", "value").
+	table.New().
 		WithColor(colour.Info2Col).
-		Add("Since (days)", s.sinceDays, "Total since (days)", s.totalSinceDays).
-		Add("#Posted entries", s.posted, "#Total posted entries", s.totalPosted).
-		Add("#Queued entries", s.queued, "", "").
-		Add("Enough for (days)", s.queuedForDays, "", "").
-		Add("Last post (days ago)", s.lastPostDaysAgo, "Pause days", s.pauseDays).
-		Add("Posts per day", s.postsPerDay, "Total posts per day", s.totalPostsPerDay).
-		Add("Posts per day target", s.postsPerDayTarget, "", "").
-		Render()
-
-	if err != nil {
-		panic(err)
-	}
+		Header(platform.String(), "value", "Lifetime stats", "value").
+		Row("Since (days)", s.sinceDays, "Total since (days)", s.totalSinceDays).
+		Row("#Posted entries", s.posted, "#Total posted entries", s.totalPosted).
+		Row("#Queued entries", s.queued, "", "").
+		Row("Enough for (days)", s.queuedForDays, "", "").
+		Row("Last post (days ago)", s.lastPostDaysAgo, "Pause days", s.pauseDays).
+		Row("Posts per day", s.postsPerDay, "Total posts per day", s.totalPostsPerDay).
+		Row("Posts per day target", s.postsPerDayTarget, "", "").
+		MustRender()
 }
 
 func pastTime(duration time.Duration) time.Time {

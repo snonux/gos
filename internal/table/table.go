@@ -17,20 +17,8 @@ type Table struct {
 	err     error
 }
 
-func New(args ...any) *Table {
-	t := Table{
-		headers: make([]string, 0, len(args)),
-		lengths: make([]int, 0, len(args)),
-		sprintf: fmt.Sprintf,
-	}
-
-	for _, arg := range args {
-		strVal := val(arg)
-		t.headers = append(t.headers, strVal)
-		t.lengths = append(t.lengths, len(strVal))
-	}
-
-	return &t
+func New() *Table {
+	return &Table{sprintf: fmt.Sprintf}
 }
 
 func (t *Table) WithColor(col *color.Color) *Table {
@@ -38,7 +26,20 @@ func (t *Table) WithColor(col *color.Color) *Table {
 	return t
 }
 
-func (t *Table) Add(args ...any) *Table {
+func (t *Table) Header(args ...any) *Table {
+	t.headers = make([]string, 0, len(args))
+	t.lengths = make([]int, 0, len(args))
+
+	for _, arg := range args {
+		strVal := val(arg)
+		t.headers = append(t.headers, strVal)
+		t.lengths = append(t.lengths, len(strVal))
+	}
+
+	return t
+}
+
+func (t *Table) Row(args ...any) *Table {
 	if len(args) != len(t.headers) {
 		t.err = fmt.Errorf("Table row (%v) not same length as table headers (%v)", args, t.headers)
 	}
@@ -59,7 +60,19 @@ func (t *Table) Add(args ...any) *Table {
 	return t
 }
 
+func (t *Table) MustRender() {
+	if err := t.Render(); err != nil {
+		panic(err)
+	}
+}
+
 func (t *Table) Render() error {
+	if len(t.headers) == 0 {
+		return fmt.Errorf("no headers")
+	}
+	if len(t.rows) == 0 {
+		return fmt.Errorf("no rows")
+	}
 	if t.err != nil {
 		return t.err
 	}
