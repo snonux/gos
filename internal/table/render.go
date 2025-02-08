@@ -1,7 +1,6 @@
 package table
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -33,26 +32,32 @@ func (r render) String() string {
 	var sb strings.Builder
 
 	sb.WriteString(r.separator)
-	sb.WriteString(r.rowString(r.tab.headers))
+	sb.WriteString(r.rowString(r.tab.headers, r.tab.sheaderf))
 
 	sb.WriteString(r.separator)
 	for _, row := range r.tab.rows {
-		sb.WriteString(r.rowString(row))
+		sb.WriteString(r.rowString(row, r.tab.sprintf))
 	}
 	sb.WriteString(r.separator)
 
 	return sb.String()
 }
 
-func (r render) rowString(row []string) string {
-	var sb strings.Builder
+func (r render) rowString(row []string, stextf formatFunc) string {
+	var (
+		sb     strings.Builder
+		sbasef = r.tab.sprintf
+	)
 
 	for i, col := range row {
-		sb.WriteString(fmt.Sprintf("| %s ", col))
+		sb.WriteString(sbasef("| "))
+		sb.WriteString(stextf("%s", col))
+		sb.WriteString(sbasef(" "))
 		for j := len(col); j < r.tab.lengths[i]; j++ {
-			sb.WriteString(" ")
+			sb.WriteString(sbasef(" "))
 		}
 	}
+	sb.WriteString(sbasef("|"))
 
-	return r.tab.sprintf("%s|", sb.String()) + "\n"
+	return sb.String() + "\n"
 }

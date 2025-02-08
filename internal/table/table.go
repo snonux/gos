@@ -3,25 +3,42 @@ package table
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
+	"github.com/buger/goterm"
 	"github.com/fatih/color"
 )
 
 type row []string
 
+type formatFunc func(format string, args ...any) string
+
 type Table struct {
-	headers []string
-	rows    []row
-	lengths []int                                   // Max length of each col
-	sprintf func(format string, args ...any) string // For colored output
-	err     error
+	headers  []string
+	rows     []row
+	lengths  []int      // Max length of each col
+	sheaderf formatFunc // For colored output
+	sprintf  formatFunc // For colored output
+	err      error
 }
 
 func New() *Table {
-	return &Table{sprintf: fmt.Sprintf}
+	return &Table{
+		sprintf:  fmt.Sprintf,
+		sheaderf: fmt.Sprintf,
+	}
 }
 
 func (t *Table) WithColor(col *color.Color) *Table {
+	return t.WithHeaderColor(col).WithBaseColor(col)
+}
+
+func (t *Table) WithHeaderColor(col *color.Color) *Table {
+	t.sheaderf = col.Sprintf
+	return t
+}
+
+func (t *Table) WithBaseColor(col *color.Color) *Table {
 	t.sprintf = col.Sprintf
 	return t
 }
@@ -40,24 +57,56 @@ func (t *Table) Header(args ...any) *Table {
 }
 
 func (t *Table) Row(args ...any) *Table {
-	if len(args) != len(t.headers) {
-		t.err = fmt.Errorf("Table row (%v) not same length as table headers (%v)", args, t.headers)
-	}
-	if t.err != nil {
-		return t
+	t.addRow(vals(args...)...)
+	return t
+}
+
+func (t *Table) TextBox(text string) *Table {
+	maxLen := goterm.Width() - 4
+	words := strings.Split(text, "\n")
+	var result []string
+
+	for _, line := range words {
+		var currentLine string
+		for _, word := range strings.Fields(line) {
+			if len(currentLine)+len(word)+1 <= maxLen {
+				if len(currentLine) > 0 {
+					currentLine += " "
+				}
+				currentLine += word
+			} else {
+				if len(currentLine) > 0 {
+					result = append(result, currentLine)
+				}
+				currentLine = word
+			}
+		}
+		if len(currentLine) > 0 {
+			result = append(result, currentLine)
+		}
 	}
 
-	row := make(row, 0, len(args))
-	for i, arg := range args {
-		strVal := val(arg)
-		row = append(row, strVal)
-		if t.lengths[i] < len(row[i]) {
-			t.lengths[i] = len(row[i])
+	for _, line := range result {
+		t.addRow(line)
+	}
+
+	return t
+}
+
+func (t *Table) addRow(row ...string) {
+	if len(row) != len(t.headers) {
+		t.err = fmt.Errorf("Table row (%v) not same length as table headers (%v)", row, t.headers)
+	}
+	if t.err != nil {
+		return
+	}
+
+	for i, strVal := range row {
+		if t.lengths[i] < len(strVal) {
+			t.lengths[i] = len(strVal)
 		}
 	}
 	t.rows = append(t.rows, row)
-
-	return t
 }
 
 func (t *Table) MustRender() {
@@ -93,13 +142,10 @@ func val(val any) string {
 	}
 }
 
-// func dataRow(sb *strings.Builder, descr1 string, val1 any, descr2 string, val2 any) {
-// 	const format = "| %-21s | %-11s | %-21s | %-11s |"
-// 	sb.WriteString(colour.SInfo2f(format, descr1, val(val1), descr2, val(val2)))
-// 	sb.WriteString("\n")
-// }
-
-// func (t *Table) separator() {
-// 	t.sb.WriteString(t.sep)
-// 	t.sb.WriteString("\n")
-// }
+func vals(vals ...any) []string {
+	strVals := make([]string, 0, len(vals))
+	for _, v := range vals {
+		strVals = append(strVals, val(v))
+	}
+	return strVals
+}

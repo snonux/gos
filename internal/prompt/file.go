@@ -10,6 +10,7 @@ import (
 
 	"codeberg.org/snonux/gos/internal/colour"
 	"codeberg.org/snonux/gos/internal/oi"
+	"codeberg.org/snonux/gos/internal/table"
 )
 
 var (
@@ -20,8 +21,12 @@ var (
 )
 
 func FileAction(question, content, filePath string, includeRandomOption ...bool) (string, error) {
-	colour.Info2fln("%s:", filePath)
-	colour.Info2fln("%s", content)
+	table.New().
+		WithBaseColor(colour.AttentionCol).
+		WithHeaderColor(colour.AckCol).
+		Header(question).
+		TextBox(content).
+		MustRender()
 	reader := bufio.NewReader(os.Stdin)
 
 	includeRandom := len(includeRandomOption) > 0 && includeRandomOption[0] == RandomOption
@@ -31,7 +36,8 @@ func FileAction(question, content, filePath string, includeRandomOption ...bool)
 	}
 
 	for {
-		colour.Ackf("%s (y=yes/n=no/e=edit/d=delete%s):", question, randomOption)
+		fmt.Print("  ")
+		colour.Ackf("(y=yes/n=no/e=edit/d=delete%s):", randomOption)
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			return "", fmt.Errorf("error reading input: %w", err)

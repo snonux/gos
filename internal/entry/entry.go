@@ -131,7 +131,7 @@ func (en Entry) ContentWithLimit(sizeLimit int) (string, []string, error) {
 		return "", urls, err
 	}
 	if len(content) > sizeLimit {
-		err := fmt.Errorf("%w (%d > %d): %v", ErrSizeLimitExceeded, len(content), sizeLimit, en)
+		err := fmt.Errorf("%w (%d > %d)", ErrSizeLimitExceeded, len(content), sizeLimit)
 		if err2 := prompt.Acknowledge("You need to shorten the content as "+err.Error(), content); err2 != nil {
 			return "", urls, errors.Join(err, err2)
 		}

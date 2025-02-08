@@ -149,7 +149,7 @@ func (s *stats) gatherQueuedStats(dir string) error {
 
 func (s stats) RenderTable(platform platforms.Platform) {
 	table.New().
-		WithColor(colour.Info2Col).
+		WithColor(colour.AttentionCol).
 		Header(platform.String(), "value", "Lifetime stats", "value").
 		Row("Since (days)", s.sinceDays, "Total since (days)", s.totalSinceDays).
 		Row("#Posted entries", s.posted, "#Total posted entries", s.totalPosted).

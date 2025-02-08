@@ -13,15 +13,9 @@ var (
 	}
 	Infoln = func(args ...any) { fmt.Println(args...) }
 
-	Info2Col = color.New(color.FgHiYellow, color.BgBlue)
-	Info2fln = func(format string, args ...any) {
-		Info2Col.Printf(format, args...)
-		fmt.Print("\n")
-	}
-	SInfo2f = Info2Col.SprintfFunc()
-
-	warnCol = color.New(color.FgHiWhite, color.BgRed)
-	Warnln  = warnCol.PrintlnFunc()
+	AttentionCol = color.New(color.FgHiYellow, color.BgBlue)
+	warnCol      = color.New(color.FgHiWhite, color.BgRed)
+	Warnln       = warnCol.PrintlnFunc()
 
 	successCol = color.New(color.FgWhite, color.BgGreen)
 	Successfln = func(format string, args ...any) {
@@ -30,5 +24,6 @@ var (
 
 	}
 
-	Ackf = color.New(color.FgBlack, color.BgHiYellow, color.Bold).PrintfFunc()
+	AckCol = color.New(color.FgBlack, color.BgHiYellow, color.Bold)
+	Ackf   = AckCol.PrintfFunc()
 )
