@@ -224,7 +224,11 @@ func performImageUpload(ctx context.Context, imagePath, uploadURL, accessToken s
 	fmt.Println(string(body))
 
 	if resp.StatusCode != http.StatusCreated {
-		return fmt.Errorf("upload failed with status %s: %s", resp.Status, string(body))
+		err := fmt.Errorf("upload failed with status %s: %s", resp.Status, string(body))
+		if resp.StatusCode == http.StatusUnauthorized {
+			err = errors.Join(err, errUnauthorized)
+		}
+		return err
 	}
 	return nil
 }
