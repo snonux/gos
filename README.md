@@ -2,7 +2,7 @@
 
 ![Gos](docs/gos-small.webp "Gos")
 
-Gos is a Go-based replacement for Buffer.com, providing the ability to schedule and manage social media posts from the command line.
+Gos is a Go-based replacement for Buffer.com, providing the ability to schedule and manage social media posts from the command line. It can be run, for example, every time you open a new shell or only once per day when you open a new shell.
 
 For a long time, I used Buffer.com to schedule and post my social media messages. But over time, there were more and more problems with that service, including a slow and unintuitive UI, and the free version only allows scheduling up to 10 messages. At one point, they started to integrate an AI assistant, and then I had enough and decided I had to build my own social sharing tool—and Gos was born.
 
