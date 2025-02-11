@@ -218,7 +218,7 @@ Hello World :-)
 
 ### The `gosc` binary
 
-`gosc` stands for Gos Composer and will simply launch your `$EDITOR` on a new text file in the gosDir. It is a quick way of composing new posts. Once composed, it will ask for your confirmation on whether the message should be queued or not, and from there it will continue normally like the regular `gos` command.
+`gosc` stands for Gos Composer and will simply launch your `$EDITOR` on a new text file in the gosDir. It's the same as running `gos --compose` realy. It is a quick way of composing new posts. Once composed, it will ask for your confirmation on whether the message should be queued or not, and from there it will continue normally like the regular `gos` command.
 
 ## How Queueing Works in Gos
 
