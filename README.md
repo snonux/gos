@@ -4,19 +4,22 @@
 
 Gos is a Go-based replacement for Buffer.com, providing the ability to schedule and manage social media posts from the command line.
 
+For a long time, I used Buffer.com to schedule and post my social media messages. But over time, there were more and more problems with that service, including a slow and unintuitive UI, and the free version only allows scheduling up to 10 messages. At one point, they started to integrate an AI assistant, and then I had enough and decided I had to build my own social sharing tool—and Gos was born.
+
 ## Features
 
-* Mastodon and LinkedIn support
-* OAuth2 authentication for LinkedIn
+* Mastodon and LinkedIn support.
 * Dry run mode for testing posts without actually publishing.
 * Configurable via flags and environment variables.
 * Easy to integrate into automated workflows.
+* OAuth2 authentication for LinkedIn.
+* Image previews for LinkedIn posts.
 
 ## Installation
 
 ### Prerequisites
 
-* Go (version 1.23 or later)
+* Go (version 1.24 or later)
 * Supported browsers like Firefox, Chrome, etc for oauth2.
 
 ### Build and Install
@@ -69,7 +72,7 @@ Example Configuration File (`~/.config/gos/gosec.json`):
 
 ### Automatically Managed Fields
 
-Once you finish the OAuth2 setup, some fields—like `LinkedInAccessToken` and `LinkedInPersonID`—will get filled in automatically. To check if everything's working without actually posting anything, you can run the app in dry run mode with the `--dry` option. After OAuth2 is successful, Gos will update the file with `LinkedInClientID` and `LinkedInAccessToken`. And if the access token expires, it’ll just go through the OAuth2 process again.
+Once you finish the OAuth2 setup (after the initial run of `gos`), some fields—like `LinkedInAccessToken` and `LinkedInPersonID`—will get filled in automatically. To check if everything's working without actually posting anything, you can run the app in dry run mode with the `--dry` option. After OAuth2 is successful, it will update the file with `LinkedInClientID` and `LinkedInAccessToken`. If the access token expires, it will go through the OAuth2 process again.
 
 ## Invoking Gos
 
@@ -79,10 +82,23 @@ Flags are used to control the tool's behavior. Below are several common ways to 
 
 ### Common Flags
 
-* `--dry` Enables dry run mode, which simulates the posting process without actually sending posts to the platforms.
-* `--gosDir <directory>`: Specifies the directory for the Gos queue/database. Default is `~/.gosdir`
-* `--browser <browser>`: Specifies the OAuth2 browser to use for authentication (e.g., firefox, chrome).
-* `--platform <platform>`: Specifies a comma separated list which social media platform to post to plus max message size (mastodon:500, linkedin:1000, default is all). 
+* `-dry`: Run the application in dry run mode, which simulates operations without making any actual changes.
+* `-version`: Display the current version of the application.
+* `-compose`: Compose a new entry. Default is set by `composeEntryDefault`.
+* `-gosDir`: Specify the directory for Gos' queue and database files. Default is `~/.gosdir`.
+* `-cacheDir`: Specify the directory for Gos' cache. Default is based on the `gosDir` path.
+* `-browser`: Choose the browser for OAuth2 processes. Default is "firefox".
+* `-secretsConfig`: Path to the secret configuration file. Default is `~/.config/gos/gosec.json`.
+* `-platforms`: Enabled platforms along with their post size limits. Default is "Mastodon:500,LinkedIn:1000".
+* `-target`: Target number of posts per week. Default is 2.
+* `-minQueued`: Minimum number of queued items before a warning message is printed. Default is 4.
+* `-maxDaysQueued`: Maximum number of days' worth of queued posts before target is increased and pauseDays decreased. Default is 365.
+* `-pauseDays`: Number of days until the next post can be submitted. Default is 3.
+* `-lookback`: Number of days to look back in time to review posting history. Default is 30.
+* `-geminiSummaryFor`: Generate a summary in Gemini Gemtext format, specifying months as a comma-separated string.
+* `-geminiCapsules`: Comma-separated list of Gemini capsules. Used to detect Gemtext links.
+* `-gemtexterEnable`: Add special tags for Gemtexter, the static site generator, to the Gemini Gemtext summary.
+* `-dev`: For internal development purposes only.
 
 ### Examples
 
@@ -104,7 +120,7 @@ Sharing to all platforms is as simple as the following (assuming it is configure
 
 :-)
 
-However, you will notice that there are no messages queued to be posted yet. Read the next section of this README...
+However, you will notice that there are no messages queued to be posted yet. Relax and read the next section of this README...
 
 ## Composing Messages to Be Posted
 
@@ -128,12 +144,14 @@ The message is just arbitrary text, and, besides of inline share tags (see later
 
 You can control which platforms a post is shared to, and manage other behaviors using tags embedded in the filename. To target specific platforms, add tags in the format `share:platform1.-platform2` within the filename. This instructs Gos to share the message only to `platform1` (e.g., Mastodon) and explicitly exclude `platform2` (e.g., LinkedIn). You can include multiple platforms by listing them after `share:`, separated by a `.`. Use the `-` symbol to exclude a platform.
 
+At the moment, only `linkedin` and `mastodon` are supported, and the shortcuts `li` and `ma` also work.
+
 **Examples:**
 
-- To share only on Mastodon: `~/.gosdir/foopost.share:mastodon.txt`
-- To exclude sharing on LinkedIn: `~/.gosdir/foopost.share:-linkedin.txt`
-- To explicitly share on both LinkedIn and Mastodon: `~/.gosdir/foopost.share:linkedin:mastodon.txt`
-- To explicitly share only on LinkedIn and exclude Mastodon: `~/.gosdir/foopost.share:linkedin:-mastodon.txt`
+* To share only on Mastodon: `~/.gosdir/foopost.share:mastodon.txt`
+* To exclude sharing on LinkedIn: `~/.gosdir/foopost.share:-linkedin.txt`
+* To explicitly share on both LinkedIn and Mastodon: `~/.gosdir/foopost.share:linkedin:mastodon.txt`
+* To explicitly share only on LinkedIn and exclude Mastodon: `~/.gosdir/foopost.share:linkedin:-mastodon.txt`
 
 Besides encoding share tags in the filename, they can also be embedded within the `.txt` file content to be queued. For example, a file named `~/.gosdir/foopost.txt` with the following content:
 
@@ -141,7 +159,17 @@ Besides encoding share tags in the filename, they can also be embedded within th
 share:mastodon The content of the post here
 ```
 
-Gos will parse this content, extract the tags, and queue it as `~/.gosdir/db/platforms/mastodon/foopost.share:mastodon.txt` (see how post queueing works later in this document).
+or
+
+```
+share:mastodon
+
+The content of the post here https://some.foo/link
+
+#some #hashtags
+```
+
+Gos will parse this content, extract the tags, and queue it as `~/.gosdir/db/platforms/mastodon/foopost.share:mastodon.extracted.txt....` (see how post queueing works later in this document).
 
 ### Using the `prio` Tag
 
@@ -172,15 +200,23 @@ So you could also have filenames like those:
 
 etc...
 
-All of above also works with embedded tags.
+All of above also works with embedded tags. E.g.:
 
+```
+share:mastodon,ask,prio Hello wold :-)
+```
 
-### Summary of Filename Structure
+or 
 
-* The text file must be placed in the gosDir.
-* Use the `.txt` extension (`.md` works as well as a hack, to make it compatible with Obsidian).
-* The optional `share` tag controls which platforms the post goes to.
-* The optional `prio` tag controls the priority of the post.
+```
+share:mastodon,ask,prio
+
+Hello World :-)
+```
+
+### The `gosc` binary
+
+`gosc` stands for Gos Composer and will simply launch your `$EDITOR` on a new text file in the gosDir. It is a quick way of composing new posts. Once composed, it will ask for your confirmation on whether the message should be queued or not, and from there it will continue normally like the regular `gos` command.
 
 ## How Queueing Works in Gos
 
@@ -188,7 +224,7 @@ When you place a message file in the gosDir, Gos processes it by moving the mess
 
 ### Step-by-Step Queueing Process
 
-1. Inserting a Message into gosDir: You start by creating a text file that represents your post (e.g., `foo.txt`) and place it in the gosDir. This file is then processed by Gos when it runs.
+1. Inserting a Message into gosDir: You start by creating a text file that represents your post (e.g., `foo.txt`) and place it in the gosDir. This file is then processed by Gos when it runs. The easiest way is to use is `gosc` here.
 
 2. Moving to the Queue: Upon running Gos, the tool identifies the message in the gosDir and places it into the queue for the specified platform. The message is moved into the appropriate directory for each platform in `./db/platforms/PLATFORM`. During this stage, the message file is renamed to include a timestamp indicating when it was queued and given a `.queued` extension.
 
@@ -227,7 +263,7 @@ For my blog, I want to post a summary of all the social messages posted over the
 gos --geminiSummaryFor 202410,202411,202412
 ```
 
-This outputs the summary for the three months specified, as shown in the example. The summary has posts from all social media networks but removes duplicates.
+This outputs the summary for the three specified months, as shown in the example. The summary includes posts from all social media networks but removes duplicates.
 
 Also add the `--gemtexterEnable` flag, if you are using [Gemtexter](https://codeberg.org/snonux/gemtexter):
 
@@ -242,8 +278,3 @@ gos --gemtexterEnable --geminiSummaryFor 202410,202411,202412 --geminiCapsules "
 ```
 
 It will then also generate Gemini Gemtext links in the summary page and flag them with `(Gemini)`.
-
-## More options
-
-Just run `gos --help` for more available options.
-
