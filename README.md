@@ -35,7 +35,9 @@ Build the binary:
 
 ```bash
 go build -o gos ./cmd/gos
+go build -o gosc ./cmd/gosc
 sudo mv gos ~/go/bin
+sudo mv gosc ~/go/bin
 ```
 
 Or if you want to use the `Taskfile`:
