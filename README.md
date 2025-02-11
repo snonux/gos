@@ -124,7 +124,7 @@ Sharing to all platforms is as simple as the following (assuming it is configure
 
 ![Gos](docs/gos-screenshot.webp "Gos Screenshot")
 
-However, you will notice that there are no messages queued to be posted yet. Relax and read the next section of this README...
+However, you will notice that there are no messages queued to be posted yet (not like on the screenshot yet!). Relax and read the next section of this README...
 
 ## Composing Messages to Be Posted
 
