@@ -31,7 +31,7 @@ git clone https://codeberg.org/snonux/gos.git
 cd gos
 ```
 
-Build the binary:
+Build the binaries:
 
 ```bash
 go build -o gos ./cmd/gos
