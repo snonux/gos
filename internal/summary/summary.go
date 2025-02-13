@@ -13,6 +13,8 @@ import (
 	"codeberg.org/snonux/gos/internal/entry"
 )
 
+const maxLinkLength = 80
+
 func Run(ctx context.Context, args config.Args) error {
 	entries, err := deduppedEntries(args)
 	if err != nil {
@@ -72,7 +74,7 @@ func generateGemtext(args config.Args, entries []entry.Entry, title string) (str
 			sb.WriteString("\n")
 			for _, url := range urls {
 				sb.WriteString("\n")
-				sb.WriteString(gemtextLink(args.GeminiCapsules, url, 100))
+				sb.WriteString(gemtextLink(args.GeminiCapsules, url, maxLinkLength))
 			}
 		}
 	}
