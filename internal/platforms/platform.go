@@ -61,7 +61,6 @@ func (p Platform) Post(ctx context.Context, args config.Args, sizeLimit int, en 
 }
 
 func ExpandAliases(shareTag string) (string, error) {
-
 	parts := strings.Split(shareTag, ":")
 	if parts[0] != "share" {
 		return "", fmt.Errorf("expected share tag, but got '%s' in '%s'", parts[0], shareTag)

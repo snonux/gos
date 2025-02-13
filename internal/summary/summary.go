@@ -72,7 +72,7 @@ func generateGemtext(args config.Args, entries []entry.Entry, title string) (str
 			sb.WriteString("\n")
 			for _, url := range urls {
 				sb.WriteString("\n")
-				sb.WriteString(gemtextLink(args.GeminiCapsules, url, 30))
+				sb.WriteString(gemtextLink(args.GeminiCapsules, url, 100))
 			}
 		}
 	}
