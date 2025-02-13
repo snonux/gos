@@ -174,7 +174,7 @@ func gemtextLink(geminiCapsules []string, url string, maxLen int) string {
 			return "=> " + url + " " + urlNoProto
 		}
 		halfLen := (maxLen - 3) / 2
-		shortened := urlNoProto[:halfLen] + "..." + urlNoProto[len(urlNoProto)-halfLen:]
+		shortened := urlNoProto[:halfLen] + "..-.." + urlNoProto[len(urlNoProto)-halfLen:]
 		return "=> " + url + " " + shortened
 	}
 
