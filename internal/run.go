@@ -20,7 +20,7 @@ func run(ctx context.Context, args config.Args) error {
 		return summary.Run(ctx, args)
 	}
 
-	if args.ComposeEntry {
+	if args.ComposeMode {
 		entryPath := fmt.Sprintf("%s/%d.ask.txt", args.GosDir, time.Now().Unix())
 		if err := prompt.EditFile(entryPath); err != nil {
 			return err
@@ -63,9 +63,14 @@ func runPlatform(ctx context.Context, args config.Args, platform platforms.Platf
 	case err != nil:
 		return err
 	}
+
+	if args.ComposeMode {
+		colour.Infoln("Not posting any entry in compose mode!")
+		return nil
+	}
+
 	err = platform.Post(ctx, args, sizeLimit, en)
 	if errors.Is(err, prompt.ErrRamdomOther) || errors.Is(err, prompt.ErrDeleted) {
-
 		return runPlatform(ctx, args, platform, sizeLimit)
 	}
 	return err

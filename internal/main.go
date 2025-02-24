@@ -13,10 +13,10 @@ import (
 	"codeberg.org/snonux/gos/internal/table"
 )
 
-func Main(composeEntryDefault bool) {
+func Main(composeModeDefault bool) {
 	dry := flag.Bool("dry", false, "Dry run")
 	version := flag.Bool("version", false, "Display version")
-	composeEntry := flag.Bool("compose", composeEntryDefault, "Compose a new entry")
+	composeMode := flag.Bool("compose", composeModeDefault, "Compose a new entry")
 	gosDir := flag.String("gosDir", filepath.Join(os.Getenv("HOME"), ".gosdir"), "Gos' queue and DB directory")
 	cacheDir := flag.String("cacheDir", filepath.Join(*gosDir, "cache"), "Go's cache dir")
 	browser := flag.String("browser", "firefox", "OAuth2 browser")
@@ -43,7 +43,7 @@ func Main(composeEntryDefault bool) {
 		os.Exit(0)
 	}
 
-	secrets, err := config.NewSecrets(secretsConfigPath)
+	secrets, err := config.NewSecrets(secretsConfigPath, *composeMode)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func Main(composeEntryDefault bool) {
 		OAuth2Browser:     *browser,
 		GemtexterEnable:   *gemtexterEnable,
 		GeminiCapsules:    strings.Split(*geminiCapsules, ","),
-		ComposeEntry:      *composeEntry,
+		ComposeMode:       *composeMode,
 	}
 	if *geminiSummaryFor != "" {
 		args.GeminiSummaryFor = strings.Split(*geminiSummaryFor, ",")

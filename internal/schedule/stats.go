@@ -79,7 +79,7 @@ func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 		totalOldest time.Time = now // All time oldest
 	)
 
-	err := oi.TraverseDir(dir, func(file os.DirEntry) error {
+	err := oi.ForeachDirEntry(dir, func(file os.DirEntry) error {
 		filePath := filepath.Join(dir, file.Name())
 		ent, err := entry.New(filePath)
 		if err != nil {
@@ -127,7 +127,7 @@ func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time) error {
 func (s *stats) gatherQueuedStats(dir string) error {
 	var firstQueuedPath string
 
-	err := oi.TraverseDir(dir, func(file os.DirEntry) error {
+	err := oi.ForeachDirEntry(dir, func(file os.DirEntry) error {
 		filePath := filepath.Join(dir, file.Name())
 		ent, err := entry.New(filePath)
 		if err != nil {

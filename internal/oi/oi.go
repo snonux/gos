@@ -49,7 +49,22 @@ func ReadDirCh[T any](dir string, cb func(file os.DirEntry) (T, bool)) (chan T, 
 	return ch, nil
 }
 
-func TraverseDir(dir string, cb func(file os.DirEntry) error) error {
+func ReadDir[T any](dir string, cb func(file os.DirEntry) (T, bool)) ([]T, error) {
+	var results []T
+
+	ch, err := ReadDirCh(dir, cb)
+	if err != nil {
+		return results, err
+	}
+
+	for file := range ch {
+		results = append(results, file)
+	}
+
+	return results, nil
+}
+
+func ForeachDirEntry(dir string, cb func(file os.DirEntry) error) error {
 	if err := EnsureDir(dir); err != nil {
 		return err
 	}
@@ -67,21 +82,6 @@ func TraverseDir(dir string, cb func(file os.DirEntry) error) error {
 	}
 
 	return errors.Join(errs...)
-}
-
-func ReadDir[T any](dir string, cb func(file os.DirEntry) (T, bool)) ([]T, error) {
-	var results []T
-
-	ch, err := ReadDirCh(dir, cb)
-	if err != nil {
-		return results, err
-	}
-
-	for file := range ch {
-		results = append(results, file)
-	}
-
-	return results, nil
 }
 
 func ReadDirRandom[T any](dir string, cb func(file os.DirEntry) (T, bool)) (T, error) {

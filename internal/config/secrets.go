@@ -22,8 +22,13 @@ type Secrets struct {
 	LinkedInPersonID string `json:"LinkedInPersonID,omitempty"`
 }
 
-func NewSecrets(configPath string) (Secrets, error) {
+func NewSecrets(configPath string, composeEntry bool) (Secrets, error) {
 	var sec Secrets
+	if composeEntry {
+		// In compose mode, no need to read the secrets.
+		return sec, nil
+	}
+
 	file, err := os.Open(configPath)
 	if err != nil {
 		return sec, fmt.Errorf("failed to open file: %w", err)
