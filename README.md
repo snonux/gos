@@ -48,9 +48,9 @@ go-task install
 
 ## Configuration
 
-Gos requires a configuration file to store API secrets and OAuth2 credentials for each supported social media platform. The configuration is managed using a Secrets structure, which is stored as a JSON file in `~/.config/gos/gosec.json`.
+Gos requires a configuration file to store API secrets and OAuth2 credentials for each supported social media platform. The configuration is managed using a Secrets structure, which is stored as a JSON file in `~/.config/gos/gos.json`.
 
-Example Configuration File (`~/.config/gos/gosec.json`):
+Example Configuration File (`~/.config/gos/gos.json`):
 
 ```json
 {
@@ -90,12 +90,13 @@ Flags are used to control the tool's behavior. Below are several common ways to 
 * `-gosDir`: Specify the directory for Gos' queue and database files. Default is `~/.gosdir`.
 * `-cacheDir`: Specify the directory for Gos' cache. Default is based on the `gosDir` path.
 * `-browser`: Choose the browser for OAuth2 processes. Default is "firefox".
-* `-secretsConfig`: Path to the secret configuration file. Default is `~/.config/gos/gosec.json`.
+* `-configPath`: Path to the configuration file. Default is `~/.config/gos/gos.json`.
 * `-platforms`: Enabled platforms along with their post size limits. Default is "Mastodon:500,LinkedIn:1000".
 * `-target`: Target number of posts per week. Default is 2.
 * `-minQueued`: Minimum number of queued items before a warning message is printed. Default is 4.
 * `-maxDaysQueued`: Maximum number of days' worth of queued posts before target is increased and pauseDays decreased. Default is 365.
 * `-pauseDays`: Number of days until the next post can be submitted. Default is 3.
+* `-runInterval`: Number of hours until the next post run. Default is 18.
 * `-lookback`: Number of days to look back in time to review posting history. Default is 30.
 * `-geminiSummaryFor`: Generate a summary in Gemini Gemtext format, specifying months as a comma-separated string.
 * `-geminiCapsules`: Comma-separated list of Gemini capsules. Used to detect Gemtext links.

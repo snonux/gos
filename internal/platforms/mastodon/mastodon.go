@@ -39,12 +39,12 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 
 	newCtx, cancel := context.WithTimeout(ctx, mastodonTimeout)
 	defer cancel()
-	req, err := http.NewRequestWithContext(newCtx, "POST", args.Secrets.MastodonURL, bytes.NewBuffer(payloadBytes))
+	req, err := http.NewRequestWithContext(newCtx, "POST", args.Config.MastodonURL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+args.Secrets.MastodonAccessToken)
+	req.Header.Set("Authorization", "Bearer "+args.Config.MastodonAccessToken)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}

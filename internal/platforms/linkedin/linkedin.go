@@ -26,7 +26,7 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 	err := post(ctx, args, sizeLimit, en)
 	if errors.Is(err, errUnauthorized) {
 		colour.Infoln(err, "=> trying to refresh LinkedIn access token")
-		args.Secrets.LinkedInAccessToken = "" // Reset the token
+		args.Config.LinkedInAccessToken = "" // Reset the token
 		return post(ctx, args, sizeLimit, en)
 	}
 	return err
@@ -38,7 +38,7 @@ func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 	}
 
 	timeout := linkedInTimeout
-	if args.Secrets.LinkedInAccessToken == "" {
+	if args.Config.LinkedInAccessToken == "" {
 		// Refreshing access token requires more time due to human interaction
 		timeout = 1 * time.Minute
 	}

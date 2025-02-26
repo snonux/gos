@@ -9,22 +9,23 @@ import (
 )
 
 type Args struct {
-	GosDir            string
-	CacheDir          string
-	DryRun            bool
-	Platforms         map[string]int // Platform and post size limits
-	Target            int
-	MinQueued         int
-	MaxDaysQueued     int
-	PauseDays         int
-	Lookback          time.Duration
-	SecretsConfigPath string
-	Secrets           Secrets
-	OAuth2Browser     string
-	GeminiSummaryFor  []string
-	GemtexterEnable   bool
-	GeminiCapsules    []string
-	ComposeMode       bool
+	GosDir           string
+	CacheDir         string
+	DryRun           bool
+	Platforms        map[string]int // Platform and post size limits
+	Target           int
+	MinQueued        int
+	MaxDaysQueued    int
+	PauseDays        int
+	RunInterval      time.Duration
+	Lookback         time.Duration
+	ConfigPath       string
+	Config           Config
+	OAuth2Browser    string
+	GeminiSummaryFor []string
+	GemtexterEnable  bool
+	GeminiCapsules   []string
+	ComposeMode      bool
 }
 
 func (a *Args) ParsePlatforms(platformStrs string) error {

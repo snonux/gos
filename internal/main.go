@@ -20,13 +20,14 @@ func Main(composeModeDefault bool) {
 	gosDir := flag.String("gosDir", filepath.Join(os.Getenv("HOME"), ".gosdir"), "Gos' queue and DB directory")
 	cacheDir := flag.String("cacheDir", filepath.Join(*gosDir, "cache"), "Go's cache dir")
 	browser := flag.String("browser", "firefox", "OAuth2 browser")
-	secretsConfigPath := filepath.Join(os.Getenv("HOME"), ".config/gos/gosec.json")
-	secretsConfigPath = *flag.String("secretsConfig", secretsConfigPath, "Gos' secret config")
+	configPath := filepath.Join(os.Getenv("HOME"), ".config/gos/gos.json")
+	configPath = *flag.String("configPath", configPath, "Gos' config file path")
 	platforms := flag.String("platforms", "Mastodon:500,LinkedIn:1000", "Platforms enabled plus their post size limits")
 	target := flag.Int("target", 2, "How many posts per week are the target?")
 	minQueued := flag.Int("minQueued", 4, "Minimum of queued items until printing a warn message!")
 	maxDaysQueued := flag.Int("maxDaysQueued", 365, "Maximum days worth of queued posts until target++ and pauseDays--")
 	pauseDays := flag.Int("pauseDays", 3, "How many days until next post can be posted?")
+	runIntervalHours := flag.Int("runInterval", 18, "How many hours to wait for the next run.")
 	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
 	geminiSummaryFor := flag.String("geminiSummaryFor", "", "Generate a summary in Gemini Gemtext format, format is coma separated string of months, e.g. 202410,202411")
 	geminiCapsules := flag.String("geminiCapsules", "foo.zone", "Comma sepaeated list Gemini capsules. Used by geminiEnable to detect Gemtext links")
@@ -43,26 +44,27 @@ func Main(composeModeDefault bool) {
 		os.Exit(0)
 	}
 
-	secrets, err := config.NewSecrets(secretsConfigPath, *composeMode)
+	conf, err := config.New(configPath, *composeMode)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	args := config.Args{
-		DryRun:            *dry,
-		GosDir:            *gosDir,
-		Target:            *target,
-		MinQueued:         *minQueued,
-		MaxDaysQueued:     *maxDaysQueued,
-		PauseDays:         *pauseDays,
-		Lookback:          time.Duration(*lookback) * time.Hour * 24,
-		SecretsConfigPath: secretsConfigPath,
-		CacheDir:          *cacheDir,
-		Secrets:           secrets,
-		OAuth2Browser:     *browser,
-		GemtexterEnable:   *gemtexterEnable,
-		GeminiCapsules:    strings.Split(*geminiCapsules, ","),
-		ComposeMode:       *composeMode,
+		DryRun:          *dry,
+		GosDir:          *gosDir,
+		Target:          *target,
+		MinQueued:       *minQueued,
+		MaxDaysQueued:   *maxDaysQueued,
+		PauseDays:       *pauseDays,
+		RunInterval:     time.Duration(*runIntervalHours) * time.Hour, // TODO: Document
+		Lookback:        time.Duration(*lookback) * time.Hour * 24,
+		ConfigPath:      configPath,
+		Config:          conf,
+		CacheDir:        *cacheDir,
+		OAuth2Browser:   *browser,
+		GemtexterEnable: *gemtexterEnable,
+		GeminiCapsules:  strings.Split(*geminiCapsules, ","),
+		ComposeMode:     *composeMode,
 	}
 	if *geminiSummaryFor != "" {
 		args.GeminiSummaryFor = strings.Split(*geminiSummaryFor, ",")

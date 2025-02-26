@@ -91,15 +91,15 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LinkedInCreds(ctx context.Context, args config.Args) (string, string, error) {
-	secrets := args.Secrets
-	if secrets.LinkedInAccessToken != "" && secrets.LinkedInPersonID != "" {
-		return secrets.LinkedInPersonID, secrets.LinkedInAccessToken, nil
+	conf := args.Config
+	if conf.LinkedInAccessToken != "" && conf.LinkedInPersonID != "" {
+		return conf.LinkedInPersonID, conf.LinkedInAccessToken, nil
 	}
 
 	oauthConfig = &oauth2.Config{
-		ClientID:     secrets.LinkedInClientID,
-		ClientSecret: secrets.LinkedInSecret,
-		RedirectURL:  secrets.LinkedInRedirectURL,
+		ClientID:     conf.LinkedInClientID,
+		ClientSecret: conf.LinkedInSecret,
+		RedirectURL:  conf.LinkedInRedirectURL,
 		Scopes:       []string{"openid", "profile", "w_member_social"},
 		Endpoint:     linkedin.Endpoint,
 	}
@@ -133,9 +133,9 @@ func LinkedInCreds(ctx context.Context, args config.Args) (string, string, error
 		return "", "", errs
 	}
 
-	secrets.LinkedInAccessToken = oauthAccessToken
-	secrets.LinkedInPersonID = oauthPersonID
-	return oauthPersonID, oauthAccessToken, secrets.WriteToDisk(args.SecretsConfigPath)
+	conf.LinkedInAccessToken = oauthAccessToken
+	conf.LinkedInPersonID = oauthPersonID
+	return oauthPersonID, oauthAccessToken, conf.WriteToDisk(args.ConfigPath)
 }
 
 func openURLInFirefox(browser, url string) error {

@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"codeberg.org/snonux/gos/internal/colour"
 )
 
-// The config file containing all the secrets and credentials.
-type Secrets struct {
+// The config file containing all the secrets and credentials plus maybe more.
+type Config struct {
+	LastRunEpoch        int64 `json:"LastRunEpoch,omitempty"`
 	MastodonURL         string
 	MastodonAccessToken string
 	LinkedInClientID    string
@@ -22,33 +24,41 @@ type Secrets struct {
 	LinkedInPersonID string `json:"LinkedInPersonID,omitempty"`
 }
 
-func NewSecrets(configPath string, composeEntry bool) (Secrets, error) {
-	var sec Secrets
-	if composeEntry {
-		// In compose mode, no need to read the secrets.
-		return sec, nil
+func New(configPath string, composeEntry bool) (Config, error) {
+	var conf Config
+
+	_, err := os.Stat(configPath)
+	if os.IsNotExist(err) {
+		if !composeEntry {
+			return conf, fmt.Errorf("No config file %s", configPath)
+		}
+		// Create empty new config for compose mode.
+		return conf, conf.WriteToDisk(configPath)
 	}
 
 	file, err := os.Open(configPath)
 	if err != nil {
-		return sec, fmt.Errorf("failed to open file: %w", err)
+		return conf, fmt.Errorf("failed to open file: %w", err)
 	}
 	defer file.Close()
 
 	bytes, err := io.ReadAll(file)
 	if err != nil {
-		return sec, fmt.Errorf("failed to read file: %w", err)
+		return conf, fmt.Errorf("failed to read file: %w", err)
 	}
 
-	if err := json.Unmarshal(bytes, &sec); err != nil {
-		return sec, fmt.Errorf("failed to unmarshal JSON: %w", err)
+	if err := json.Unmarshal(bytes, &conf); err != nil {
+		return conf, fmt.Errorf("failed to unmarshal JSON: %w", err)
 	}
 
-	return sec, nil
+	return conf, nil
 }
 
-func (s Secrets) WriteToDisk(configPath string) error {
+func (s Config) WriteToDisk(configPath string) error {
 	colour.Infoln("Writing", configPath)
+	if err := os.MkdirAll(filepath.Dir(configPath), os.ModePerm); err != nil {
+		return err
+	}
 
 	bytes, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {

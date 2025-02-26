@@ -19,9 +19,10 @@ func run(ctx context.Context, args config.Args) error {
 	if len(args.GeminiSummaryFor) > 0 {
 		return summary.Run(ctx, args)
 	}
+	now := time.Now().Unix()
 
 	if args.ComposeMode {
-		entryPath := fmt.Sprintf("%s/%d.ask.txt", args.GosDir, time.Now().Unix())
+		entryPath := fmt.Sprintf("%s/%d.ask.txt", args.GosDir, now)
 		if err := prompt.EditFile(entryPath); err != nil {
 			return err
 		}
@@ -32,6 +33,12 @@ func run(ctx context.Context, args config.Args) error {
 			return err
 		}
 		colour.Infoln(err)
+	}
+
+	sinceLastRun := time.Duration(now-args.Config.LastRunEpoch) * time.Second
+	if sinceLastRun < args.RunInterval {
+		colour.Infoln("Run interval", args.RunInterval, "with", sinceLastRun, "not yet reached. Not posting anything!")
+		return nil
 	}
 
 	for platformStr, sizeLimit := range args.Platforms {
@@ -48,7 +55,8 @@ func run(ctx context.Context, args config.Args) error {
 		}
 	}
 
-	return nil
+	args.Config.LastRunEpoch = now
+	return args.Config.WriteToDisk(args.ConfigPath)
 }
 
 func runPlatform(ctx context.Context, args config.Args, platform platforms.Platform, sizeLimit int) error {
