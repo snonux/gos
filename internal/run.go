@@ -37,7 +37,7 @@ func run(ctx context.Context, args config.Args) error {
 
 	sinceLastRun := time.Duration(now-args.Config.LastRunEpoch) * time.Second
 	if sinceLastRun < args.RunInterval {
-		colour.Infoln("Run interval", args.RunInterval, "with", sinceLastRun, "not yet reached. Not posting anything!")
+		colour.Infoln("Run interval of", args.RunInterval, "with", sinceLastRun, "not yet reached. Not posting anything!")
 		return nil
 	}
 
