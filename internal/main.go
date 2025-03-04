@@ -27,7 +27,7 @@ func Main(composeModeDefault bool) {
 	minQueued := flag.Int("minQueued", 4, "Minimum of queued items until printing a warn message!")
 	maxDaysQueued := flag.Int("maxDaysQueued", 365, "Maximum days worth of queued posts until target++ and pauseDays--")
 	pauseDays := flag.Int("pauseDays", 3, "How many days until next post can be posted?")
-	runIntervalHours := flag.Int("runInterval", 12, "How many hours to wait for the next run.")
+	runInterval := flag.Int("runInterval", 12, "How many hours to wait for the next run.")
 	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
 	geminiSummaryFor := flag.String("geminiSummaryFor", "", "Generate a summary in Gemini Gemtext format, format is coma separated string of months, e.g. 202410,202411")
 	geminiCapsules := flag.String("geminiCapsules", "foo.zone", "Comma sepaeated list Gemini capsules. Used by geminiEnable to detect Gemtext links")
@@ -56,7 +56,7 @@ func Main(composeModeDefault bool) {
 		MinQueued:       *minQueued,
 		MaxDaysQueued:   *maxDaysQueued,
 		PauseDays:       *pauseDays,
-		RunInterval:     time.Duration(*runIntervalHours) * time.Hour, // TODO: Document
+		RunInterval:     time.Duration(*runInterval) * time.Hour, // TODO: Document
 		Lookback:        time.Duration(*lookback) * time.Hour * 24,
 		ConfigPath:      configPath,
 		Config:          conf,
