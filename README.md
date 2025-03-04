@@ -1,6 +1,6 @@
 # Gos (Go Social Media)
 
-![Gos](docs/gos-small.webp "Gos")
+![Gos](docs/gos.png "Gos")
 
 Gos is a Go-based replacement for Buffer.com (which I wrote in Go), providing the ability to schedule and manage social media posts from the command line. It can be run, for example, every time you open a new shell or only once every N hours when you open a new shell.
 

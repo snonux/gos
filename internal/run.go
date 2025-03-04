@@ -20,6 +20,7 @@ func run(ctx context.Context, args config.Args) error {
 		return summary.Run(ctx, args)
 	}
 	now := time.Now().Unix()
+	printLogo()
 
 	if args.ComposeMode {
 		entryPath := fmt.Sprintf("%s/%d.ask.txt", args.GosDir, now)
