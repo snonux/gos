@@ -2,7 +2,7 @@
 
 ![Gos](docs/gos.png "Gos")
 
-Gos is a Go-based replacement for Buffer.com (which I wrote in Go), providing the ability to schedule and manage social media posts from the command line. It can be run, for example, every time you open a new shell or only once every N hours when you open a new shell.
+Gos is a Go-based replacement for Buffer.com, providing the ability to schedule and manage social media posts from the command line. It can be run, for example, every time you open a new shell or only once every N hours when you open a new shell.
 
 I used Buffer.com to schedule and post my social media messages for a long time. However, over time, there were more problems with that service, including a slow and unintuitive UI, and the free version only allows scheduling up to 10 messages. At one point, they started to integrate an AI assistant (which would seemingly randomly pop up in separate JavaScript input boxes), and then I had enough and decided I had to build my own social sharing tool—and Gos was born.
 
@@ -261,6 +261,10 @@ The key factors in message selection are:
 * Post History Lookback: The `-lookback` flag tells Gos how many days back to look in the post history to calculate whether the weekly post target has already been met. It ensures that previously posted content is considered before deciding to queue up another message.
 * Message Priority: Messages with no priority value are processed after those with priority. If two messages have the same priority, one is selected randomly.
 * Pause Between Posts: The `-pauseDays` flag allows you to specify a minimum number of days to wait between posts for the same platform. This prevents oversaturation of content and ensures that posts are spread out over time.
+
+## Replication of the database
+
+I simply use [Syncthing](https://syncthing.net) to backup/sync my `gosDir`
 
 ## Post summary as gemini gemtext
 
