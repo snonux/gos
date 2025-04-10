@@ -25,7 +25,7 @@ func Main(composeModeDefault bool) {
 	platforms := flag.String("platforms", "Mastodon:500,LinkedIn:1000", "Platforms enabled plus their post size limits")
 	target := flag.Int("target", 2, "How many posts per week are the target?")
 	minQueued := flag.Int("minQueued", 4, "Minimum of queued items until printing a warn message!")
-	maxDaysQueued := flag.Int("maxDaysQueued", 365, "Maximum days worth of queued posts until target++ and pauseDays--")
+	maxDaysQueued := flag.Int("maxDaysQueued", 1000, "Maximum days worth of queued posts until target++ and pauseDays--")
 	pauseDays := flag.Int("pauseDays", 3, "How many days until next post can be posted?")
 	runInterval := flag.Int("runInterval", 12, "How many hours to wait for the next run.")
 	lookback := flag.Int("lookback", 30, "How many days look back in time for posting history")
