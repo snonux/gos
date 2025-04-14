@@ -41,7 +41,7 @@ func NewPreview(ctx context.Context, args config.Args, urls []string) (preview, 
 			p.title = urls[0]
 		}
 		if errors.Is(err, errNoImageElementFound) {
-			colour.Infoln("URL", urls[0], "without any image, that's fine, though.")
+			colour.Infoln("URL", urls[0], "is without any image, that's fine, though.")
 		}
 		if !errors.Is(err, errNoTitleElementFound) && !errors.Is(err, errNoImageElementFound) {
 			return p, err
