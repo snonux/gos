@@ -38,7 +38,7 @@ func Run(args config.Args, platform platforms.Platform) (entry.Entry, error) {
 
 	en, err := selectEntry(dir)
 	if err != nil && !errors.Is(err, oi.ErrNotFound) {
-		return en, nil // Unknown error
+		return en, err
 	}
 	if !en.HasTag("now") && stats.targetHit() {
 		return entry.Zero, ErrNothingToSchedule
@@ -64,6 +64,7 @@ func selectEntry(dir string) (en entry.Entry, err error) {
 		}
 
 	}
+	err = ErrNothingQueued
 	return
 }
 
