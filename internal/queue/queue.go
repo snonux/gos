@@ -23,7 +23,7 @@ func Run(args config.Args) error {
 	if err := queueEntries(args); err != nil {
 		return err
 	}
-	if err := queuePlatforms(args); err != nil {
+	if err := queueEntriesToPlatforms(args); err != nil {
 		return err
 	}
 	return nil
@@ -73,7 +73,7 @@ func queueEntries(args config.Args) error {
 
 // Queue all ./db/queued/*.txt.STAMP.queued into ./db/platforms/PLATFORM/*.txt.STAMP.queued
 // for each PLATFORM
-func queuePlatforms(args config.Args) error {
+func queueEntriesToPlatforms(args config.Args) error {
 	dbDir := filepath.Join(args.GosDir, "db")
 	ch, err := oi.ReadDirCh(dbDir, find(dbDir, ".queued"))
 	if err != nil {

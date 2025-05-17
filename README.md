@@ -15,9 +15,11 @@ I used Buffer.com to schedule and post my social media messages for a long time.
 * OAuth2 authentication for LinkedIn.
 * Image previews for LinkedIn posts.
 
+Besides Mastodon and LinkedIn, there is also a pseudo-platform called "Noop," which exists solely to keep track of things (e.g., for later Gemini summaries) without actually posting anything to a real social media platform.
+
 ## Installation
 
-## Prequisites
+## Prerequisites
 
 The prerequisites are:
 

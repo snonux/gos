@@ -29,9 +29,13 @@ func NewShare(args config.Args, tags map[string]struct{}) (Share, error) {
 		}
 	}
 
+	// If there is no share tag, by default include all platforms but "Noop"
 	if len(s.Includes) == 0 {
 		for platformStr := range args.Platforms {
 			if slices.Contains(s.Excludes, strings.ToLower(platformStr)) {
+				continue
+			}
+			if platformStr == "Noop" {
 				continue
 			}
 			s.Includes = append(s.Includes, strings.ToLower(platformStr))
