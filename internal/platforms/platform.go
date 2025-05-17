@@ -10,6 +10,7 @@ import (
 	"codeberg.org/snonux/gos/internal/entry"
 	"codeberg.org/snonux/gos/internal/platforms/linkedin"
 	"codeberg.org/snonux/gos/internal/platforms/mastodon"
+	"codeberg.org/snonux/gos/internal/platforms/noop"
 )
 
 type Platform string
@@ -19,6 +20,8 @@ var aliases = map[string]string{
 	"li":       "linkedin",
 	"mastodon": "mastodon",
 	"ma":       "mastodon",
+	"no":       "noop",
+	"noop":     "noop",
 	"xcom":     "xcom",
 	"x":        "xcom",
 	"twitter":  "xcom",
@@ -45,6 +48,8 @@ func (p Platform) Post(ctx context.Context, args config.Args, sizeLimit int, en 
 		err = mastodon.Post(ctx, args, sizeLimit, en)
 	case "linkedin":
 		err = linkedin.Post(ctx, args, sizeLimit, en)
+	case "noop":
+		err = noop.Post(ctx, args, sizeLimit, en)
 	default:
 		err = fmt.Errorf("Platform '%s' (not yet) implemented", p)
 	}
