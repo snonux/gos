@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"codeberg.org/snonux/gos/internal/colour"
 )
@@ -22,6 +23,9 @@ type Config struct {
 	LinkedInAccessToken string `json:"LinkedInAccessToken,omitempty"`
 	// Will be updated by gos automatically, after successful oauth2
 	LinkedInPersonID string `json:"LinkedInPersonID,omitempty"`
+	// Pause posting between these dates (format: "2006-01-02")
+	PauseStart string `json:"PauseStart,omitempty"`
+	PauseEnd   string `json:"PauseEnd,omitempty"`
 }
 
 func New(configPath string, composeEntry bool) (Config, error) {
@@ -76,4 +80,28 @@ func (s Config) WriteToDisk(configPath string) error {
 	}
 
 	return os.Rename(tmpConfigPath, configPath)
+}
+
+// IsPaused checks if the current time falls within the configured pause period
+func (c Config) IsPaused() (bool, error) {
+	if c.PauseStart == "" || c.PauseEnd == "" {
+		return false, nil
+	}
+
+	now := time.Now()
+	startDate, err := time.Parse("2006-01-02", c.PauseStart)
+	if err != nil {
+		return false, fmt.Errorf("invalid PauseStart date format '%s', expected YYYY-MM-DD: %w", c.PauseStart, err)
+	}
+
+	endDate, err := time.Parse("2006-01-02", c.PauseEnd)
+	if err != nil {
+		return false, fmt.Errorf("invalid PauseEnd date format '%s', expected YYYY-MM-DD: %w", c.PauseEnd, err)
+	}
+
+	// Set time to start of day for start date and end of day for end date
+	startDate = time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 0, 0, 0, 0, now.Location())
+	endDate = time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 999999999, now.Location())
+
+	return (now.After(startDate) || now.Equal(startDate)) && (now.Before(endDate) || now.Equal(endDate)), nil
 }

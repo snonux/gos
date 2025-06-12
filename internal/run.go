@@ -22,6 +22,16 @@ func run(ctx context.Context, args config.Args) error {
 	now := time.Now().Unix()
 	printLogo()
 
+	// Check if posting is paused
+	paused, err := args.Config.IsPaused()
+	if err != nil {
+		return fmt.Errorf("error checking pause status: %w", err)
+	}
+	if paused {
+		colour.Infoln("Posting is paused until", args.Config.PauseEnd, "- skipping all posts")
+		return nil
+	}
+
 	if args.ComposeMode {
 		entryPath := fmt.Sprintf("%s/%d.ask.txt", args.GosDir, now)
 		if err := prompt.EditFile(entryPath); err != nil {

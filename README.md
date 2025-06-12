@@ -62,7 +62,20 @@ Example Configuration File (`~/.config/gos/gos.json`):
   "MastodonAccessToken": "your-mastodon-access-token",
   "LinkedInClientID": "your-linkedin-client-id",
   "LinkedInSecret": "your-linkedin-client-secret",
+  "LinkedInRedirectURL": "http://localhost:8080/callback"
+}
+```
+
+Example with pause period configured:
+```json
+{
+  "MastodonURL": "https://mastodon.example.com",
+  "MastodonAccessToken": "your-mastodon-access-token",
+  "LinkedInClientID": "your-linkedin-client-id",
+  "LinkedInSecret": "your-linkedin-client-secret",
   "LinkedInRedirectURL": "http://localhost:8080/callback",
+  "PauseStart": "2024-07-01",
+  "PauseEnd": "2024-09-18"
 }
 ```
 
@@ -75,10 +88,28 @@ Example Configuration File (`~/.config/gos/gos.json`):
 * `LinkedInRedirectURL`: The redirect URL configured for handling OAuth2 responses.
 * `LinkedInAccessToken`: Gos will automatically update this after successful OAuth2 authentication with LinkedIn.
 * `LinkedInPersonID`: Gos will automatically update this after successful OAuth2 authentication with LinkedIn.
+* `PauseStart`: (Optional) Start date for pausing all posts in YYYY-MM-DD format.
+* `PauseEnd`: (Optional) End date for pausing all posts in YYYY-MM-DD format.
 
 ### Automatically managed fields
 
 Once you finish the OAuth2 setup (after the initial run of `gos`), some fields—like `LinkedInAccessToken` and `LinkedInPersonID` will get filled in automatically. To check if everything's working without actually posting anything, you can run the app in dry run mode with the `--dry` option. After OAuth2 is successful, the file will be updated with `LinkedInClientID` and `LinkedInAccessToken`. If the access token expires, it will go through the OAuth2 process again.
+
+### Pausing posts
+
+You can pause Gos from posting any messages during a specific time period by adding `PauseStart` and `PauseEnd` dates to your configuration file. This is useful for vacations, breaks, or any period when you don't want automated posts.
+
+When both `PauseStart` and `PauseEnd` are configured, Gos will skip all posting during that period but will still queue new messages. The pause period is inclusive of both start and end dates.
+
+**Example use case**: If you're going on vacation from July 1st to September 18th, add these fields to your config:
+```json
+{
+  "PauseStart": "2024-07-01",
+  "PauseEnd": "2024-09-18"
+}
+```
+
+During this period, running `gos` will display a message indicating that posting is paused and skip all social media posts until September 19th.
 
 ## Invoking Gos
 
