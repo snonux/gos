@@ -113,30 +113,29 @@ During this period, running `gos` will display a message indicating that posting
 
 ## Invoking Gos
 
-Gos is a command-line tool for posting updates to multiple social media platforms. You can run it with various flags to customize its behaviour, such as posting in dry run mode, limiting posts by size, or targeting specific platforms.
+Gos is a command-line tool for posting updates to multiple social media platforms. You can run it with various flags to customise its behaviour, such as posting in dry run mode, limiting posts by size, or targeting specific platforms.
 
-Flags control the tool's behavior. Below are several common ways to invoke Gos and descriptions of the available flags.
+Flags control the tool's behaviour. Below are several common ways to invoke Gos and descriptions of the available flags.
 
 ### Common flags
 
-* `-dry`: Run the application in dry run mode, simulating operations without making any changes.
-* `-version`: Display the current version of the application.
-* `-compose`: Compose a new entry. Default is set by `composeEntryDefault`.
-* `-gosDir`: Specify the directory for Gos' queue and database files. The default is `~/.gosdir`.
-* `—cacheDir`: Specify the directory for Gos' cache. The default is based on the `gosDir` path.
-* `-browser`: Choose the browser for OAuth2 processes. The default is "firefox".
-* `-configPath`: Path to the configuration file. Default is `~/.config/gos/gos.json`.
-* `—platforms`: The enabled platforms and their post size limits. The default is "Mastodon:500,LinkedIn:1000."
-* `-target`: Target number of posts per week. The default is 2.
-* `-minQueued`: Minimum number of queued items before a warning message is printed. The default is 4.
-* `-maxDaysQueued`: Maximum number of days' worth of queued posts before the target increases and pauseDays decreases. The default is 365.
-* `-pauseDays`: Number of days until the next post can be submitted. The default is 3.
-* `-runInterval`: Number of hours until the next post run. The default is 12.
-* `—lookback`: The number of days to look back in time to review posting history. The default is 30.
-* `-geminiSummaryFor`: Generate a Gemini Gemtext format summary specifying months as a comma-separated string.
-* `-geminiCapsules`: Comma-separated list of Gemini capsules. Used to detect Gemtext links.
-* `-gemtexterEnable`: Add special tags for Gemtexter, the static site generator, to the Gemini Gemtext summary.
-* `-dev`: For internal development purposes only.
+* `-dry`: Dry run mode; simulate operations without posting.
+* `-version`: Display the current version and exit.
+* `-compose`: Compose a new entry (default: `false`).
+* `-gosDir`: Directory for Gos queue and DB (default: `~/.gosdir`).
+* `-cacheDir`: Directory for cache files (default: `<gosDir>/cache`).
+* `-browser`: Browser to use for OAuth2 (default: `firefox`).
+* `-configPath`: Path to the config file (default: `~/.config/gos/gos.json`).
+* `-platforms`: Enabled platforms and size limits (default: `Mastodon:500,LinkedIn:1000,Noop:2000`).
+* `-target`: Target posts per week (default: `4`).
+* `-minQueued`: Minimum queued items before warning (default: `10`).
+* `-maxDaysQueued`: Max days worth of queued posts before `target++` and `pauseDays--` (default: `1000`).
+* `-pauseDays`: Minimum days to wait between posts (default: `1`).
+* `-runInterval`: Hours to wait between runs when invoked repeatedly (default: `6`).
+* `-lookback`: Days to look back for posting history (default: `90`).
+* `-geminiSummaryFor`: Generate Gemini Gemtext summary for months, e.g. `202410,202411`.
+* `-geminiCapsules`: Comma-separated Gemini capsules for link mapping, e.g. `foo.zone,example.org` (default: `foo.zone`).
+* `-gemtexterEnable`: Add Gemtexter tags to the Gemini Gemtext summary.
 
 ### Examples
 
@@ -182,7 +181,7 @@ The message is just arbitrary text, and, besides inline share tags (see later in
 
 ### Adding share tags in the filename
 
-You can control which platforms a post is shared to, and manage other behaviors using tags embedded in the filename. Add tags in the format `share:platform1.-platform2` to target specific platforms within the filename. This instructs Gos to share the message only to `platform1` (e.g., Mastodon) and explicitly exclude `platform2` (e.g., LinkedIn). You can include multiple platforms by listing them after `share:`, separated by a `.`. Use the `-` symbol to exclude a platform.
+You can control which platforms a post is shared to, and manage other behaviours using tags embedded in the filename. Add tags in the format `share:platform1.-platform2` to target specific platforms within the filename. This instructs Gos to share the message only to `platform1` (e.g., Mastodon) and explicitly exclude `platform2` (e.g., LinkedIn). You can include multiple platforms by listing them after `share:`, separated by a `.`. Use the `-` symbol to exclude a platform.
 
 Currently, only `linkedin` and `mastodon` are supported, and the shortcuts `li` and `ma` also work.
 
@@ -243,7 +242,7 @@ etc...
 All of the above also works with embedded tags. E.g.:
 
 ```
-share:mastodon,ask,prio Hello wold :-)
+share:mastodon,ask,prio Hello world :-)
 ```
 
 or 
@@ -294,6 +293,25 @@ The key factors in message selection are:
 * Post History Lookback: The `-lookback` flag tells Gos how many days back to look in the post history to calculate whether the weekly post target has already been met. It ensures that previously posted content is considered before deciding to queue up another message.
 * Message Priority: Messages with no priority value are processed after those with priority. If two messages have the same priority, one is selected randomly.
 * Pause Between Posts: The `-pauseDays` flag allows you to specify a minimum number of days to wait between posts for the same platform. This prevents oversaturation of content and ensures that posts are spread out over time.
+
+## Scheduling cadence
+
+- Target: Weekly target is converted to a per-day rate (`target / 7`). If the recent posting rate meets or exceeds this rate, Gos skips posting unless a message is tagged with `now`.
+- Lookback: Only posts within the lookback window (default: 90 days) count toward the rate. Paused days are excluded from the rate calculation, so long pauses do not penalise the cadence.
+- Pause days: Enforces a minimum gap between posts for a platform. If the last post is within `-pauseDays`, Gos waits longer before posting again.
+- Run interval: Prevents back-to-back runs from posting too frequently. Gos records the last successful run and skips posting until `-runInterval` hours have elapsed (queue processing still runs).
+- Dynamic catch-up: If the queue represents more than `-maxDaysQueued` worth of posts, Gos slightly increases the effective daily target and reduces `pauseDays` to catch up.
+
+### Run interval example
+
+If you launch `gos` frequently (e.g. from your shell startup), set a run interval so it skips posting until enough time has passed:
+
+```sh
+# Example: run from your shell profile; only posts every 6 hours
+gos -runInterval 6
+```
+
+The queue will still be processed each run (e.g. extracting tags or moving files), but posting is skipped until the interval since the last successful run has elapsed.
 
 ## Replication of the database
 
