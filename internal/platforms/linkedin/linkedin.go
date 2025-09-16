@@ -22,6 +22,16 @@ var errUnauthorized = errors.New("unauthorized access, refresh or create token?"
 
 const linkedInTimeout = 10 * time.Second
 
+// addCommonHeaders applies required headers and optional LinkedIn versioning.
+func addCommonHeaders(req *http.Request, accessToken, liVersion string) {
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-RestLi-Protocol-Version", "2.0.0")
+	if liVersion != "" {
+		req.Header.Set("LinkedIn-Version", liVersion)
+	}
+}
+
 func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) error {
 	err := post(ctx, args, sizeLimit, en)
 	if errors.Is(err, errUnauthorized) {
@@ -68,11 +78,11 @@ func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 
 	newCtx, cancel = context.WithTimeout(ctx, linkedInTimeout)
 	defer cancel()
-	return postMessageToLinkedInAPI(newCtx, personID, accessToken, content, prev)
+	return postMessageToLinkedInAPI(newCtx, personID, accessToken, content, prev, args.Config.LinkedInVersion)
 }
 
 // https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/posts-api
-func postMessageToLinkedInAPI(ctx context.Context, personID, accessToken, content string, prev preview) error {
+func postMessageToLinkedInAPI(ctx context.Context, personID, accessToken, content string, prev preview, liVersion string) error {
 	const linkedInPostsURL = "https://api.linkedin.com/rest/posts"
 
 	personURN := fmt.Sprintf("urn:li:person:%s", personID)
@@ -91,7 +101,7 @@ func postMessageToLinkedInAPI(ctx context.Context, personID, accessToken, conten
 
 	article := map[string]interface{}{}
 	if thumbnailPath, ok := prev.Thumbnail(); ok {
-		thumbnailURN, err := postImageToLinkedInAPI(ctx, personURN, accessToken, thumbnailPath)
+		thumbnailURN, err := postImageToLinkedInAPI(ctx, personURN, accessToken, thumbnailPath, liVersion)
 		if err != nil {
 			return err
 		}
@@ -112,10 +122,11 @@ func postMessageToLinkedInAPI(ctx context.Context, personID, accessToken, conten
 		return fmt.Errorf("Error creating request: %w", err)
 	}
 
-	req.Header.Add("Authorization", "Bearer "+accessToken)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("X-RestLi-Protocol-Version", "2.0.0")
-	req.Header.Add("LinkedIn-Version", "202409")
+	// Use configured LinkedIn version if available
+	addCommonHeaders(req, accessToken, liVersion)
+	if liVersion != "" {
+		colour.Infoln("Using LinkedIn-Version", liVersion)
+	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -133,21 +144,25 @@ func postMessageToLinkedInAPI(ctx context.Context, personID, accessToken, conten
 			resp.Status, string(body))
 		if resp.StatusCode == http.StatusUnauthorized {
 			err = errors.Join(err, errUnauthorized)
+		} else if resp.StatusCode == http.StatusUpgradeRequired {
+			// 426 often indicates a non-active LinkedIn-Version header.
+			// Provide a clear hint to configure a valid version.
+			err = fmt.Errorf("%w; LinkedIn API version likely inactive. Set an active 'LinkedInVersion' in config (e.g. 202502) or remove to use default. Response: %s", err, string(body))
 		}
 	}
 	return err
 }
 
 // https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/images-api
-func postImageToLinkedInAPI(ctx context.Context, personURN, accessToken, imagePath string) (string, error) {
-	uploadURL, imageURN, err := initializeImageUpload(ctx, personURN, accessToken)
+func postImageToLinkedInAPI(ctx context.Context, personURN, accessToken, imagePath string, liVersion string) (string, error) {
+	uploadURL, imageURN, err := initializeImageUpload(ctx, personURN, accessToken, liVersion)
 	if err != nil {
 		return imageURN, err
 	}
 	return imageURN, performImageUpload(ctx, imagePath, uploadURL, accessToken)
 }
 
-func initializeImageUpload(ctx context.Context, personURN, accessToken string) (string, string, error) {
+func initializeImageUpload(ctx context.Context, personURN, accessToken string, liVersion string) (string, string, error) {
 	const linkedInAPIURL = "https://api.linkedin.com/rest/images?action=initializeUpload"
 
 	type InitializeUploadRequest struct {
@@ -156,7 +171,6 @@ func initializeImageUpload(ctx context.Context, personURN, accessToken string) (
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"initializeUploadRequest": InitializeUploadRequest{Owner: personURN},
 	})
-
 	if err != nil {
 		return "", "", fmt.Errorf("error creating request body: %w", err)
 	}
@@ -167,9 +181,8 @@ func initializeImageUpload(ctx context.Context, personURN, accessToken string) (
 		return "", "", fmt.Errorf("error creating request: %w", err)
 	}
 
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("LinkedIn-Version", "202409")
+	// Version header is optional and configurable
+	addCommonHeaders(req, accessToken, liVersion)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)

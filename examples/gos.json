@@ -4,6 +4,7 @@
   "LinkedInClientID": "CENSORED",
   "LinkedInSecret": "CENSORED",
   "LinkedInRedirectURL": "http://localhost:8080/callback",
+  "LinkedInVersion": "",
   "LinkedInAccessToken": "CENSORED",
   "LinkedInPersonID": "CENSORED"
 }

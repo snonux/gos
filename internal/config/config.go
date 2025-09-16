@@ -19,6 +19,10 @@ type Config struct {
 	LinkedInClientID    string
 	LinkedInSecret      string
 	LinkedInRedirectURL string
+	// Optional LinkedIn API version header value (e.g., "202502").
+	// When set, requests include `LinkedIn-Version: <value>`.
+	// Leave empty to omit the header and use LinkedIn's default.
+	LinkedInVersion string `json:"LinkedInVersion,omitempty"`
 	// Will be updated by gos automatically, after successful oauth2
 	LinkedInAccessToken string `json:"LinkedInAccessToken,omitempty"`
 	// Will be updated by gos automatically, after successful oauth2

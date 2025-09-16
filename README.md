@@ -62,7 +62,8 @@ Example Configuration File (`~/.config/gos/gos.json`):
   "MastodonAccessToken": "your-mastodon-access-token",
   "LinkedInClientID": "your-linkedin-client-id",
   "LinkedInSecret": "your-linkedin-client-secret",
-  "LinkedInRedirectURL": "http://localhost:8080/callback"
+  "LinkedInRedirectURL": "http://localhost:8080/callback",
+  "LinkedInVersion": ""  
 }
 ```
 
@@ -86,10 +87,19 @@ Example with pause period configured:
 * `LinkedInClientID`: The client ID for your LinkedIn app, which is needed for OAuth2 authentication.
 * `LinkedInSecret`: The client secret for your LinkedIn app.
 * `LinkedInRedirectURL`: The redirect URL configured for handling OAuth2 responses.
+* `LinkedInVersion`: (Optional) LinkedIn API version header value (e.g., `202502`). Set this if you receive 426 Upgrade Required with `NONEXISTENT_VERSION`. Leave empty to omit the header and use LinkedIn's default.
 * `LinkedInAccessToken`: Gos will automatically update this after successful OAuth2 authentication with LinkedIn.
 * `LinkedInPersonID`: Gos will automatically update this after successful OAuth2 authentication with LinkedIn.
 * `PauseStart`: (Optional) Start date for pausing all posts in YYYY-MM-DD format.
 * `PauseEnd`: (Optional) End date for pausing all posts in YYYY-MM-DD format.
+
+### LinkedIn API versioning
+
+LinkedIn requires an active API version via the `LinkedIn-Version` header for some endpoints. If you see an error like:
+
+`Status: 426 Upgrade Required {"code":"NONEXISTENT_VERSION","message":"Requested version <date> is not active"}`
+
+set an active version string (e.g., `202502`) in the `LinkedInVersion` field of your config. You can also clear the field to omit the header and fall back to LinkedIn's default version.
 
 ### Automatically managed fields
 
