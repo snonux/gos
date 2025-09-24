@@ -35,20 +35,25 @@ git clone https://codeberg.org/snonux/gos.git
 cd gos
 ```
 
-Build the binaries:
+Build and install the binaries:
 
 ```bash
-go build -o gos ./cmd/gos
-go build -o gosc ./cmd/gosc
-sudo mv gos ~/go/bin
-sudo mv gosc ~/go/bin
+mage install
 ```
 
-Or, if you want to use the `Taskfile`:
+### Mage targets
 
-```bash
-go-task install
-```
+This project uses Mage for automation. Here are some common commands:
+
+* `mage` or `mage build`: Build the `gos` and `gosc` binaries.
+* `mage install`: Build and install the binaries to `~/go/bin`.
+* `mage clean`: Remove the built binaries.
+* `mage test`: Run the tests.
+* `mage fuzz`: Run the fuzz tests.
+* `mage lint`: Run the linter.
+* `mage vet`: Run `go vet`.
+* `mage dev`: Run tests, vet, and lint, then build the binaries with the race detector.
+* `mage devInstall`: Install `gopls` and `golangci-lint`.
 
 ## Configuration
 
