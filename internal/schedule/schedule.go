@@ -23,7 +23,7 @@ var (
 
 func Run(args config.Args, platform platforms.Platform) (entry.Entry, error) {
 	dir := fmt.Sprintf("%s/db/platforms/%s", args.GosDir, platform.String())
-	stats, err := newStats(dir, args.Lookback, args.Target, args.PauseDays, args.MaxDaysQueued, args.Config)
+	stats, err := newStats(args.GosDir, platform.String(), args.Lookback, args.Target, args.PauseDays, args.MaxDaysQueued, args.Config)
 	if err != nil {
 		return entry.Zero, err
 	}

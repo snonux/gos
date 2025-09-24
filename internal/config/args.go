@@ -26,6 +26,7 @@ type Args struct {
 	GemtexterEnable  bool
 	GeminiCapsules   []string
 	ComposeMode      bool
+	StatsOnly        bool
 }
 
 func (a *Args) ParsePlatforms(platformStrs string) error {

@@ -32,7 +32,8 @@ type stats struct {
 	pauseDays int
 }
 
-func newStats(dir string, lookback time.Duration, target, pauseDays, maxQueuedDays int, cfg config.Config) (stats, error) {
+func newStats(gosDir string, platformName string, lookback time.Duration, target, pauseDays, maxQueuedDays int, cfg config.Config) (stats, error) {
+	dir := filepath.Join(gosDir, "db", "platforms", strings.ToLower(platformName))
 	s := stats{postsPerDayTarget: float64(target) / 7, pauseDays: pauseDays}
 
 	if err := s.gatherPostedStats(dir, pastTime(lookback), cfg); err != nil {
@@ -50,10 +51,10 @@ func newStats(dir string, lookback time.Duration, target, pauseDays, maxQueuedDa
 		}
 		newTarget := s.postsPerDayTarget + add
 
-		colour.Infoln("Increasing posts per day target", s.postsPerDayTarget, "by", add, "to", newTarget)
+		colour.Infoln(platformName, "- Increasing posts per day target", s.postsPerDayTarget, "by", add, "to", newTarget)
 		s.postsPerDayTarget = newTarget
 
-		colour.Infoln("Decreasing pause days from", s.pauseDays, "to", s.pauseDays-1)
+		colour.Infoln(platformName, "- Decreasing pause days from", s.pauseDays, "to", s.pauseDays-1)
 		s.pauseDays--
 	}
 
@@ -115,7 +116,7 @@ func (s *stats) gatherPostedStats(dir string, lookbackTime time.Time, cfg config
 
 	since := now.Sub(oldest)
 	s.sinceDays = since.Abs().Hours() / 24.0
-	
+
 	// Subtract paused days from the calculation period
 	pausedDays := calculatePausedDays(oldest, now, cfg)
 	activeDays := s.sinceDays - pausedDays
@@ -224,4 +225,20 @@ func minTime(a, b time.Time) time.Time {
 		return a
 	}
 	return b
+}
+
+func PrintAllStats(args config.Args) {
+	for platformName := range args.Platforms {
+		platform, err := platforms.New(platformName)
+		if err != nil {
+			colour.Warnln("Error creating platform for", platformName, ":", err)
+			continue
+		}
+		s, err := newStats(args.GosDir, platformName, args.Lookback, args.Target, args.PauseDays, args.MaxDaysQueued, args.Config)
+		if err != nil {
+			colour.Warnln("Error gathering stats for", platformName, ":", err)
+			continue
+		}
+		s.RenderTable(platform)
+	}
 }

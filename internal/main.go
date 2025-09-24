@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"codeberg.org/snonux/gos/internal/config"
+	"codeberg.org/snonux/gos/internal/schedule"
 )
 
 func Main(composeModeDefault bool) {
@@ -31,6 +32,7 @@ func Main(composeModeDefault bool) {
 	geminiSummaryFor := flag.String("geminiSummaryFor", "", "Generate a summary in Gemini Gemtext format, format is coma separated string of months, e.g. 202410,202411")
 	geminiCapsules := flag.String("geminiCapsules", "foo.zone", "Comma sepaeated list Gemini capsules. Used by geminiEnable to detect Gemtext links")
 	gemtexterEnable := flag.Bool("gemtexterEnable", false, "Add special Gemtexter (the static site generator) tags to the Gemini Gemtext summary")
+	statsOnly := flag.Bool("stats", false, "Print statistics for all social networks and exit")
 	flag.Parse()
 
 	conf, err := config.New(configPath, *composeMode)
@@ -54,6 +56,7 @@ func Main(composeModeDefault bool) {
 		GemtexterEnable: *gemtexterEnable,
 		GeminiCapsules:  strings.Split(*geminiCapsules, ","),
 		ComposeMode:     *composeMode,
+		StatsOnly:       *statsOnly,
 	}
 	if *geminiSummaryFor != "" {
 		args.GeminiSummaryFor = strings.Split(*geminiSummaryFor, ",")
@@ -66,6 +69,12 @@ func Main(composeModeDefault bool) {
 	if *version {
 		printVersion()
 		return
+	}
+
+	if args.StatsOnly {
+		// Call the new function to print all stats
+		schedule.PrintAllStats(args)
+		return // Exit after printing stats
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())

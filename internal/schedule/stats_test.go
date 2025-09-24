@@ -21,44 +21,44 @@ func TestGatherPostedStats(t *testing.T) {
 	// Create test posted files with different timestamps
 	now := time.Now()
 	testFiles := []struct {
-		filename string
-		content  string
+		filename  string
+		content   string
 		timestamp time.Time
 	}{
 		{
 			// Posted entry from 5 days ago
-			filename: "post1.txt." + now.AddDate(0, 0, -5).Format(timestamp.Format) + ".posted",
-			content:  "Test post 1",
+			filename:  "post1.txt." + now.AddDate(0, 0, -5).Format(timestamp.Format) + ".posted",
+			content:   "Test post 1",
 			timestamp: now.AddDate(0, 0, -5),
 		},
 		{
 			// Posted entry from 3 days ago
-			filename: "post2.txt." + now.AddDate(0, 0, -3).Format(timestamp.Format) + ".posted",
-			content:  "Test post 2",
+			filename:  "post2.txt." + now.AddDate(0, 0, -3).Format(timestamp.Format) + ".posted",
+			content:   "Test post 2",
 			timestamp: now.AddDate(0, 0, -3),
 		},
 		{
 			// Posted entry from 1 day ago
-			filename: "post3.txt." + now.AddDate(0, 0, -1).Format(timestamp.Format) + ".posted",
-			content:  "Test post 3",
+			filename:  "post3.txt." + now.AddDate(0, 0, -1).Format(timestamp.Format) + ".posted",
+			content:   "Test post 3",
 			timestamp: now.AddDate(0, 0, -1),
 		},
 		{
 			// Posted entry from 10 days ago (outside lookback period)
-			filename: "old_post.txt." + now.AddDate(0, 0, -10).Format(timestamp.Format) + ".posted",
-			content:  "Old test post",
+			filename:  "old_post.txt." + now.AddDate(0, 0, -10).Format(timestamp.Format) + ".posted",
+			content:   "Old test post",
 			timestamp: now.AddDate(0, 0, -10),
 		},
 		{
 			// Queued entry (should be ignored)
-			filename: "queued_post.txt." + now.AddDate(0, 0, -2).Format(timestamp.Format) + ".queued",
-			content:  "Queued post",
+			filename:  "queued_post.txt." + now.AddDate(0, 0, -2).Format(timestamp.Format) + ".queued",
+			content:   "Queued post",
 			timestamp: now.AddDate(0, 0, -2),
 		},
 		{
 			// Posted entry with .now. tag (should be ignored)
-			filename: "now_post.now.txt." + now.AddDate(0, 0, -2).Format(timestamp.Format) + ".posted",
-			content:  "Now post",
+			filename:  "now_post.now.txt." + now.AddDate(0, 0, -2).Format(timestamp.Format) + ".posted",
+			content:   "Now post",
 			timestamp: now.AddDate(0, 0, -2),
 		},
 	}
@@ -74,7 +74,7 @@ func TestGatherPostedStats(t *testing.T) {
 	// Initialize stats and run gatherPostedStats
 	s := &stats{}
 	lookbackTime := now.AddDate(0, 0, -7) // 7 days lookback
-	cfg := config.Config{} // Empty config (no pause)
+	cfg := config.Config{}                // Empty config (no pause)
 
 	err = s.gatherPostedStats(tmpDir, lookbackTime, cfg)
 	if err != nil {
@@ -226,23 +226,23 @@ func TestGatherPostedStatsWithPause(t *testing.T) {
 
 	// Key test: postsPerDay should exclude the pause period
 	// Let's calculate this step by step:
-	
+
 	// 1. Find the actual time range of our posts
 	oldestPost := now.AddDate(0, 0, -8)
-	
+
 	// 2. Calculate paused days using our helper function
 	actualPausedDays := calculatePausedDays(oldestPost, now, cfg)
-	
+
 	// 3. Calculate expected values
 	expectedActiveDays := s.sinceDays - actualPausedDays
 	expectedPostsPerDay := float64(expectedPosted) / expectedActiveDays
-	
+
 	// Debug info for understanding the calculation
-	// t.Logf("Debug: sinceDays=%.1f, actualPausedDays=%.1f, expectedActiveDays=%.1f", 
+	// t.Logf("Debug: sinceDays=%.1f, actualPausedDays=%.1f, expectedActiveDays=%.1f",
 	//	s.sinceDays, actualPausedDays, expectedActiveDays)
-	
+
 	if s.postsPerDay < expectedPostsPerDay-0.01 || s.postsPerDay > expectedPostsPerDay+0.01 {
-		t.Errorf("Expected postsPerDay≈%.2f (%.0f posts / %.1f active days), got postsPerDay=%.2f", 
+		t.Errorf("Expected postsPerDay≈%.2f (%.0f posts / %.1f active days), got postsPerDay=%.2f",
 			expectedPostsPerDay, float64(expectedPosted), expectedActiveDays, s.postsPerDay)
 	}
 }
