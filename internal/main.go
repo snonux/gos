@@ -23,7 +23,7 @@ func Main(composeModeDefault bool) {
 	configPath := filepath.Join(os.Getenv("HOME"), ".config/gos/gos.json")
 	configPath = *flag.String("configPath", configPath, "Gos' config file path")
 	platforms := flag.String("platforms", "Mastodon:500,LinkedIn:1000,Noop:2000", "Platforms enabled plus their post size limits")
-	target := flag.Int("target", 4, "How many posts per week are the target?")
+	target := flag.Int("target", 2, "How many posts per week are the target?")
 	minQueued := flag.Int("minQueued", 42, "Minimum of queued items until printing a warn message!")
 	maxDaysQueued := flag.Int("maxDaysQueued", 365*2, "Maximum days worth of queued posts until target++ and pauseDays--")
 	pauseDays := flag.Int("pauseDays", 1, "How many days until next post can be posted?")
