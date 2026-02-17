@@ -73,6 +73,12 @@ func (p preview) Thumbnail() (string, bool) {
 }
 
 func (p preview) DownloadImage(destPath string) (string, error) {
+	// Skip data URIs - they can't be downloaded and don't provide meaningful images
+	if u, err := url.Parse(p.thumbnailURL); err == nil && u.Scheme == "data" {
+		colour.Infoln("Skipping data URI image, using article metadata instead")
+		return "", nil
+	}
+
 	if err := oi.EnsureDir(destPath); err != nil {
 		return "", err
 	}

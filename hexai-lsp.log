@@ -1,0 +1,100 @@
+2025/09/04 15:40:17 hexai-lsp [40m[90mllm/openai msg[1] role=user size=339 preview=[36mProvide the next likely code to insert at the cursor.
+File: file:///home/paul/git/hexai/PROJECTSTATU…[40m[90m[0m
+2025/09/04 15:40:17 hexai-lsp [40m[90mllm/openai msg[2] role=user size=3342 preview=[36mAdditional context:
+# Ideas
+
+## Code quality
+
+* [/] TODO's in the code to be addressed
+* [/] No more…[40m[90m[0m
+2025/09/04 15:40:17 hexai-lsp [40m[90mllm/openai POST https://api.openai.com/v1/chat/completions[0m
+2025/09/04 15:40:18 hexai-lsp [40m[90mlsp completion trigger kind=1 char="" uri=file:///home/paul/git/hexai/PROJECTSTATUS.md line=15 char=75[0m
+2025/09/04 15:40:18 hexai-lsp [40m[90mlsp completion ctx uri=file:///home/paul/git/hexai/PROJECTSTATUS.md line=15 char=75 above="" current="* [ ] Modify the LLM triggers to be more consistenc. E.g. use >>text here>" below="* [X] Include unit test coverage reports" function=""[0m
+2025/09/04 15:40:18 hexai-lsp [40m[90mllm/openai success choice=0 finish=stop size=22 preview=[32mnt with other triggers[40m[90m duration=631.487672ms[0m
+2025/09/04 15:40:18 hexai-lsp [40m[90mlsp llm stats reqs=22 avg_sent=3915 avg_recv=71 sent_total=86132 recv_total=1431 rpm=3.06 sent_per_min=11993 recv_per_min=199[0m
+2025/09/04 15:40:18 hexai-lsp [40m[90mlsp completion llm=requesting model=gpt-4.1[0m
+2025/09/04 15:40:18 hexai-lsp [40m[90mllm/openai chat start model=gpt-4.1 temp=0.20 max_tokens=4000 stop=0 messages=3[0m
+2025/09/04 15:40:18 hexai-lsp [40m[90mllm/openai msg[0] role=system size=306 preview=[36mYou are a terse code completion engine. Return only the code to insert, no surrounding prose or back…[40m[90m[0m
+2025/09/04 15:40:18 hexai-lsp [40m[90mllm/openai msg[1] role=user size=340 preview=[36mProvide the next likely code to insert at the cursor.
+File: file:///home/paul/git/hexai/PROJECTSTATU…[40m[90m[0m
+2025/09/04 15:40:18 hexai-lsp [40m[90mllm/openai msg[2] role=user size=3343 preview=[36mAdditional context:
+# Ideas
+
+## Code quality
+
+* [/] TODO's in the code to be addressed
+* [/] No more…[40m[90m[0m
+2025/09/04 15:40:18 hexai-lsp [40m[90mllm/openai POST https://api.openai.com/v1/chat/completions[0m
+2025/09/04 15:40:18 hexai-lsp [40m[90mlsp completion trigger kind=1 char="" uri=file:///home/paul/git/hexai/PROJECTSTATUS.md line=15 char=78[0m
+2025/09/04 15:40:18 hexai-lsp [40m[90mlsp completion ctx uri=file:///home/paul/git/hexai/PROJECTSTATUS.md line=15 char=78 above="" current="* [ ] Modify the LLM triggers to be more consistenc. E.g. use >>text here> or" below="* [X] Include unit test coverage reports" function=""[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mlsp completion llm=requesting model=gpt-4.1[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mllm/openai chat start model=gpt-4.1 temp=0.20 max_tokens=4000 stop=0 messages=3[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mllm/openai msg[0] role=system size=306 preview=[36mYou are a terse code completion engine. Return only the code to insert, no surrounding prose or back…[40m[90m[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mllm/openai msg[1] role=user size=343 preview=[36mProvide the next likely code to insert at the cursor.
+File: file:///home/paul/git/hexai/PROJECTSTATU…[40m[90m[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mllm/openai msg[2] role=user size=3346 preview=[36mAdditional context:
+# Ideas
+
+## Code quality
+
+* [/] TODO's in the code to be addressed
+* [/] No more…[40m[90m[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mllm/openai POST https://api.openai.com/v1/chat/completions[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mlsp completion trigger kind=1 char="" uri=file:///home/paul/git/hexai/PROJECTSTATUS.md line=15 char=79[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mlsp completion ctx uri=file:///home/paul/git/hexai/PROJECTSTATUS.md line=15 char=79 above="" current="* [ ] Modify the LLM triggers to be more consistenc. E.g. use >>text here> or >" below="* [X] Include unit test coverage reports" function=""[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mllm/openai success choice=0 finish=stop size=91 preview=[32m* [ ] Audit all LLM trigger points for consistency and document the standard trigger format[40m[90m duration=1.796370662s[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mlsp llm stats reqs=24 avg_sent=3921 avg_recv=72 sent_total=94124 recv_total=1522 rpm=3.33 sent_per_min=13077 recv_per_min=211[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mlsp completion llm=requesting model=gpt-4.1[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mllm/openai chat start model=gpt-4.1 temp=0.20 max_tokens=4000 stop=0 messages=3[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mllm/openai msg[0] role=system size=306 preview=[36mYou are a terse code completion engine. Return only the code to insert, no surrounding prose or back…[40m[90m[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mllm/openai msg[1] role=user size=344 preview=[36mProvide the next likely code to insert at the cursor.
+File: file:///home/paul/git/hexai/PROJECTSTATU…[40m[90m[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mllm/openai msg[2] role=user size=3347 preview=[36mAdditional context:
+# Ideas
+
+## Code quality
+
+* [/] TODO's in the code to be addressed
+* [/] No more…[40m[90m[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mllm/openai POST https://api.openai.com/v1/chat/completions[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mllm/openai success choice=0 finish=stop size=45 preview=[32m>text here> throughout for inline completions[40m[90m duration=807.205456ms[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mllm/openai success choice=0 finish=stop size=93 preview=[32m* [ ] Standardize all LLM triggers to use a consistent delimiter format, e.g. `>>text here>>`[40m[90m duration=1.36528963s[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mlsp llm stats reqs=24 avg_sent=3921 avg_recv=71 sent_total=94124 recv_total=1567 rpm=3.33 sent_per_min=13062 recv_per_min=217[0m
+2025/09/04 15:40:19 hexai-lsp [40m[90mlsp llm stats reqs=24 avg_sent=3921 avg_recv=72 sent_total=94124 recv_total=1660 rpm=3.33 sent_per_min=13062 recv_per_min=230[0m
+2025/09/04 15:40:20 hexai-lsp [40m[90mllm/openai success choice=0 finish=stop size=81 preview=[32m* [ ] Audit all trigger patterns for consistency and document the standard format[40m[90m duration=666.442236ms[0m
+2025/09/04 15:40:20 hexai-lsp [40m[90mlsp llm stats reqs=24 avg_sent=3921 avg_recv=72 sent_total=94124 recv_total=1741 rpm=3.33 sent_per_min=13056 recv_per_min=242[0m
+2025/09/04 15:46:43 hexai-lsp [40m[90mlsp llm enabled provider=openai model=gpt-4.1[0m
+2025/09/04 15:46:43 hexai-lsp [40m[90mlsp client initialized[0m
+2025/09/04 15:46:44 hexai-lsp [40m[90mlsp completion trigger kind=1 char="" uri=file:///home/paul/Notes/Listen/Urlaub.md line=0 char=1[0m
+2025/09/04 15:46:44 hexai-lsp [40m[90mlsp completion ctx uri=file:///home/paul/Notes/Listen/Urlaub.md line=0 char=1 above="" current="#" below="" function=""[0m
+2025/09/04 15:46:45 hexai-lsp [40m[90mlsp completion llm=requesting model=gpt-4.1[0m
+2025/09/04 15:46:45 hexai-lsp [40m[90mllm/openai chat start model=gpt-4.1 temp=0.20 max_tokens=4000 stop=0 messages=3[0m
+2025/09/04 15:46:45 hexai-lsp [40m[90mllm/openai msg[0] role=system size=306 preview=[36mYou are a terse code completion engine. Return only the code to insert, no surrounding prose or back…[40m[90m[0m
+2025/09/04 15:46:45 hexai-lsp [40m[90mllm/openai msg[1] role=user size=221 preview=[36mProvide the next likely code to insert at the cursor.
+File: file:///home/paul/Notes/Listen/Urlaub.md…[40m[90m[0m
+2025/09/04 15:46:45 hexai-lsp [40m[90mllm/openai msg[2] role=user size=22 preview=[36mAdditional context:
+#
+[40m[90m[0m
+2025/09/04 15:46:45 hexai-lsp [40m[90mllm/openai POST https://api.openai.com/v1/chat/completions[0m
+2025/09/04 15:46:46 hexai-lsp [40m[90mllm/openai success choice=0 finish=stop size=6 preview=[32mUrlaub[40m[90m duration=970.760029ms[0m
+2025/09/04 15:46:46 hexai-lsp [40m[90mlsp llm stats reqs=1 avg_sent=549 avg_recv=6 sent_total=549 recv_total=6 rpm=27.74 sent_per_min=15228 recv_per_min=166[0m
+2025/09/04 15:46:59 hexai-lsp [40m[90mlsp llm enabled provider=openai model=gpt-4.1[0m
+2025/09/04 15:46:59 hexai-lsp [40m[90mlsp client initialized[0m
+2025/09/04 15:47:02 hexai-lsp [40m[90mlsp completion trigger kind=1 char="" uri=file:///home/paul/Notes/Listen/Vacation.md line=0 char=0[0m
+2025/09/04 15:47:02 hexai-lsp [40m[90mlsp completion ctx uri=file:///home/paul/Notes/Listen/Vacation.md line=0 char=0 above="" current="" below="" function=""[0m
+2025/09/04 15:47:02 hexai-lsp [40m[90mlsp completion llm=requesting model=gpt-4.1[0m
+2025/09/04 15:47:02 hexai-lsp [40m[90mllm/openai chat start model=gpt-4.1 temp=0.20 max_tokens=4000 stop=0 messages=3[0m
+2025/09/04 15:47:02 hexai-lsp [40m[90mllm/openai msg[0] role=system size=306 preview=[36mYou are a terse code completion engine. Return only the code to insert, no surrounding prose or back…[40m[90m[0m
+2025/09/04 15:47:02 hexai-lsp [40m[90mllm/openai msg[1] role=user size=222 preview=[36mProvide the next likely code to insert at the cursor.
+File: file:///home/paul/Notes/Listen/Vacation.…[40m[90m[0m
+2025/09/04 15:47:02 hexai-lsp [40m[90mllm/openai msg[2] role=user size=21 preview=[36mAdditional context:
+
+[40m[90m[0m
+2025/09/04 15:47:02 hexai-lsp [40m[90mllm/openai POST https://api.openai.com/v1/chat/completions[0m
+2025/09/04 15:47:04 hexai-lsp [40m[90mllm/openai success choice=0 finish=stop size=126 preview=[32m- Book flights
+- Reserve hotel
+- Create itinerary
+- Pack essentials
+- Arrange transportation
+- Set v…[40m[90m duration=1.350494698s[0m
+2025/09/04 15:47:04 hexai-lsp [40m[90mlsp llm stats reqs=1 avg_sent=549 avg_recv=126 sent_total=549 recv_total=126 rpm=14.55 sent_per_min=7987 recv_per_min=1833[0m

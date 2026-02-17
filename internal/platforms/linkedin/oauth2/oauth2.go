@@ -93,7 +93,13 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 func LinkedInCreds(ctx context.Context, args config.Args) (string, string, error) {
 	conf := args.Config
 	if conf.LinkedInAccessToken != "" && conf.LinkedInPersonID != "" {
-		return conf.LinkedInPersonID, conf.LinkedInAccessToken, nil
+		// Validate cached token before using it
+		token := &oauth2.Token{AccessToken: conf.LinkedInAccessToken}
+		if _, err := getOauthPersonID(token); err == nil {
+			return conf.LinkedInPersonID, conf.LinkedInAccessToken, nil
+		}
+		// Cached token is invalid, clear it to trigger re-auth
+		conf.LinkedInAccessToken = ""
 	}
 
 	oauthConfig = &oauth2.Config{

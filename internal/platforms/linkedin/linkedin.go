@@ -27,9 +27,10 @@ func addCommonHeaders(req *http.Request, accessToken, liVersion string) {
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-RestLi-Protocol-Version", "2.0.0")
-	if liVersion != "" {
-		req.Header.Set("LinkedIn-Version", liVersion)
+	if liVersion == "" {
+		liVersion = "202601" // Default to latest stable version
 	}
+	req.Header.Set("LinkedIn-Version", liVersion)
 }
 
 func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) error {
@@ -147,7 +148,7 @@ func postMessageToLinkedInAPI(ctx context.Context, personID, accessToken, conten
 		} else if resp.StatusCode == http.StatusUpgradeRequired {
 			// 426 often indicates a non-active LinkedIn-Version header.
 			// Provide a clear hint to configure a valid version.
-			err = fmt.Errorf("%w; LinkedIn API version likely inactive. Set an active 'LinkedInVersion' in config (e.g. 202502) or remove to use default. Response: %s", err, string(body))
+			err = fmt.Errorf("%w; LinkedIn API version likely inactive. Set an active 'LinkedInVersion' in config (e.g. 202601) or remove to use default. Response: %s", err, string(body))
 		}
 	}
 	return err
@@ -191,6 +192,24 @@ func initializeImageUpload(ctx context.Context, personURN, accessToken string, l
 	}
 	defer resp.Body.Close()
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", "", fmt.Errorf("error reading response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		err := fmt.Errorf("image upload initialization failed. Status: %s\n%s\n",
+			resp.Status, string(body))
+		if resp.StatusCode == http.StatusUnauthorized {
+			err = errors.Join(err, errUnauthorized)
+		} else if resp.StatusCode == http.StatusUpgradeRequired {
+			// 426 often indicates a non-active LinkedIn-Version header.
+			// Provide a clear hint to configure a valid version.
+			err = fmt.Errorf("%w; LinkedIn API version likely inactive. Set an active 'LinkedInVersion' in config (e.g. 202601) or remove to use default. Response: %s", err, string(body))
+		}
+		return "", "", err
+	}
+
 	type InitializeUploadResponse struct {
 		Value struct {
 			UploadURL string `json:"uploadUrl"`
@@ -198,7 +217,7 @@ func initializeImageUpload(ctx context.Context, personURN, accessToken string, l
 		} `json:"value"`
 	}
 	var response InitializeUploadResponse
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+	if err := json.Unmarshal(body, &response); err != nil {
 		return "", "", fmt.Errorf("error decoding response: %w", err)
 	}
 
