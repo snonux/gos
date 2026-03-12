@@ -44,13 +44,16 @@ func NewPreview(ctx context.Context, args config.Args, urls []string) (preview, 
 			colour.Infoln("URL", urls[0], "is without any image, that's fine, though.")
 		}
 		if !errors.Is(err, errNoTitleElementFound) && !errors.Is(err, errNoImageElementFound) {
-			return p, err
+			colour.Infoln("Skipping LinkedIn preview metadata for", urls[0], "due to", err)
+			return p, nil
 		}
 	}
 
 	if p.thumbnailURL != "" {
 		if p.thumbnailDownloadPath, err = p.DownloadImage(args.CacheDir); err != nil {
-			return p, err
+			colour.Infoln("Skipping LinkedIn preview image for", urls[0], "due to", err)
+			p.thumbnailDownloadPath = ""
+			return p, nil
 		}
 		colour.Infoln("Downloaded preview image to ", p.thumbnailDownloadPath)
 	}
@@ -65,7 +68,7 @@ func (p preview) String() string {
 }
 
 func (p preview) TitleAndURL() (string, string, bool) {
-	return p.title, p.url, p.url != ""
+	return p.title, p.url, p.url != "" && p.title != ""
 }
 
 func (p preview) Thumbnail() (string, bool) {
