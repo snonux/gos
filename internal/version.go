@@ -6,7 +6,7 @@ import (
 	"codeberg.org/snonux/gos/internal/table"
 )
 
-const versionStr = "v1.2.5"
+const versionStr = "v1.2.6"
 
 func printVersion() {
 	table.New().

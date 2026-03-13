@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -159,9 +160,10 @@ func isPausedAtTime(c Config, testTime time.Time) (bool, error) {
 
 func TestIsPausedCurrentTime(t *testing.T) {
 	// Test with actual current time using the real IsPaused method
+	currentYear := time.Now().Year()
 	config := Config{
-		PauseStart: "2025-01-01",
-		PauseEnd:   "2025-12-31",
+		PauseStart: fmt.Sprintf("%d-01-01", currentYear),
+		PauseEnd:   fmt.Sprintf("%d-12-31", currentYear),
 	}
 
 	paused, err := config.IsPaused()
@@ -169,9 +171,9 @@ func TestIsPausedCurrentTime(t *testing.T) {
 		t.Errorf("Unexpected error: %v", err)
 	}
 
-	// Since we're in 2025, this should be paused
+	// Since we're in the current year, this should be paused
 	if !paused {
-		t.Errorf("Expected to be paused in 2025, but got false")
+		t.Errorf("Expected to be paused in %d, but got false", currentYear)
 	}
 
 	// Test with dates in the past

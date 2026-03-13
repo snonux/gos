@@ -116,11 +116,11 @@ func postMessageToLinkedInAPI(ctx context.Context, personID, accessToken, conten
 
 	payload, err := json.Marshal(post)
 	if err != nil {
-		return fmt.Errorf("Error encoding JSON:%w", err)
+		return fmt.Errorf("error encoding JSON: %w", err)
 	}
 	req, err := http.NewRequestWithContext(ctx, "POST", linkedInPostsURL, bytes.NewBuffer(payload))
 	if err != nil {
-		return fmt.Errorf("Error creating request: %w", err)
+		return fmt.Errorf("error creating request: %w", err)
 	}
 
 	// Use configured LinkedIn version if available
@@ -132,17 +132,21 @@ func postMessageToLinkedInAPI(ctx context.Context, personID, accessToken, conten
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("Error sending request: %w", err)
+		return fmt.Errorf("error sending request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already read the data
+			colour.Errorln("Error closing response body:", err)
+		}
+	}()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		err = fmt.Errorf("failed to post to LinkedIn. Status: %s\n%s\n",
-			resp.Status, string(body))
+		err = fmt.Errorf("failed to post to LinkedIn. Status: %s: %s", resp.Status, string(body))
 		if resp.StatusCode == http.StatusUnauthorized {
 			err = errors.Join(err, errUnauthorized)
 		} else if resp.StatusCode == http.StatusUpgradeRequired {
@@ -190,7 +194,12 @@ func initializeImageUpload(ctx context.Context, personURN, accessToken string, l
 	if err != nil {
 		return "", "", fmt.Errorf("error sending request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already read the data
+			colour.Errorln("Error closing response body:", err)
+		}
+	}()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -198,8 +207,7 @@ func initializeImageUpload(ctx context.Context, personURN, accessToken string, l
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		err := fmt.Errorf("image upload initialization failed. Status: %s\n%s\n",
-			resp.Status, string(body))
+		err := fmt.Errorf("image upload initialization failed. Status: %s: %s", resp.Status, string(body))
 		if resp.StatusCode == http.StatusUnauthorized {
 			err = errors.Join(err, errUnauthorized)
 		} else if resp.StatusCode == http.StatusUpgradeRequired {
@@ -229,7 +237,12 @@ func performImageUpload(ctx context.Context, imagePath, uploadURL, accessToken s
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already read the data
+			colour.Errorln("Error closing image file:", err)
+		}
+	}()
 
 	imageData, err := io.ReadAll(file)
 	if err != nil {
@@ -248,7 +261,12 @@ func performImageUpload(ctx context.Context, imagePath, uploadURL, accessToken s
 	if err != nil {
 		return fmt.Errorf("error sending upload request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already read the data
+			colour.Errorln("Error closing response body:", err)
+		}
+	}()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err

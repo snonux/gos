@@ -11,7 +11,8 @@ import (
 	"codeberg.org/snonux/gos/internal/colour"
 )
 
-// The config file containing all the secrets and credentials plus maybe more.
+// Config holds the application configuration loaded from the JSON config file.
+// It contains secrets, credentials, and various settings for the application.
 type Config struct {
 	LastRunEpoch        int64 `json:"LastRunEpoch,omitempty"`
 	MastodonURL         string
@@ -48,7 +49,12 @@ func New(configPath string, composeEntry bool) (Config, error) {
 	if err != nil {
 		return conf, fmt.Errorf("failed to open file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already written the data
+			colour.Errorln("Error closing file:", err)
+		}
+	}()
 
 	bytes, err := io.ReadAll(file)
 	if err != nil {
@@ -77,7 +83,12 @@ func (s Config) WriteToDisk(configPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already written the data
+			colour.Errorln("Error closing file:", err)
+		}
+	}()
 
 	if _, err := file.Write(bytes); err != nil {
 		return fmt.Errorf("failed to write to file: %w", err)

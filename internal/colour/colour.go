@@ -17,9 +17,15 @@ var (
 	warnCol      = color.New(color.FgHiWhite, color.BgRed)
 	Warnln       = warnCol.PrintlnFunc()
 
+	errorCol = color.New(color.FgRed)
+	Errorln  = errorCol.PrintlnFunc()
+
 	successCol = color.New(color.FgWhite, color.BgGreen)
 	Successfln = func(format string, args ...any) {
-		successCol.Printf(format, args...)
+		if _, err := successCol.Printf(format, args...); err != nil {
+			// Log the error but don't fail the operation since we've already printed the data
+			Errorln("Error printing success message:", err)
+		}
 		fmt.Print("\n")
 
 	}

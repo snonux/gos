@@ -1,3 +1,5 @@
+// Package entry handles the representation and manipulation of social media post entries.
+// It defines the Entry struct and provides methods for parsing, modifying, and posting entries.
 package entry
 
 import (
@@ -15,20 +17,27 @@ import (
 	"codeberg.org/snonux/gos/internal/timestamp"
 )
 
+// State represents the lifecycle state of an entry.
 type State int
 
 const (
+	// Unknown represents the unknown state of an entry.
 	Unknown State = iota
-	Inboxed
-	Queued
-	Posted
+	// Inboxed represents the inboxed state of an entry.
+	Inboxed State = iota
+	// Queued represents the queued state of an entry.
+	Queued State = iota
+	// Posted represents the posted state of an entry.
+	Posted State = iota
 )
 
-var (
-	validTags            = []string{"ask", "prio", "now"}
-	ErrSizeLimitExceeded = errors.New("message size limit exceeded")
-)
+// validTags contains the list of valid tags that can be applied to entries.
+var validTags = []string{"ask", "prio", "now"}
 
+// ErrSizeLimitExceeded is returned when an entry exceeds the size limit for a platform.
+var ErrSizeLimitExceeded = errors.New("message size limit exceeded")
+
+// String returns the string representation of the State.
 func (s State) String() string {
 	switch s {
 	case Unknown:

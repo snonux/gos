@@ -23,49 +23,33 @@ func run(ctx context.Context, args config.Args) error {
 	printLogo()
 
 	// Check if posting is paused
-	paused, err := args.Config.IsPaused()
-	if err != nil {
-		return fmt.Errorf("error checking pause status: %w", err)
-	}
-	if paused {
-		colour.Infoln("Posting is paused until", args.Config.PauseEnd, "- skipping all posts")
-		return nil
+	if err := checkPauseStatus(args); err != nil {
+		return err
 	}
 
+	// Handle compose mode
 	if args.ComposeMode {
-		entryPath := fmt.Sprintf("%s/%d.ask.txt", args.GosDir, now)
-		if err := prompt.EditFile(entryPath); err != nil {
+		if err := handleComposeMode(args); err != nil {
 			return err
 		}
 	}
 
-	if err := queue.Run(args); err != nil {
-		if !softError(err) {
-			return err
-		}
-		colour.Infoln(err)
+	// Run queue operations
+	if err := runQueueOperations(args); err != nil {
+		return err
 	}
 
-	sinceLastRun := time.Duration(now-args.Config.LastRunEpoch) * time.Second
-	if sinceLastRun < args.RunInterval {
-		colour.Infoln("Run interval of", args.RunInterval, "with", sinceLastRun, "not yet reached. Not posting anything!")
-		return nil
+	// Check run interval
+	if err := checkRunInterval(args); err != nil {
+		return err
 	}
 
-	for platformStr, sizeLimit := range args.Platforms {
-		platform, err := platforms.New(platformStr)
-		if err != nil {
-			return err
-		}
-		if err := runPlatform(ctx, args, platform, sizeLimit); err != nil {
-			if softError(err) {
-				colour.Infoln(err)
-				continue
-			}
-			return err
-		}
+	// Post to platforms
+	if err := postToPlatforms(ctx, args); err != nil {
+		return err
 	}
 
+	// Update last run time
 	args.Config.LastRunEpoch = now
 	return args.Config.WriteToDisk(args.ConfigPath)
 }
@@ -93,6 +77,64 @@ func runPlatform(ctx context.Context, args config.Args, platform platforms.Platf
 		return runPlatform(ctx, args, platform, sizeLimit)
 	}
 	return err
+}
+
+func checkPauseStatus(args config.Args) error {
+	// Check if posting is paused
+	paused, err := args.Config.IsPaused()
+	if err != nil {
+		return fmt.Errorf("error checking pause status: %w", err)
+	}
+	if paused {
+		colour.Infoln("Posting is paused until", args.Config.PauseEnd, "- skipping all posts")
+		return nil
+	}
+	return nil
+}
+
+func handleComposeMode(args config.Args) error {
+	entryPath := fmt.Sprintf("%s/%d.ask.txt", args.GosDir, time.Now().Unix())
+	if err := prompt.EditFile(entryPath); err != nil {
+		return err
+	}
+	return nil
+}
+
+func runQueueOperations(args config.Args) error {
+	if err := queue.Run(args); err != nil {
+		if !softError(err) {
+			return err
+		}
+		colour.Infoln(err)
+	}
+	return nil
+}
+
+func checkRunInterval(args config.Args) error {
+	now := time.Now().Unix()
+	sinceLastRun := time.Duration(now-args.Config.LastRunEpoch) * time.Second
+	if sinceLastRun < args.RunInterval {
+		colour.Infoln("Run interval of", args.RunInterval, "with", sinceLastRun, "not yet reached. Not posting anything!")
+		return nil
+	}
+	return nil
+}
+
+func postToPlatforms(ctx context.Context, args config.Args) error {
+	for platformStr, sizeLimit := range args.Platforms {
+		platform, err := platforms.New(platformStr)
+		if err != nil {
+			return err
+		}
+		if err := runPlatform(ctx, args, platform, sizeLimit); err != nil {
+			if softError(err) {
+				colour.Infoln(err)
+				continue
+			}
+			return err
+		}
+	}
+	return nil
 }
 
 func softError(err error) bool {

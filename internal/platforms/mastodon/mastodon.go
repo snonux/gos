@@ -52,7 +52,12 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 	if err != nil {
 		return fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already read the data
+			colour.Errorln("Error closing response body:", err)
+		}
+	}()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err

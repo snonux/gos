@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"codeberg.org/snonux/gos/internal/colour"
 	"golang.org/x/exp/rand"
 )
 
@@ -117,7 +118,12 @@ func CopyFile(srcPath, dstPath string) error {
 	if err != nil {
 		return err
 	}
-	defer source.Close()
+	defer func() {
+		if err := source.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already read the data
+			colour.Errorln("Error closing source file:", err)
+		}
+	}()
 
 	if err := EnsureParentDir(dstPath); err != nil {
 		return err
@@ -127,7 +133,12 @@ func CopyFile(srcPath, dstPath string) error {
 	if err != nil {
 		return err
 	}
-	defer destination.Close()
+	defer func() {
+		if err := destination.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already written the data
+			colour.Errorln("Error closing destination file:", err)
+		}
+	}()
 
 	_, err = io.Copy(destination, source)
 	return err
@@ -154,7 +165,12 @@ func WriteFile(filePath, content string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already written the data
+			colour.Errorln("Error closing file:", err)
+		}
+	}()
 
 	_, err = file.WriteString(content)
 	if err != nil {

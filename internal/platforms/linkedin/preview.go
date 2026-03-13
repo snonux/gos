@@ -89,7 +89,12 @@ func (p preview) DownloadImage(destPath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already read the data
+			colour.Errorln("Error closing response body:", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("bad status while trying to download image: %s", resp.Status)
@@ -100,7 +105,12 @@ func (p preview) DownloadImage(destPath string) (string, error) {
 	if err != nil {
 		return destFile, fmt.Errorf("%s: %w", destFile, err)
 	}
-	defer out.Close()
+	defer func() {
+		if err := out.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already written the data
+			colour.Errorln("Error closing output file:", err)
+		}
+	}()
 
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
@@ -177,7 +187,12 @@ func extractFromURL(ctx context.Context, url string) (string, string, error) {
 	if err != nil {
 		return "", "", fmt.Errorf("failed to get URL: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already read the data
+			colour.Errorln("Error closing response body:", err)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", "", fmt.Errorf("failed to get a successful response: %v", resp.StatusCode)

@@ -41,7 +41,12 @@ func getOauthPersonID(token *oauth2.Token) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("Error making the request:%w", err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log the error but don't fail the operation since we've already read the data
+			colour.Errorln("Error closing response body:", err)
+		}
+	}()
 
 	body, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode != http.StatusOK {
@@ -171,7 +176,10 @@ func WaitUntilURLIsReachable(url string) error {
 			colour.Infofln("URL is not reachable: %v", err)
 		} else {
 			colour.Infofln("URL is reachable: %s - Status Code: %d", url, resp.StatusCode)
-			resp.Body.Close()
+			if err := resp.Body.Close(); err != nil {
+				// Log the error but don't fail the operation since we've already read the data
+				colour.Errorln("Error closing response body:", err)
+			}
 			return nil
 		}
 	}
