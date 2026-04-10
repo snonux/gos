@@ -56,6 +56,36 @@ func TestSharePositive(t *testing.T) {
 	}
 }
 
+func TestShareSnonuxDefaultExcluded(t *testing.T) {
+	args := config.Args{Platforms: map[string]int{
+		"mastodon": 500,
+		"Snonux":   2000,
+	}}
+	s, err := NewShare(args, map[string]struct{}{"prio": {}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if slices.Contains(s.Includes, "snonux") {
+		t.Errorf("snonux should not be in default includes, got %v", s.Includes)
+	}
+	if !slices.Contains(s.Includes, "mastodon") {
+		t.Errorf("expected mastodon in includes, got %v", s.Includes)
+	}
+}
+
+func TestShareSnonuxExplicitAliases(t *testing.T) {
+	for _, tag := range []string{"share:snonux", "share:sno", "share:sn"} {
+		args := config.Args{Platforms: map[string]int{"snonux": 2000}}
+		s, err := NewShare(args, map[string]struct{}{tag: {}})
+		if err != nil {
+			t.Fatal(tag, err)
+		}
+		if !sameElements(s.Includes, []string{"snonux"}) {
+			t.Errorf("%s: expected includes [snonux], got %v", tag, s.Includes)
+		}
+	}
+}
+
 func TestShareNegative(t *testing.T) {
 	args := config.Args{Platforms: map[string]int{
 		string("mastodon"): 100,

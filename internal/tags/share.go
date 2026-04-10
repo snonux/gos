@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"codeberg.org/snonux/gos/internal/config"
+	"codeberg.org/snonux/gos/internal/platforms"
 )
 
 // Share tags.
@@ -22,23 +23,37 @@ func NewShare(args config.Args, tags map[string]struct{}) (Share, error) {
 		}
 		for _, t := range strings.Split(tag[6:], ":") {
 			if strings.HasPrefix(t, "-") {
-				s.Excludes = append(s.Excludes, strings.ToLower(t[1:]))
+				raw := strings.ToLower(t[1:])
+				if p, err := platforms.New(raw); err == nil {
+					raw = p.String()
+				}
+				s.Excludes = append(s.Excludes, raw)
 			} else {
-				s.Includes = append(s.Includes, strings.ToLower(t))
+				raw := strings.ToLower(t)
+				if p, err := platforms.New(raw); err == nil {
+					raw = p.String()
+				}
+				s.Includes = append(s.Includes, raw)
 			}
 		}
 	}
 
-	// If there is no share tag, by default include all platforms but "Noop"
+	// If there is no share tag, by default include all platforms but noop-like
+	// platforms (Noop, Snonux) that are only queued when explicitly named in share:.
 	if len(s.Includes) == 0 {
 		for platformStr := range args.Platforms {
-			if slices.Contains(s.Excludes, strings.ToLower(platformStr)) {
+			p, err := platforms.New(platformStr)
+			if err != nil {
 				continue
 			}
-			if platformStr == "Noop" {
+			name := p.String()
+			if name == "noop" || name == "snonux" {
 				continue
 			}
-			s.Includes = append(s.Includes, strings.ToLower(platformStr))
+			if slices.Contains(s.Excludes, name) {
+				continue
+			}
+			s.Includes = append(s.Includes, name)
 		}
 	}
 

@@ -29,7 +29,7 @@ func Run(args config.Args, platform platforms.Platform) (entry.Entry, error) {
 	}
 	stats.RenderTable(platform)
 
-	if platform != "noop" && stats.queued < args.MinQueued {
+	if platform != "noop" && platform != "snonux" && stats.queued < args.MinQueued {
 		_ = prompt.Acknowledge(
 			fmt.Sprintf("There are only %d messages queued for %s - time to fill it up!",
 				stats.queued, platform),

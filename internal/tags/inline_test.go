@@ -17,6 +17,7 @@ func TestInlineExtractTagsToFilePath(t *testing.T) {
 		"share:li,foo this    is the main content": "./gosdir/foo.golang.rox.share:linkedin.foo.extracted.txt",
 		"share:li:ma this is the main content":     "./gosdir/foo.golang.rox.share:linkedin:mastodon.extracted.txt",
 		"share:li:ma,now this is the main content": "./gosdir/foo.golang.rox.share:linkedin:mastodon.now.extracted.txt",
+		"share:sno this is the main content":       "./gosdir/foo.golang.rox.share:snonux.extracted.txt",
 		"share,soon this will be shared soon":      "./gosdir/foo.golang.rox.share.soon.extracted.txt",
 	}
 
@@ -40,6 +41,7 @@ func TestInlineExtractTagsFromContent(t *testing.T) {
 		"foo.bar,baz blablablabla...":                {"foo", "bar", "baz"},
 		"foo,bar.baz    blablablabla...":             {"foo", "bar", "baz"},
 		"share:li this    is the main content":       {"share:linkedin"},
+		"share:sn this is the main content":          {"share:snonux"},
 		"share:li,foo this    is the main content":   {"share:linkedin", "foo"},
 		"shar()e:li,foo this    is the main content": {"shar()e:li", "foo"},
 		"share this post":                            {},

@@ -22,6 +22,9 @@ var aliases = map[string]string{
 	"ma":       "mastodon",
 	"no":       "noop",
 	"noop":     "noop",
+	"snonux":   "snonux",
+	"sno":      "snonux",
+	"sn":       "snonux",
 	"xcom":     "xcom",
 	"x":        "xcom",
 	"twitter":  "xcom",
@@ -50,6 +53,8 @@ func (p Platform) Post(ctx context.Context, args config.Args, sizeLimit int, en 
 		err = linkedin.Post(ctx, args, sizeLimit, en)
 	case "noop":
 		err = noop.Post(ctx, args, sizeLimit, en)
+	case "snonux":
+		err = noop.Post(ctx, args, sizeLimit, en)
 	default:
 		err = fmt.Errorf("Platform '%s' (not yet) implemented", p)
 	}
@@ -75,7 +80,7 @@ func ExpandAliases(shareTag string) (string, error) {
 	dedup := make(map[string]struct{}, len(aliases))
 
 	for _, alias := range parts[1:] {
-		platformStr, ok := aliases[alias]
+		platformStr, ok := aliases[strings.ToLower(alias)]
 		if !ok {
 			return "", fmt.Errorf("invalid platform alias '%s' in '%s'", alias, shareTag)
 		}
