@@ -25,7 +25,7 @@ func Main(composeModeDefault bool) {
 	// cacheDir := flag.String("cacheDir", filepath.Join(*gosDir, "cache"), "Go's cache dir")
 	browser := flag.String("browser", "firefox", "OAuth2 browser")
 	configPath := flag.String("configPath", filepath.Join(os.Getenv("HOME"), ".config/gos/gos.json"), "Gos' config file path")
-	platforms := flag.String("platforms", "Mastodon:500,LinkedIn:1000,Noop:2000", "Platforms enabled plus their post size limits")
+	platforms := flag.String("platforms", "Mastodon:500,LinkedIn:1000,Noop:2000,Snonux:2000", "Platforms enabled plus their post size limits")
 	target := flag.Int("target", 2, "How many posts per week are the target?")
 	minQueued := flag.Int("minQueued", 42, "Minimum of queued items until printing a warn message!")
 	maxDaysQueued := flag.Int("maxDaysQueued", 365*2, "Maximum days worth of queued posts until target++ and pauseDays--")

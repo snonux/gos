@@ -11,6 +11,7 @@ import (
 	"codeberg.org/snonux/gos/internal/platforms/linkedin"
 	"codeberg.org/snonux/gos/internal/platforms/mastodon"
 	"codeberg.org/snonux/gos/internal/platforms/noop"
+	"codeberg.org/snonux/gos/internal/platforms/snonux"
 )
 
 type Platform string
@@ -54,7 +55,7 @@ func (p Platform) Post(ctx context.Context, args config.Args, sizeLimit int, en 
 	case "noop":
 		err = noop.Post(ctx, args, sizeLimit, en)
 	case "snonux":
-		err = noop.Post(ctx, args, sizeLimit, en)
+		err = snonux.Post(ctx, args, sizeLimit, en)
 	default:
 		err = fmt.Errorf("Platform '%s' (not yet) implemented", p)
 	}

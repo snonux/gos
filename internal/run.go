@@ -67,11 +67,6 @@ func runPlatform(ctx context.Context, args config.Args, platform platforms.Platf
 		return err
 	}
 
-	if args.ComposeMode {
-		colour.Infoln("Not posting any entry in compose mode!")
-		return nil
-	}
-
 	err = platform.Post(ctx, args, sizeLimit, en)
 	if errors.Is(err, prompt.ErrRamdomOther) || errors.Is(err, prompt.ErrDeleted) {
 		return runPlatform(ctx, args, platform, sizeLimit)

@@ -11,6 +11,7 @@ import (
 
 	"codeberg.org/snonux/gos/internal/config"
 	"codeberg.org/snonux/gos/internal/entry"
+	"codeberg.org/snonux/gos/internal/platforms"
 )
 
 const maxLinkLength = 80
@@ -64,9 +65,6 @@ func generateGemtext(args config.Args, entries []entry.Entry, title string) (str
 		sb.WriteString("\n\n### ")
 		sb.WriteString(firstFewWords(content, 50))
 
-		if err != err {
-			return "", err
-		}
 		sb.WriteString("\n\n")
 		sb.WriteString(content)
 
@@ -98,6 +96,10 @@ func matchingEntries(args config.Args) iter.Seq2[entry.Entry, error] {
 				return
 			}
 			for _, path := range paths {
+				rel, err := filepath.Rel(filepath.Join(args.GosDir, "db", "platforms"), filepath.Dir(path))
+				if err == nil && strings.EqualFold(rel, platforms.Platform("snonux").String()) {
+					continue
+				}
 				en, err := entry.New(path)
 				if !yield(en, err) {
 					return
