@@ -22,6 +22,11 @@ var errUnauthorized = errors.New("unauthorized access, refresh or create token?"
 
 const linkedInTimeout = 10 * time.Second
 
+// linkedInAuthTimeout bounds the interactive browser login/consent flow when
+// (re-)authenticating, so it needs to be generous enough for manual entry of
+// credentials and 2FA rather than a normal API call timeout.
+const linkedInAuthTimeout = 5 * time.Minute
+
 // addCommonHeaders applies required headers and optional LinkedIn versioning.
 func addCommonHeaders(req *http.Request, accessToken, liVersion string) {
 	req.Header.Set("Authorization", "Bearer "+accessToken)
@@ -51,7 +56,7 @@ func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 	timeout := linkedInTimeout
 	if args.Config.LinkedInAccessToken == "" {
 		// Refreshing access token requires more time due to human interaction
-		timeout = 1 * time.Minute
+		timeout = linkedInAuthTimeout
 	}
 	newCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
