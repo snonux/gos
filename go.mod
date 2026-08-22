@@ -1,4 +1,4 @@
-module codeberg.org/snonux/gos
+module github.com/snonux/gos
 
 go 1.23.2
 

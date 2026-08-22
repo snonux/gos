@@ -3,15 +3,15 @@ package internal
 import (
 	"fmt"
 
-	"codeberg.org/snonux/gos/internal/table"
+	"github.com/snonux/gos/internal/table"
 )
 
-const versionStr = "v1.3.1"
+const versionStr = "v1.3.2"
 
 func printVersion() {
 	table.New().
 		Header("Gos version", "Author", "URL").
-		Row(versionStr, "Paul Buetow", "https://codeberg.org/snonux/gos").
+		Row(versionStr, "Paul Buetow", "https://github.com/snonux/gos").
 		MustRender()
 }
 

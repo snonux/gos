@@ -3,10 +3,10 @@ package noop
 import (
 	"context"
 
-	"codeberg.org/snonux/gos/internal/colour"
-	"codeberg.org/snonux/gos/internal/config"
-	"codeberg.org/snonux/gos/internal/entry"
-	"codeberg.org/snonux/gos/internal/prompt"
+	"github.com/snonux/gos/internal/colour"
+	"github.com/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/entry"
+	"github.com/snonux/gos/internal/prompt"
 )
 
 // Psudo platform, not posting really anything.

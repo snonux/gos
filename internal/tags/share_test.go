@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"codeberg.org/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/config"
 )
 
 func TestSharePositive(t *testing.T) {

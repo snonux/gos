@@ -31,7 +31,7 @@ The prerequisites are:
 Clone the repository:
 
 ```bash
-git clone https://codeberg.org/snonux/gos.git
+git clone https://github.com/snonux/gos.git
 cd gos
 ```
 

@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"codeberg.org/snonux/gos/internal/colour"
-	"codeberg.org/snonux/gos/internal/config"
-	"codeberg.org/snonux/gos/internal/entry"
-	"codeberg.org/snonux/gos/internal/platforms/linkedin"
-	"codeberg.org/snonux/gos/internal/platforms/mastodon"
-	"codeberg.org/snonux/gos/internal/platforms/noop"
-	"codeberg.org/snonux/gos/internal/platforms/snonux"
+	"github.com/snonux/gos/internal/colour"
+	"github.com/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/entry"
+	"github.com/snonux/gos/internal/platforms/linkedin"
+	"github.com/snonux/gos/internal/platforms/mastodon"
+	"github.com/snonux/gos/internal/platforms/noop"
+	"github.com/snonux/gos/internal/platforms/snonux"
 )
 
 type Platform string

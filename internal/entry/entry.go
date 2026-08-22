@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"codeberg.org/snonux/gos/internal/oi"
-	"codeberg.org/snonux/gos/internal/prompt"
-	"codeberg.org/snonux/gos/internal/timestamp"
+	"github.com/snonux/gos/internal/oi"
+	"github.com/snonux/gos/internal/prompt"
+	"github.com/snonux/gos/internal/timestamp"
 )
 
 // State represents the lifecycle state of an entry.

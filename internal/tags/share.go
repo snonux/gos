@@ -4,8 +4,8 @@ import (
 	"slices"
 	"strings"
 
-	"codeberg.org/snonux/gos/internal/config"
-	"codeberg.org/snonux/gos/internal/platforms"
+	"github.com/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/platforms"
 )
 
 // Share tags.

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"codeberg.org/snonux/gos/internal/colour"
+	"github.com/snonux/gos/internal/colour"
 	"golang.org/x/exp/rand"
 )
 

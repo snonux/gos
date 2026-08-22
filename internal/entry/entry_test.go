@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"codeberg.org/snonux/gos/internal/timestamp"
+	"github.com/snonux/gos/internal/timestamp"
 )
 
 func TestEntry(t *testing.T) {

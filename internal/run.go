@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	"codeberg.org/snonux/gos/internal/colour"
-	"codeberg.org/snonux/gos/internal/config"
-	"codeberg.org/snonux/gos/internal/platforms"
-	"codeberg.org/snonux/gos/internal/prompt"
-	"codeberg.org/snonux/gos/internal/queue"
-	"codeberg.org/snonux/gos/internal/schedule"
-	"codeberg.org/snonux/gos/internal/summary"
+	"github.com/snonux/gos/internal/colour"
+	"github.com/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/platforms"
+	"github.com/snonux/gos/internal/prompt"
+	"github.com/snonux/gos/internal/queue"
+	"github.com/snonux/gos/internal/schedule"
+	"github.com/snonux/gos/internal/summary"
 )
 
 func run(ctx context.Context, args config.Args) error {

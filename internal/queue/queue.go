@@ -7,13 +7,13 @@ import (
 	"strings"
 	"time"
 
-	"codeberg.org/snonux/gos/internal/colour"
-	"codeberg.org/snonux/gos/internal/config"
-	"codeberg.org/snonux/gos/internal/entry"
-	"codeberg.org/snonux/gos/internal/oi"
-	"codeberg.org/snonux/gos/internal/platforms"
-	"codeberg.org/snonux/gos/internal/tags"
-	"codeberg.org/snonux/gos/internal/timestamp"
+	"github.com/snonux/gos/internal/colour"
+	"github.com/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/entry"
+	"github.com/snonux/gos/internal/oi"
+	"github.com/snonux/gos/internal/platforms"
+	"github.com/snonux/gos/internal/tags"
+	"github.com/snonux/gos/internal/timestamp"
 )
 
 // Strictly, we only operate on .txt files, but we also accept .md as Obsidian creates only .md files.

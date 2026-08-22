@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strings"
 
-	"codeberg.org/snonux/gos/internal/oi"
-	"codeberg.org/snonux/gos/internal/platforms"
+	"github.com/snonux/gos/internal/oi"
+	"github.com/snonux/gos/internal/platforms"
 )
 
 var inlineTagRE = regexp.MustCompile(`[.,:]`)

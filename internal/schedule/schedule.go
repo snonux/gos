@@ -8,12 +8,12 @@ import (
 	"slices"
 	"strings"
 
-	"codeberg.org/snonux/gos/internal/colour"
-	"codeberg.org/snonux/gos/internal/config"
-	"codeberg.org/snonux/gos/internal/entry"
-	"codeberg.org/snonux/gos/internal/oi"
-	"codeberg.org/snonux/gos/internal/platforms"
-	"codeberg.org/snonux/gos/internal/prompt"
+	"github.com/snonux/gos/internal/colour"
+	"github.com/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/entry"
+	"github.com/snonux/gos/internal/oi"
+	"github.com/snonux/gos/internal/platforms"
+	"github.com/snonux/gos/internal/prompt"
 )
 
 var (

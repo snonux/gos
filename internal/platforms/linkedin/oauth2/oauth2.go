@@ -11,8 +11,8 @@ import (
 	"runtime"
 	"time"
 
-	"codeberg.org/snonux/gos/internal/colour"
-	"codeberg.org/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/colour"
+	"github.com/snonux/gos/internal/config"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/linkedin"
 )

@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"codeberg.org/snonux/gos/internal/colour"
-	"codeberg.org/snonux/gos/internal/config"
-	"codeberg.org/snonux/gos/internal/entry"
-	"codeberg.org/snonux/gos/internal/oi"
-	"codeberg.org/snonux/gos/internal/prompt"
-	"codeberg.org/snonux/gos/internal/timestamp"
+	"github.com/snonux/gos/internal/colour"
+	"github.com/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/entry"
+	"github.com/snonux/gos/internal/oi"
+	"github.com/snonux/gos/internal/prompt"
+	"github.com/snonux/gos/internal/timestamp"
 )
 
 // Post writes the entry body as plain text under <gosDir>/snonux/inbox (filename .md).

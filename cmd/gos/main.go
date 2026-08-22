@@ -1,7 +1,7 @@
 package main
 
 import (
-	"codeberg.org/snonux/gos/internal"
+	"github.com/snonux/gos/internal"
 )
 
 func main() {

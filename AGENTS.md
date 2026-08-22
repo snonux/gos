@@ -68,7 +68,7 @@ Run `mage dev` to ensure tests pass, vet and lint checks succeed, and the build 
 ## Code Conventions
 
 - **Go version**: 1.23+
-- **Module path**: `codeberg.org/snonux/gos`
+- **Module path**: `github.com/snonux/gos`
 - **Package layout**: Internal packages under `internal/`, commands under `cmd/`
 - **Error handling**: Standard Go error handling patterns
 - **Dependencies**: Minimal external dependencies (fatih/color, golang.org/x packages)

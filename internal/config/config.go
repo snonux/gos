@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"codeberg.org/snonux/gos/internal/colour"
+	"github.com/snonux/gos/internal/colour"
 )
 
 // Config holds the application configuration loaded from the JSON config file.

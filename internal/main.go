@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"codeberg.org/snonux/gos/internal/config"
-	"codeberg.org/snonux/gos/internal/schedule"
+	"github.com/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/schedule"
 )
 
 // Main is the entry point for the Gos application.

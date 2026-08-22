@@ -10,9 +10,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"codeberg.org/snonux/gos/internal/colour"
-	"codeberg.org/snonux/gos/internal/config"
-	"codeberg.org/snonux/gos/internal/oi"
+	"github.com/snonux/gos/internal/colour"
+	"github.com/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/oi"
 	"golang.org/x/net/html"
 )
 

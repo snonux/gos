@@ -9,9 +9,9 @@ import (
 	"sort"
 	"strings"
 
-	"codeberg.org/snonux/gos/internal/config"
-	"codeberg.org/snonux/gos/internal/entry"
-	"codeberg.org/snonux/gos/internal/platforms"
+	"github.com/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/entry"
+	"github.com/snonux/gos/internal/platforms"
 )
 
 const maxLinkLength = 80

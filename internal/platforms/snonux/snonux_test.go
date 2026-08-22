@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"codeberg.org/snonux/gos/internal/entry"
+	"github.com/snonux/gos/internal/entry"
 )
 
 func TestInboxMarkdownPath(t *testing.T) {

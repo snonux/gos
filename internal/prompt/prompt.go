@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"codeberg.org/snonux/gos/internal/colour"
-	"codeberg.org/snonux/gos/internal/table"
+	"github.com/snonux/gos/internal/colour"
+	"github.com/snonux/gos/internal/table"
 )
 
 func Acknowledge(messages ...string) error {

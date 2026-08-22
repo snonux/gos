@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"codeberg.org/snonux/gos/internal/config"
-	"codeberg.org/snonux/gos/internal/timestamp"
+	"github.com/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/timestamp"
 )
 
 func TestGatherPostedStats(t *testing.T) {

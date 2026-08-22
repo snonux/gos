@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"codeberg.org/snonux/gos/internal/config"
+	"github.com/snonux/gos/internal/config"
 )
 
 func TestPreviewExtract(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"codeberg.org/snonux/gos/internal/colour"
+	"github.com/snonux/gos/internal/colour"
 )
 
 type Args struct {
