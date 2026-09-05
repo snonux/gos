@@ -64,21 +64,31 @@ func post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 	if err != nil {
 		return err
 	}
-	content, urls, err := en.ContentWithLimit(sizeLimit)
-	if err != nil {
-		return err
-	}
-
-	newCtx, cancel = context.WithTimeout(ctx, linkedInTimeout)
-	defer cancel()
-
-	prev, err := NewPreview(newCtx, args, urls)
+	content, _, err := en.ContentWithLimit(sizeLimit)
 	if err != nil {
 		return err
 	}
 
 	question := "Do you want to post this message to Linkedin?"
 	if content, err = prompt.FileAction(question, content, en.Path, prompt.RandomOption); err != nil {
+		return err
+	}
+
+	// After FileAction so edits during the confirm loop are included.
+	if err := prompt.MaybeOpenURLs(args.OAuth2Browser, content); err != nil {
+		return err
+	}
+
+	// Re-read URLs from the (possibly edited) file for the link preview card.
+	_, urls, err := en.Content()
+	if err != nil {
+		return err
+	}
+
+	newCtx, cancel = context.WithTimeout(ctx, linkedInTimeout)
+	defer cancel()
+	prev, err := NewPreview(newCtx, args, urls)
+	if err != nil {
 		return err
 	}
 

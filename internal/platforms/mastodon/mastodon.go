@@ -30,6 +30,10 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 		content, en.Path, prompt.RandomOption); err != nil {
 		return err
 	}
+	// After FileAction so edits during the confirm loop are included.
+	if err := prompt.MaybeOpenURLs(args.OAuth2Browser, content); err != nil {
+		return err
+	}
 
 	payload := map[string]string{"status": content}
 	payloadBytes, err := json.Marshal(payload)
