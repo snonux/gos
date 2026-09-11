@@ -42,7 +42,12 @@ func Post(ctx context.Context, args config.Args, sizeLimit int, en entry.Entry) 
 	err := post(ctx, args, sizeLimit, en)
 	if errors.Is(err, errUnauthorized) {
 		colour.Infoln(err, "=> trying to refresh LinkedIn access token")
-		args.Config.LinkedInAccessToken = "" // Reset the token
+		// Clear memory and disk so LinkedInCreds does not reload the bad token.
+		args.Config.LinkedInAccessToken = ""
+		args.Config.LinkedInPersonID = ""
+		if werr := args.Config.WriteToDisk(args.ConfigPath); werr != nil {
+			return errors.Join(err, werr)
+		}
 		return post(ctx, args, sizeLimit, en)
 	}
 	return err

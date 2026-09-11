@@ -95,18 +95,32 @@ func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("Successfully fetched LinkedIn person ID\n"))
 }
 
+// tryCreds returns LinkedIn credentials when the access token can call the userinfo API.
+func tryCreds(conf config.Config) (personID, accessToken string, ok bool) {
+	if conf.LinkedInAccessToken == "" || conf.LinkedInPersonID == "" {
+		return "", "", false
+	}
+	token := &oauth2.Token{AccessToken: conf.LinkedInAccessToken}
+	if _, err := getOauthPersonID(token); err != nil {
+		return "", "", false
+	}
+	return conf.LinkedInPersonID, conf.LinkedInAccessToken, true
+}
+
 func LinkedInCreds(ctx context.Context, args config.Args) (string, string, error) {
-	conf := args.Config
-	if conf.LinkedInAccessToken != "" && conf.LinkedInPersonID != "" {
-		// Validate cached token before using it
-		token := &oauth2.Token{AccessToken: conf.LinkedInAccessToken}
-		if _, err := getOauthPersonID(token); err == nil {
-			return conf.LinkedInPersonID, conf.LinkedInAccessToken, nil
-		}
-		// Cached token is invalid, clear it to trigger re-auth
-		conf.LinkedInAccessToken = ""
+	if personID, accessToken, ok := tryCreds(args.Config); ok {
+		return personID, accessToken, nil
 	}
 
+	// args.Config is a value copy. An earlier OAuth in this process may have
+	// written fresh credentials to disk without updating the caller's Args.
+	if disk, err := config.New(args.ConfigPath, false); err == nil {
+		if personID, accessToken, ok := tryCreds(disk); ok {
+			return personID, accessToken, nil
+		}
+	}
+
+	conf := args.Config
 	oauthConfig = &oauth2.Config{
 		ClientID:     conf.LinkedInClientID,
 		ClientSecret: conf.LinkedInSecret,
@@ -117,16 +131,28 @@ func LinkedInCreds(ctx context.Context, args config.Args) (string, string, error
 	errCh = make(chan error)
 	globalCtx = ctx
 
-	http.HandleFunc("/", oauthIndexHandler)
-	http.HandleFunc("/callback", oauthCallbackHandler)
-	http.HandleFunc("/up", upHandler)
+	// Use a dedicated mux/server so a second OAuth attempt in the same process
+	// does not panic on re-registering "/" with http.DefaultServeMux (Go 1.22+).
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", oauthIndexHandler)
+	mux.HandleFunc("/callback", oauthCallbackHandler)
+	mux.HandleFunc("/up", upHandler)
 
-	colour.Infoln("Listening on http://localhost:8080 for LinkedIn OAuth2")
+	server := &http.Server{Addr: ":8080", Handler: mux}
 	go func() {
-		if err := http.ListenAndServe(":8080", nil); err != nil {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- err
 		}
 	}()
+	defer func() {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			colour.Errorln("Error shutting down LinkedIn OAuth server:", err)
+		}
+	}()
+
+	colour.Infoln("Listening on http://localhost:8080 for LinkedIn OAuth2")
 
 	if err := WaitUntilURLIsReachable("http://localhost:8080/up"); err != nil {
 		return "", "", err
