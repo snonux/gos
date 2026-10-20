@@ -70,7 +70,7 @@ func New(configPath string, composeEntry bool) (Config, error) {
 
 func (s Config) WriteToDisk(configPath string) error {
 	colour.Infoln("Writing", configPath)
-	if err := os.MkdirAll(filepath.Dir(configPath), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
 		return err
 	}
 
@@ -79,7 +79,9 @@ func (s Config) WriteToDisk(configPath string) error {
 		return fmt.Errorf("failed to marshal JSON: %w", err)
 	}
 	tmpConfigPath := fmt.Sprintf("%s.tmp", configPath)
-	file, err := os.Create(tmpConfigPath)
+	// The config holds API secrets and access tokens, so only the owner may
+	// read it. Chmod as well, in case a stale temp file already existed.
+	file, err := os.OpenFile(tmpConfigPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
@@ -89,6 +91,9 @@ func (s Config) WriteToDisk(configPath string) error {
 			colour.Errorln("Error closing file:", err)
 		}
 	}()
+	if err := file.Chmod(0o600); err != nil {
+		return fmt.Errorf("failed to restrict file permissions: %w", err)
+	}
 
 	if _, err := file.Write(bytes); err != nil {
 		return fmt.Errorf("failed to write to file: %w", err)
