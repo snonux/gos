@@ -2,6 +2,9 @@ package oauth2
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/subtle"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -23,7 +26,25 @@ var (
 	oauthPersonID    string
 	errCh            chan error
 	globalCtx        context.Context
+	// oauthState is the random OAuth2 state value of the flow in progress.
+	// The callback rejects any other value, so a forged or replayed
+	// callback (login CSRF) cannot plant someone else's token.
+	oauthState string
 )
+
+// oauthListenAddr binds the callback server to loopback only: the flow is
+// driven from a browser on this machine, and nobody else on the network
+// should be able to reach the callback.
+const oauthListenAddr = "127.0.0.1:8080"
+
+// newOAuthState returns a fresh, unguessable OAuth2 state value.
+func newOAuthState() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", fmt.Errorf("generating OAuth2 state: %w", err)
+	}
+	return hex.EncodeToString(b), nil
+}
 
 func getOauthPersonID(token *oauth2.Token) (string, error) {
 	const url = "https://api.linkedin.com/v2/userinfo"
@@ -69,11 +90,20 @@ func upHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func oauthIndexHandler(w http.ResponseWriter, r *http.Request) {
-	url := oauthConfig.AuthCodeURL("state", oauth2.AccessTypeOffline)
+	url := oauthConfig.AuthCodeURL(oauthState, oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func oauthCallbackHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	state := r.URL.Query().Get("state")
+	if oauthState == "" || subtle.ConstantTimeCompare([]byte(state), []byte(oauthState)) != 1 {
+		// Not our flow: refuse it, but keep waiting for the real callback.
+		http.Error(w, "invalid OAuth2 state", http.StatusBadRequest)
+		return
+	}
+	// The state is single use.
+	oauthState = ""
 	defer close(errCh)
 	code := r.URL.Query().Get("code")
 
@@ -130,6 +160,11 @@ func LinkedInCreds(ctx context.Context, args config.Args) (string, string, error
 	}
 	errCh = make(chan error)
 	globalCtx = ctx
+	state, err := newOAuthState()
+	if err != nil {
+		return "", "", err
+	}
+	oauthState = state
 
 	// Use a dedicated mux/server so a second OAuth attempt in the same process
 	// does not panic on re-registering "/" with http.DefaultServeMux (Go 1.22+).
@@ -138,7 +173,7 @@ func LinkedInCreds(ctx context.Context, args config.Args) (string, string, error
 	mux.HandleFunc("/callback", oauthCallbackHandler)
 	mux.HandleFunc("/up", upHandler)
 
-	server := &http.Server{Addr: ":8080", Handler: mux}
+	server := &http.Server{Addr: oauthListenAddr, Handler: mux, ReadHeaderTimeout: 10 * time.Second}
 	go func() {
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- err
